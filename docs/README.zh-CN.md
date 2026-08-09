@@ -1,0 +1,50 @@
+# HaloAI 文档索引
+
+简体中文 · [English](README.md)
+
+`docs/` 中每份英文文档都必须有同名 `.zh-CN.md` 中文对应文件。产品、架构、协议或安全变更只有在两个版本语义一致时才算完成。
+
+## 推荐阅读顺序
+
+1. 先读[产品概要](product-brief.zh-CN.md)与[产品需求](product-requirements.zh-CN.md)。
+2. 修改契约、数据表、权限或提示词前，先读[领域模型](domain-model.zh-CN.md)。
+3. 通过[系统架构](architecture.zh-CN.md)与[技术决策](technical-decisions.zh-CN.md)理解组件和依赖边界。
+4. 再阅读负责当前行为的专项规格。
+5. 最后按[质量与测试](quality-and-testing.zh-CN.md)确认适用的验收门槛。
+
+## 产品与体验
+
+| 文档 | 负责的事实 |
+| --- | --- |
+| [产品概要](product-brief.zh-CN.md) | 产品承诺、目标用户、首个成果、原则与非目标 |
+| [产品需求](product-requirements.zh-CN.md) | 功能与非功能需求、成功指标和 MVP 完成定义 |
+| [用户体验与视觉](ux-and-visual.zh-CN.md) | 信息架构、响应式行为、Quiet Halo 视觉、无障碍和美观验收 |
+| [国际化](internationalization.zh-CN.md) | Locale 协商、ICU 消息、内容语言、时区、RTL 预留和 CI 规则 |
+
+## 领域与架构
+
+| 文档 | 负责的事实 |
+| --- | --- |
+| [领域模型](domain-model.zh-CN.md) | 限界上下文、实体、不变量、责任链、生命周期和关系概览 |
+| [系统架构](architecture.zh-CN.md) | 系统边界、请求路径、部署形态与演进方式 |
+| [技术决策](technical-decisions.zh-CN.md) | 已采用技术、暂不引入的复杂度、替换条件和失败边界 |
+| [实时协作](realtime-collaboration.zh-CN.md) | REST/SSE/WebSocket 分工、重放、Presence、CRDT 持久化和离线行为 |
+| [Agent 运行时](agent-runtime.zh-CN.md) | 版本、路由、耐久状态机、事件、记忆、预算、工具、审批与恢复 |
+
+## 安全、治理与交付
+
+| 文档 | 负责的事实 |
+| --- | --- |
+| [安全基线](security.zh-CN.md) | 精简但强制的安全原则与上线门槛 |
+| [权限与安全](permissions-and-security.zh-CN.md) | 资源动作矩阵、租户隔离、会话、凭据、审计、删除和攻击套件 |
+| [质量与测试](quality-and-testing.zh-CN.md) | 测试分层、多用户与实时测试、视觉 QA、无障碍、性能和发布门禁 |
+| [交付路线](roadmap.zh-CN.md) | Foundation、Alpha、Beta、受控行动与企业化演进 |
+
+## 维护规则
+
+- 协议值、事件名、Capability、状态枚举和错误码保持英文，永不本地化。
+- 用户可见文案进入类型化语言消息；API 错误只返回稳定错误码和结构化参数。
+- 新增租户资源时，必须同时定义 `workspaceId`、授权动作、审计事件、保留期、擦除路径和测试。
+- 新增工具时，必须同时定义风险级别、凭据作用域、网络策略、审批策略、限制、审计结构和攻击测试。
+- 正式文档只描述 HaloAI 必须满足的行为，不记录历史参考来源或来源项目说明。
+- 文档交付前运行 `pnpm docs:check`。

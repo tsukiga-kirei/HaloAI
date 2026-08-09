@@ -1,0 +1,26 @@
+{
+  "name": "@haloai/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --root ../.. packages/db/src/schema/schema.smoke.test.ts",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

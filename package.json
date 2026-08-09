@@ -1,0 +1,43 @@
+{
+  "name": "haloai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A human and AI collaboration workspace.",
+  "packageManager": "pnpm@9.3.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo dev --filter=@haloai/web --filter=@haloai/api",
+    "dev:all": "turbo dev",
+    "dev:web": "pnpm --filter @haloai/web dev",
+    "dev:api": "pnpm --filter @haloai/api dev",
+    "dev:collab": "pnpm --filter @haloai/collab dev",
+    "dev:worker": "pnpm --filter @haloai/worker dev",
+    "infra:up": "docker compose up -d postgres",
+    "infra:down": "docker compose down",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
+    "docs:check": "tsx scripts/check-doc-pairs.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm docs:check && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
+    "check:all": "pnpm check && pnpm test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^22.20.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.11",
+    "turbo": "^2.10.9",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 默认只读；当前工作流不发布包、镜像或部署产物。
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: 文档、格式、类型、测试与构建
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.3.0
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装锁定依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 运行基础质量门禁
+        run: pnpm check
+
+  browser:
+    name: 桌面、平板与手机端到端验收
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.3.0
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 安装锁定依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 安装 Chromium 与系统依赖
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: 运行浏览器验收
+        run: pnpm test:e2e
+
+      - name: 上传失败截图和追踪
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-artifacts
+          path: test-results/playwright
+          if-no-files-found: ignore
+          retention-days: 7
