@@ -116,7 +116,7 @@ Locale 解析器是使用表驱动测试覆盖的纯函数。框架 Adapter 可�
 翻译接口具有以下语义契约：
 
 ```ts
-function translate<K extends MessageKey>(
+declare function translate<K extends MessageKey>(
   key: K,
   values: MessageArgs<K>,
   context: LocaleContext,

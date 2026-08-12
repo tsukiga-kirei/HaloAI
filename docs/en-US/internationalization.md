@@ -116,7 +116,7 @@ The canonical catalog schema generates or infers:
 The translation interface has this semantic contract:
 
 ```ts
-function translate<K extends MessageKey>(
+declare function translate<K extends MessageKey>(
   key: K,
   values: MessageArgs<K>,
   context: LocaleContext,
