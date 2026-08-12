@@ -1,4 +1,6 @@
 import { Bell, ChevronDown, Hash, Inbox, MoreHorizontal, Search, Settings2 } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, HaloMark, SidebarSection } from "./primitives";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
@@ -52,21 +54,20 @@ export function WorkspaceSidebar({
   return (
     <aside className="workspace-sidebar" aria-label={dictionary.rooms}>
       <div className="brand-row">
-        <a className="brand" href="#workspace" aria-label="HaloAI">
+        <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
           <HaloMark />
           <span className="brand-copy">
             <strong>HaloAI</strong>
             <small>{dictionary.brandTagline}</small>
           </span>
-        </a>
-        <button
+        </Link>
+        <Link
           className="icon-button"
-          type="button"
           aria-label={dictionary.settings}
-          onClick={() => onNotify(dictionary.settingsPreview)}
+          href={"/admin/overview" as Route}
         >
           <Settings2 size={17} />
-        </button>
+        </Link>
       </div>
 
       <button

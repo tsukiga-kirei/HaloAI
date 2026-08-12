@@ -41,4 +41,20 @@ test.describe("手机工作台", () => {
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
+
+  test("390×844 的后台使用移动导航且配置卡片无横向溢出", async ({ page }) => {
+    await page.goto("/admin/overview");
+    await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
+    const navigation = page.getByRole("navigation", { name: "后台配置导航" });
+    await expect(navigation).toBeVisible();
+
+    await navigation.getByRole("link", { name: "AI 协作者" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "AI 协作者" })).toBeVisible();
+    await expect(page.getByText("Nova", { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await navigation.getByRole("link", { name: "安全策略" }).click();
+    await expect(page.getByText("工作空间数据隔离", { exact: true })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
 });

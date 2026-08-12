@@ -69,6 +69,7 @@ HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于�
 | API 与耐久 Worker            | 框架已实现        | Fastify 边界、可恢复 SSE 和 Graphile 任务边界                      |
 | 数据库 schema                | Foundation 已实现 | 显式租户协作、运行时与治理数据表                                   |
 | 响应式工作台                 | Foundation 已实现 | 房间搜索/创建/切换、独立消息、流式回复、文档版本、主题和移动端布局 |
+| 前台与工作空间后台           | Alpha 骨架已实现  | `/app` 与 `/admin/*` 独立外壳、服务端权限守卫、双语与移动端布局    |
 | CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口                |
 | 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                           |
 | 真实认证与数据库             | Alpha 进行中      | 数据库迁移、RLS 事务与协作 repository 已完成；认证和 API 待接入    |
@@ -76,7 +77,7 @@ HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于�
 
 > 当前演示运行时不会调用真实模型或外部工具，因此不需要 API Key，也不代表已经达到生产安全等级。
 
-当前页面不是纯静态稿。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。PostgreSQL 迁移与首批协作 repository 已完成，当前页面尚未接入这些 API；登录、跨用户共享与长期保存仍需继续完成认证和 HTTP 数据链路。尚未接后端的次要入口会显示阶段说明，不会静默执行或伪装成功。
+当前页面不是纯静态稿。`/app` 是团队协作前台，`/admin/*` 是独立的工作空间后台，`/system` 默认保持锁定。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。PostgreSQL 迁移与首批协作 repository 已完成，当前页面尚未接入这些 API；登录、跨用户共享与长期保存仍需继续完成认证和 HTTP 数据链路。尚未接后端的操作会显示阶段说明，不会静默执行或伪装成功。
 
 ## 技术路线
 
@@ -276,23 +277,24 @@ Turborepo 会把可复用的任务结果写入 `.turbo/`。它是自动生成的
 
 ## 文档
 
-| 中文                                                 | English                                                            | 内容                                |
-| ---------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
-| [文档索引](docs/zh-CN/README.md)                     | [Documentation](docs/en-US/README.md)                              | 文档导航与维护规则                  |
-| [产品概要](docs/zh-CN/product-brief.md)              | [Product brief](docs/en-US/product-brief.md)                       | 用户、首个任务和产品原则            |
-| [产品需求](docs/zh-CN/product-requirements.md)       | [Product requirements](docs/en-US/product-requirements.md)         | 功能、指标与 MVP 验收               |
-| [用户体验与视觉](docs/zh-CN/ux-and-visual.md)        | [UX and visual](docs/en-US/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
-| [领域模型](docs/zh-CN/domain-model.md)               | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
-| [系统架构](docs/zh-CN/architecture.md)               | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
-| [技术决策](docs/zh-CN/technical-decisions.md)        | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
-| [持久化与租户事务](docs/zh-CN/persistence.md)        | [Persistence](docs/en-US/persistence.md)                           | 数据库角色、迁移、RLS 与 Repository |
-| [实时协作](docs/zh-CN/realtime-collaboration.md)     | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
-| [Agent 运行时](docs/zh-CN/agent-runtime.md)          | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
-| [安全基线](docs/zh-CN/security.md)                   | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |
-| [权限与安全](docs/zh-CN/permissions-and-security.md) | [Permissions and security](docs/en-US/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
-| [国际化](docs/zh-CN/internationalization.md)         | [Internationalization](docs/en-US/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
-| [质量与测试](docs/zh-CN/quality-and-testing.md)      | [Quality and testing](docs/en-US/quality-and-testing.md)           | 测试分层与发布门禁                  |
-| [交付路线](docs/zh-CN/roadmap.md)                    | [Roadmap](docs/en-US/roadmap.md)                                   | Foundation 到企业部署阶段           |
+| 中文                                                  | English                                                            | 内容                                |
+| ----------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
+| [文档索引](docs/zh-CN/README.md)                      | [Documentation](docs/en-US/README.md)                              | 文档导航与维护规则                  |
+| [产品概要](docs/zh-CN/product-brief.md)               | [Product brief](docs/en-US/product-brief.md)                       | 用户、首个任务和产品原则            |
+| [产品需求](docs/zh-CN/product-requirements.md)        | [Product requirements](docs/en-US/product-requirements.md)         | 功能、指标与 MVP 验收               |
+| [用户体验与视觉](docs/zh-CN/ux-and-visual.md)         | [UX and visual](docs/en-US/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
+| [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md) | [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | 前台、后台路由、视觉与授权边界      |
+| [领域模型](docs/zh-CN/domain-model.md)                | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
+| [系统架构](docs/zh-CN/architecture.md)                | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
+| [技术决策](docs/zh-CN/technical-decisions.md)         | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
+| [持久化与租户事务](docs/zh-CN/persistence.md)         | [Persistence](docs/en-US/persistence.md)                           | 数据库角色、迁移、RLS 与 Repository |
+| [实时协作](docs/zh-CN/realtime-collaboration.md)      | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
+| [Agent 运行时](docs/zh-CN/agent-runtime.md)           | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
+| [安全基线](docs/zh-CN/security.md)                    | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |
+| [权限与安全](docs/zh-CN/permissions-and-security.md)  | [Permissions and security](docs/en-US/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
+| [国际化](docs/zh-CN/internationalization.md)          | [Internationalization](docs/en-US/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
+| [质量与测试](docs/zh-CN/quality-and-testing.md)       | [Quality and testing](docs/en-US/quality-and-testing.md)           | 测试分层与发布门禁                  |
+| [交付路线](docs/zh-CN/roadmap.md)                     | [Roadmap](docs/en-US/roadmap.md)                                   | Foundation 到企业部署阶段           |
 
 ## 开发约束
 

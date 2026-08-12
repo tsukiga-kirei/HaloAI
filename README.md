@@ -60,23 +60,24 @@ Create a workspace and project room
 
 HaloAI is currently in the **Foundation / specification and framework phase**. Existing code validates the TypeScript architecture, authorization policy, event streaming, and responsive workspace. Interfaces and package boundaries may change until the product, domain, security, and UX specifications are reviewed.
 
-| Area                                      | Status                 | Notes                                                                                                  |
-| ----------------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| Product, UX, security, architecture specs | Draft 0.1 complete     | Full English/Chinese pairs with acceptance gates                                                       |
-| pnpm TypeScript workspace                 | Established            | Strict types and independent domain packages                                                           |
-| Actor / Role / AgentProfile               | Foundation implemented | Identity, authority, persona, membership separated                                                     |
-| Authorization policy and tests            | Foundation implemented | Fail-closed server policy with delegation intersection                                                 |
-| API and durable worker                    | Framework implemented  | Fastify boundary, resumable SSE, Graphile task boundary                                                |
-| Database schema                           | Foundation implemented | Tenant-explicit collaboration, runtime and governance tables                                           |
-| Responsive workspace                      | Foundation implemented | Room search/create/switching, isolated messages, SSE replies, document versions, themes, mobile layout |
-| CRDT collaboration service                | Foundation implemented | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                          |
-| Provider-neutral model boundary           | Foundation implemented | Streaming protocol and demo adapter; no live provider yet                                              |
-| Real authentication and persistence       | Alpha in progress      | Migration, RLS transactions, and collaboration repositories are complete; auth and APIs remain         |
-| Rich-text editor and durable CRDT storage | Not started            | Web/PostgreSQL integration in Team Beta                                                                |
+| Area                                       | Status                  | Notes                                                                                                  |
+| ------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------ |
+| Product, UX, security, architecture specs  | Draft 0.1 complete      | Full English/Chinese pairs with acceptance gates                                                       |
+| pnpm TypeScript workspace                  | Established             | Strict types and independent domain packages                                                           |
+| Actor / Role / AgentProfile                | Foundation implemented  | Identity, authority, persona, membership separated                                                     |
+| Authorization policy and tests             | Foundation implemented  | Fail-closed server policy with delegation intersection                                                 |
+| API and durable worker                     | Framework implemented   | Fastify boundary, resumable SSE, Graphile task boundary                                                |
+| Database schema                            | Foundation implemented  | Tenant-explicit collaboration, runtime and governance tables                                           |
+| Responsive workspace                       | Foundation implemented  | Room search/create/switching, isolated messages, SSE replies, document versions, themes, mobile layout |
+| Collaboration and workspace administration | Alpha shell implemented | Separate `/app` and `/admin/*` shells, server guards, bilingual copy, and mobile layouts               |
+| CRDT collaboration service                 | Foundation implemented  | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                          |
+| Provider-neutral model boundary            | Foundation implemented  | Streaming protocol and demo adapter; no live provider yet                                              |
+| Real authentication and persistence        | Alpha in progress       | Migration, RLS transactions, and collaboration repositories are complete; auth and APIs remain         |
+| Rich-text editor and durable CRDT storage  | Not started             | Web/PostgreSQL integration in Team Beta                                                                |
 
 > The current demo runtime calls no real model or external tool. It needs no API key and is not a claim of production readiness.
 
-The current page is not a static mock. Rooms, messages, members, and document versions use real in-browser state, while demo replies stream through a server route over SSE. Reloading resets that demo state. PostgreSQL migrations and the initial collaboration repositories now exist, but the page is not connected to those APIs yet; sign-in, cross-user sharing, and durable persistence still require the authentication and HTTP data path. Secondary actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
+The current UI is not a static mock. `/app` is the team collaboration surface, `/admin/*` is a separate workspace administration surface, and `/system` stays locked by default. Rooms, messages, members, and document versions use real in-browser state, while demo replies stream through a server route over SSE. Reloading resets that demo state. PostgreSQL migrations and the initial collaboration repositories now exist, but the UI is not connected to those APIs yet; sign-in, cross-user sharing, and durable persistence still require the authentication and HTTP data path. Actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
 
 ## Technology direction
 
@@ -273,23 +274,24 @@ Read the [security baseline](docs/en-US/security.md) before enabling real models
 
 ## Documentation
 
-| English                                                            | 中文                                                 | Scope                                                |
-| ------------------------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------- |
-| [Documentation index](docs/en-US/README.md)                        | [文档索引](docs/zh-CN/README.md)                     | Navigation and maintenance rules                     |
-| [Product brief](docs/en-US/product-brief.md)                       | [产品概要](docs/zh-CN/product-brief.md)              | Audience, first job, principles                      |
-| [Product requirements](docs/en-US/product-requirements.md)         | [产品需求](docs/zh-CN/product-requirements.md)       | Requirements, metrics, MVP acceptance                |
-| [UX and visual](docs/en-US/ux-and-visual.md)                       | [用户体验与视觉](docs/zh-CN/ux-and-visual.md)        | Responsive behavior and quantified visual quality    |
-| [Domain model](docs/en-US/domain-model.md)                         | [领域模型](docs/zh-CN/domain-model.md)               | Actors, resources, invariants and lifecycle          |
-| [Architecture](docs/en-US/architecture.md)                         | [系统架构](docs/zh-CN/architecture.md)               | Domain boundaries and evolution                      |
-| [Technical decisions](docs/en-US/technical-decisions.md)           | [技术决策](docs/zh-CN/technical-decisions.md)        | Technology choices and replacement triggers          |
-| [Persistence and tenant transactions](docs/en-US/persistence.md)   | [持久化与租户事务](docs/zh-CN/persistence.md)        | Database roles, migrations, RLS, and repositories    |
-| [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | [实时协作](docs/zh-CN/realtime-collaboration.md)     | SSE recovery, CRDT, presence and offline behavior    |
-| [Agent runtime](docs/en-US/agent-runtime.md)                       | [Agent 运行时](docs/zh-CN/agent-runtime.md)          | State machine, tools, budgets and recovery           |
-| [Security](docs/en-US/security.md)                                 | [安全基线](docs/zh-CN/security.md)                   | Authorization and launch gates                       |
-| [Permissions and security](docs/en-US/permissions-and-security.md) | [权限与安全](docs/zh-CN/permissions-and-security.md) | Permission matrix, tenant isolation and attack suite |
-| [Internationalization](docs/en-US/internationalization.md)         | [国际化](docs/zh-CN/internationalization.md)         | Locale, ICU, content language and CI rules           |
-| [Quality and testing](docs/en-US/quality-and-testing.md)           | [质量与测试](docs/zh-CN/quality-and-testing.md)      | Test layers and release gates                        |
-| [Roadmap](docs/en-US/roadmap.md)                                   | [交付路线](docs/zh-CN/roadmap.md)                    | Foundation through enterprise                        |
+| English                                                            | 中文                                                  | Scope                                                |
+| ------------------------------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
+| [Documentation index](docs/en-US/README.md)                        | [文档索引](docs/zh-CN/README.md)                      | Navigation and maintenance rules                     |
+| [Product brief](docs/en-US/product-brief.md)                       | [产品概要](docs/zh-CN/product-brief.md)               | Audience, first job, principles                      |
+| [Product requirements](docs/en-US/product-requirements.md)         | [产品需求](docs/zh-CN/product-requirements.md)        | Requirements, metrics, MVP acceptance                |
+| [UX and visual](docs/en-US/ux-and-visual.md)                       | [用户体验与视觉](docs/zh-CN/ux-and-visual.md)         | Responsive behavior and quantified visual quality    |
+| [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md) | Collaboration, administration, and authorization     |
+| [Domain model](docs/en-US/domain-model.md)                         | [领域模型](docs/zh-CN/domain-model.md)                | Actors, resources, invariants and lifecycle          |
+| [Architecture](docs/en-US/architecture.md)                         | [系统架构](docs/zh-CN/architecture.md)                | Domain boundaries and evolution                      |
+| [Technical decisions](docs/en-US/technical-decisions.md)           | [技术决策](docs/zh-CN/technical-decisions.md)         | Technology choices and replacement triggers          |
+| [Persistence and tenant transactions](docs/en-US/persistence.md)   | [持久化与租户事务](docs/zh-CN/persistence.md)         | Database roles, migrations, RLS, and repositories    |
+| [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | [实时协作](docs/zh-CN/realtime-collaboration.md)      | SSE recovery, CRDT, presence and offline behavior    |
+| [Agent runtime](docs/en-US/agent-runtime.md)                       | [Agent 运行时](docs/zh-CN/agent-runtime.md)           | State machine, tools, budgets and recovery           |
+| [Security](docs/en-US/security.md)                                 | [安全基线](docs/zh-CN/security.md)                    | Authorization and launch gates                       |
+| [Permissions and security](docs/en-US/permissions-and-security.md) | [权限与安全](docs/zh-CN/permissions-and-security.md)  | Permission matrix, tenant isolation and attack suite |
+| [Internationalization](docs/en-US/internationalization.md)         | [国际化](docs/zh-CN/internationalization.md)          | Locale, ICU, content language and CI rules           |
+| [Quality and testing](docs/en-US/quality-and-testing.md)           | [质量与测试](docs/zh-CN/quality-and-testing.md)       | Test layers and release gates                        |
+| [Roadmap](docs/en-US/roadmap.md)                                   | [交付路线](docs/zh-CN/roadmap.md)                     | Foundation through enterprise                        |
 
 ## Development agreements
 

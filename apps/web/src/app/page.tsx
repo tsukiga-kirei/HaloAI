@@ -1,5 +1,6 @@
-import { HaloWorkspace } from "@/components/halo-workspace";
+import type { Route } from "next";
+import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  return <HaloWorkspace />;
+  redirect("/app" as Route);
 }

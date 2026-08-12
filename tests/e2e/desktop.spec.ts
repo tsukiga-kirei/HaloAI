@@ -148,8 +148,38 @@ test.describe("桌面工作台", () => {
     await expect(page.getByText("版本 v4", { exact: true })).toBeVisible();
   });
 
-  test("尚未接后端的次要入口会明确说明状态", async ({ page }) => {
-    await page.getByRole("button", { name: "设置" }).click();
-    await expect(page.getByRole("status")).toContainText("设置中心将在内部 Alpha 接入");
+  test("设置入口进入独立工作空间后台", async ({ page }) => {
+    await page.getByRole("link", { name: "设置" }).click();
+    await expect(page).toHaveURL(/\/admin\/overview$/);
+    await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "后台配置导航" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("后台分区可导航并继承语言和主题偏好", async ({ page }) => {
+    await page.goto("/admin/overview");
+    await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
+
+    await page.getByRole("link", { name: "成员与角色" }).click();
+    await expect(page).toHaveURL(/\/admin\/members$/);
+    await expect(page.getByRole("heading", { level: 1, name: "成员与访问角色" })).toBeVisible();
+
+    await page.getByRole("button", { name: "切换语言" }).click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Members and access roles" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Change theme" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    await page.getByRole("link", { name: "Back to collaboration" }).click();
+    await expect(page).toHaveURL(/\/app$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
+  });
+
+  test("系统后台保持独立锁定且不展示租户内容", async ({ page }) => {
+    await page.goto("/system");
+    await expect(page.getByRole("heading", { level: 1, name: "系统后台保持锁定" })).toBeVisible();
+    await expect(page.getByText("内测发布", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("用户研究", { exact: true })).toHaveCount(0);
   });
 });

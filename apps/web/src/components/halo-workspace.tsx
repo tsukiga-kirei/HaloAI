@@ -31,6 +31,7 @@ const streamEventSchema = z.object({
 export function HaloWorkspace() {
   const [locale, setLocale] = useState<Locale>("zh-CN");
   const [theme, setTheme] = useState<Theme>("light");
+  const [preferencesReady, setPreferencesReady] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [documentTab, setDocumentTab] = useState<DocumentTab>("document");
   const [rooms, setRooms] = useState<DemoRoom[]>(demoRooms);
@@ -80,14 +81,16 @@ export function HaloWorkspace() {
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       setTheme("dark");
     }
+    setPreferencesReady(true);
   }, []);
 
   useEffect(() => {
+    if (!preferencesReady) return;
     document.documentElement.dataset.theme = theme;
     document.documentElement.lang = locale;
     window.localStorage.setItem("haloai.theme", theme);
     window.localStorage.setItem("haloai.locale", locale);
-  }, [locale, theme]);
+  }, [locale, preferencesReady, theme]);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

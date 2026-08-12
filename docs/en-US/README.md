@@ -14,12 +14,13 @@ Every English document in `docs/en-US/` has a same-named counterpart in `docs/zh
 
 ## Product and experience
 
-| Document                                        | Owns                                                                                                           |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| [Product brief](product-brief.md)               | Product promise, target users, first outcome, principles and non-goals                                         |
-| [Product requirements](product-requirements.md) | Functional requirements, non-functional requirements, metrics and MVP definition of done                       |
-| [UX and visual](ux-and-visual.md)               | Information architecture, responsive behavior, Quiet Halo visual language, accessibility and visual acceptance |
-| [Internationalization](internationalization.md) | Locale negotiation, ICU messages, content language, time zones, RTL readiness and CI rules                     |
+| Document                                            | Owns                                                                                                           |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [Product brief](product-brief.md)                   | Product promise, target users, first outcome, principles and non-goals                                         |
+| [Product requirements](product-requirements.md)     | Functional requirements, non-functional requirements, metrics and MVP definition of done                       |
+| [UX and visual](ux-and-visual.md)                   | Information architecture, responsive behavior, Quiet Halo visual language, accessibility and visual acceptance |
+| [Frontend surface boundaries](frontend-surfaces.md) | Routes, visual language, and authorization for collaboration and administration                                |
+| [Internationalization](internationalization.md)     | Locale negotiation, ICU messages, content language, time zones, RTL readiness and CI rules                     |
 
 ## Domain and architecture
 
