@@ -68,15 +68,8 @@ export const documents = pgTable(
       table.projectId,
       table.id,
     ),
-    index("documents_project_status_idx").on(
-      table.workspaceId,
-      table.projectId,
-      table.status,
-    ),
-    check(
-      "documents_schema_version_check",
-      sql`${table.documentSchemaVersion} > 0`,
-    ),
+    index("documents_project_status_idx").on(table.workspaceId, table.projectId, table.status),
+    check("documents_schema_version_check", sql`${table.documentSchemaVersion} > 0`),
     workspacePolicy("documents_tenant", table.workspaceId),
   ],
 );
@@ -101,9 +94,7 @@ export const yjsUpdates = pgTable(
     clientMutationId: uuid("client_mutation_id"),
     runId: uuid("run_id"),
     transactionOrigin: varchar("transaction_origin", { length: 160 }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -130,11 +121,7 @@ export const yjsUpdates = pgTable(
     uniqueIndex("yjs_updates_client_mutation_unique")
       .on(table.workspaceId, table.documentId, table.actorId, table.clientMutationId)
       .where(sql`${table.clientMutationId} is not null`),
-    index("yjs_updates_document_time_idx").on(
-      table.workspaceId,
-      table.documentId,
-      table.createdAt,
-    ),
+    index("yjs_updates_document_time_idx").on(table.workspaceId, table.documentId, table.createdAt),
     check(
       "yjs_updates_size_sequence_check",
       sql`${table.sequence} > 0 and octet_length(${table.update}) between 1 and 1048576`,
@@ -164,9 +151,7 @@ export const yjsSnapshots = pgTable(
     documentSchemaVersion: integer("document_schema_version").notNull(),
     createdByActorId: uuid("created_by_actor_id").notNull(),
     runId: uuid("run_id"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -229,9 +214,7 @@ export const documentVersions = pgTable(
     plainTextDigest: text("plain_text_digest"),
     createdByActorId: uuid("created_by_actor_id").notNull(),
     runId: uuid("run_id"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -265,10 +248,7 @@ export const documentVersions = pgTable(
       table.documentId,
       table.versionNumber,
     ),
-    check(
-      "document_versions_number_positive_check",
-      sql`${table.versionNumber} > 0`,
-    ),
+    check("document_versions_number_positive_check", sql`${table.versionNumber} > 0`),
     ...workspaceAppendOnlyPolicies("document_versions", table.workspaceId),
   ],
 );

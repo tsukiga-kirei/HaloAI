@@ -79,22 +79,12 @@ export const DocumentProposalOperationSchema = z.discriminatedUnion("kind", [
   AddSummaryOperationSchema,
 ]);
 
-export type AppendSectionOperation = z.infer<
-  typeof AppendSectionOperationSchema
->;
-export type ReplaceSectionOperation = z.infer<
-  typeof ReplaceSectionOperationSchema
->;
-export type InsertCommentOperation = z.infer<
-  typeof InsertCommentOperationSchema
->;
-export type SuggestTitleOperation = z.infer<
-  typeof SuggestTitleOperationSchema
->;
+export type AppendSectionOperation = z.infer<typeof AppendSectionOperationSchema>;
+export type ReplaceSectionOperation = z.infer<typeof ReplaceSectionOperationSchema>;
+export type InsertCommentOperation = z.infer<typeof InsertCommentOperationSchema>;
+export type SuggestTitleOperation = z.infer<typeof SuggestTitleOperationSchema>;
 export type AddSummaryOperation = z.infer<typeof AddSummaryOperationSchema>;
-export type DocumentProposalOperation = z.infer<
-  typeof DocumentProposalOperationSchema
->;
+export type DocumentProposalOperation = z.infer<typeof DocumentProposalOperationSchema>;
 
 export const ProposalCitationSchema = z
   .object({
@@ -165,9 +155,7 @@ export const DocumentProposalSchema = z
       });
     }
 
-    const operationIds = proposal.operations.map(
-      (operation) => operation.operationId,
-    );
+    const operationIds = proposal.operations.map((operation) => operation.operationId);
     const operationIdSet = new Set(operationIds);
     if (operationIdSet.size !== operationIds.length) {
       context.addIssue({
@@ -195,9 +183,7 @@ export const DocumentProposalSchema = z
       }
     }
 
-    const reviewedStatuses = new Set<
-      z.infer<typeof DocumentProposalStatusSchema>
-    >([
+    const reviewedStatuses = new Set<z.infer<typeof DocumentProposalStatusSchema>>([
       "accepted",
       "partially_accepted",
       "rejected",
@@ -216,10 +202,7 @@ export const DocumentProposalSchema = z
           message: "reviewed proposal states require a human reviewer and time",
         });
       }
-    } else if (
-      proposal.reviewedBy !== undefined ||
-      proposal.reviewedAt !== undefined
-    ) {
+    } else if (proposal.reviewedBy !== undefined || proposal.reviewedAt !== undefined) {
       context.addIssue({
         code: "custom",
         path: ["reviewedBy"],
@@ -263,9 +246,7 @@ export const DocumentProposalSchema = z
       });
     }
     if (
-      new Set(["draft", "pending_review", "rejected", "stale", "expired"]).has(
-        proposal.status,
-      ) &&
+      new Set(["draft", "pending_review", "rejected", "stale", "expired"]).has(proposal.status) &&
       selectedCount > 0
     ) {
       context.addIssue({
@@ -304,10 +285,7 @@ export const DocumentProposalSchema = z
       });
     }
 
-    if (
-      proposal.expiresAt !== undefined &&
-      !isAfter(proposal.expiresAt, proposal.createdAt)
-    ) {
+    if (proposal.expiresAt !== undefined && !isAfter(proposal.expiresAt, proposal.createdAt)) {
       context.addIssue({
         code: "custom",
         path: ["expiresAt"],
@@ -365,7 +343,5 @@ export const DocumentProposalSchema = z
     }
   });
 
-export type DocumentProposalStatus = z.infer<
-  typeof DocumentProposalStatusSchema
->;
+export type DocumentProposalStatus = z.infer<typeof DocumentProposalStatusSchema>;
 export type DocumentProposal = z.infer<typeof DocumentProposalSchema>;

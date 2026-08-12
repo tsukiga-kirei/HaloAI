@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HaloAI — Human + AI collaboration",
-  description: "A shared workspace where people and AI teammates turn conversation into finished work.",
+  title: "HaloAI — Teams + AI collaboration",
+  description:
+    "A shared workspace where teams and AI collaborators turn conversation into outcomes.",
   applicationName: "HaloAI",
   manifest: "/manifest.webmanifest",
   icons: {
@@ -29,4 +30,3 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     </html>
   );
 }
-

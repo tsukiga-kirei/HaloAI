@@ -212,21 +212,14 @@ export const runSteps = pgTable(
       foreignColumns: [agentRuns.workspaceId, agentRuns.id],
     }).onDelete("cascade"),
     uniqueIndex("run_steps_workspace_id_unique").on(table.workspaceId, table.id),
-    uniqueIndex("run_steps_run_sequence_unique").on(
-      table.workspaceId,
-      table.runId,
-      table.sequence,
-    ),
+    uniqueIndex("run_steps_run_sequence_unique").on(table.workspaceId, table.runId, table.sequence),
     uniqueIndex("run_steps_idempotency_unique").on(
       table.workspaceId,
       table.runId,
       table.idempotencyKey,
     ),
     index("run_steps_status_idx").on(table.workspaceId, table.runId, table.status),
-    check(
-      "run_steps_sequence_attempt_check",
-      sql`${table.sequence} > 0 and ${table.attempt} >= 0`,
-    ),
+    check("run_steps_sequence_attempt_check", sql`${table.sequence} > 0 and ${table.attempt} >= 0`),
     workspacePolicy("run_steps_tenant", table.workspaceId),
   ],
 );
@@ -242,9 +235,7 @@ export const runMessages = pgTable(
     runId: uuid("run_id").notNull(),
     messageId: uuid("message_id").notNull(),
     role: runMessageRole("role").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({

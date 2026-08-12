@@ -12,12 +12,12 @@
 
 HaloAI 区分以下四个值，禁止把它们合并成一个：
 
-| 值 | 含义 | 作用域 | 示例 |
-| --- | --- | --- | --- |
-| UI locale | 产品界面的语言与格式惯例 | 请求和用户偏好 | zh-CN |
-| 内容语言 | 消息、文档、评论或来源的语言 | 单条内容记录 | fr |
-| 回复语言 | AI 结果所要求的语言 | Run 或任务 | en-US |
-| 时区 | 展示或调度时间点所使用的民用时间规则 | 用户或工作空间 | Asia/Shanghai |
+| 值        | 含义                                 | 作用域         | 示例          |
+| --------- | ------------------------------------ | -------------- | ------------- |
+| UI locale | 产品界面的语言与格式惯例             | 请求和用户偏好 | zh-CN         |
+| 内容语言  | 消息、文档、评论或来源的语言         | 单条内容记录   | fr            |
+| 回复语言  | AI 结果所要求的语言                  | Run 或任务     | en-US         |
+| 时区      | 展示或调度时间点所使用的民用时间规则 | 用户或工作空间 | Asia/Shanghai |
 
 UI locale 使用来自封闭、类型化白名单的规范 BCP 47 标签。内容语言标签可以表示尚未作为 UI locale 支持的语言。内容语言未知时保存为 und，禁止在可信度不足时强行猜测。
 
@@ -62,7 +62,7 @@ Locale Cookie 只包含受支持的 locale 标识。它不携带授权数据，�
 
 支持的 locale 集合和默认值在国际化 Package 中定义一次，由 Web 应用、API 展示层、Worker、通知渲染器和测试共同导入。
 
-~~~ts
+```ts
 export const supportedLocales = ["zh-CN", "en-US"] as const;
 export type Locale = (typeof supportedLocales)[number];
 export const defaultLocale: Locale = "zh-CN";
@@ -72,7 +72,7 @@ export interface LocaleContext {
   timeZone: string;
   source: "account" | "cookie" | "header" | "default";
 }
-~~~
+```
 
 代码只有在验证后才能使用 Locale 类型。未经验证的字符串仍然是 string。禁止把请求数据直接断言成 Locale。
 
@@ -115,13 +115,13 @@ Locale 解析器是使用表驱动测试覆盖的纯函数。框架 Adapter 可�
 
 翻译接口具有以下语义契约：
 
-~~~ts
+```ts
 function translate<K extends MessageKey>(
   key: K,
   values: MessageArgs<K>,
   context: LocaleContext,
 ): string;
-~~~
+```
 
 禁止动态构造 Key、任意字符串索引以及 translate(valueFromApi) 这类回退。当有限状态映射到文案时，代码使用从状态到 MessageKey 的穷尽类型化 Record。
 
@@ -162,7 +162,7 @@ Key 描述语义，而不是当前措辞。仅修改文案时保留原 Key。当
 
 领域层与 API 层返回稳定、机器可读的错误，而不是本地化展示句子：
 
-~~~ts
+```ts
 interface ApiError {
   code: ErrorCode;
   params?: Record<string, string | number | boolean>;
@@ -170,7 +170,7 @@ interface ApiError {
   retryAfterMs?: number;
   traceId: string;
 }
-~~~
+```
 
 ErrorCode 是版本化联合类型。每个 Code 必须穷尽映射到一个 UI MessageKey 和安全参数 Adapter。客户端在展示边界使用当前 locale 完成本地化。
 
@@ -295,10 +295,10 @@ UI locale、会话语言、来源语言和请求输出语言是相互独立的 R
 
 从规范目录生成两个仅用于测试的 locale：
 
-| 伪 locale | 行为 | 可发现问题 |
-| --- | --- | --- |
-| en-XA | 为文本添加重音并把普通文案扩展约 35–50%，同时保留占位符 | 裁切、固定宽度、字符串拼接、未翻译文本 |
-| ar-XB | 应用从右到左方向、镜像代表性文本并隔离变量 | 物理 CSS、方向错误、混合文字失败 |
+| 伪 locale | 行为                                                    | 可发现问题                             |
+| --------- | ------------------------------------------------------- | -------------------------------------- |
+| en-XA     | 为文本添加重音并把普通文案扩展约 35–50%，同时保留占位符 | 裁切、固定宽度、字符串拼接、未翻译文本 |
+| ar-XB     | 应用从右到左方向、镜像代表性文本并隔离变量              | 物理 CSS、方向错误、混合文字失败       |
 
 生成过程保留 ICU 结构、富文本标签、键盘快捷键、产品名、代码 Token 与测试 Selector。伪 locale 永远不能成为持久化生产偏好，也绝不能发送给真实用户。
 

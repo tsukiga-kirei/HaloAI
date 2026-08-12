@@ -13,13 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { lifecycleColumns, workspacePolicy } from "./common";
-import {
-  actorKind,
-  actorStatus,
-  membershipStatus,
-  userStatus,
-  workspaceStatus,
-} from "./enums";
+import { actorKind, actorStatus, membershipStatus, userStatus, workspaceStatus } from "./enums";
 
 /**
  * User 是跨工作空间登录身份，不属于任何租户，也不携带 workspace_id。
@@ -104,9 +98,7 @@ export const humanActors = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -152,10 +144,7 @@ export const workspaceMemberships = pgTable(
       foreignColumns: [actors.workspaceId, actors.id],
     }).onDelete("restrict"),
     uniqueIndex("workspace_memberships_workspace_id_unique").on(table.workspaceId, table.id),
-    uniqueIndex("workspace_memberships_actor_unique").on(
-      table.workspaceId,
-      table.humanActorId,
-    ),
+    uniqueIndex("workspace_memberships_actor_unique").on(table.workspaceId, table.humanActorId),
     index("workspace_memberships_status_idx").on(table.workspaceId, table.status),
     check(
       "workspace_memberships_owner_active_check",

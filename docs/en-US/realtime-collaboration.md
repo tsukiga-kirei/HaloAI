@@ -347,15 +347,15 @@ Independent section changes may be safely rebased when stable node identity and 
 
 ### Cache policy
 
-| Resource | Strategy |
-| --- | --- |
-| Versioned application shell, icons, and fonts | Precache or cache-first with versioned names |
-| Navigation | Network-first with an offline shell fallback |
-| Public immutable assets | Stale-while-revalidate |
-| Authentication, permission, approval, and audit APIs | Network-only and no-store |
-| SSE responses and run streams | Never cached |
-| Authorized recent message/document summaries | Optional local storage only when policy permits |
-| Attachments and sensitive documents | Not cached by default |
+| Resource                                             | Strategy                                        |
+| ---------------------------------------------------- | ----------------------------------------------- |
+| Versioned application shell, icons, and fonts        | Precache or cache-first with versioned names    |
+| Navigation                                           | Network-first with an offline shell fallback    |
+| Public immutable assets                              | Stale-while-revalidate                          |
+| Authentication, permission, approval, and audit APIs | Network-only and no-store                       |
+| SSE responses and run streams                        | Never cached                                    |
+| Authorized recent message/document summaries         | Optional local storage only when policy permits |
+| Attachments and sensitive documents                  | Not cached by default                           |
 
 Local data is partitioned by account, tenant, workspace, and resource ID. Logout, account switch, remote session revocation, and cache schema upgrade clear or invalidate the applicable private data. Browser storage is treated as recoverable convenience storage, not as a trusted secure vault.
 
@@ -505,4 +505,3 @@ Realtime collaboration is complete only when:
 - Offline behavior never silently invokes AI or approves sensitive work.
 - Account and tenant boundaries hold across cache, stream, WebSocket, and multi-tab behavior.
 - Performance, limits, recovery, security, and cross-browser tests pass.
-

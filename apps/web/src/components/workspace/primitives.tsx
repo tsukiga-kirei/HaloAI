@@ -32,10 +32,12 @@ export function Avatar({
 export function SidebarSection({
   title,
   actionLabel,
+  onAction,
   children,
 }: {
   title: string;
   actionLabel?: string;
+  onAction?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -43,7 +45,13 @@ export function SidebarSection({
       <div className="sidebar-section-heading">
         <span>{title}</span>
         {actionLabel === undefined ? null : (
-          <button type="button" className="icon-button tiny" aria-label={actionLabel} title={actionLabel}>
+          <button
+            type="button"
+            className="icon-button tiny"
+            aria-label={actionLabel}
+            title={actionLabel}
+            onClick={onAction}
+          >
             <Plus size={14} />
           </button>
         )}

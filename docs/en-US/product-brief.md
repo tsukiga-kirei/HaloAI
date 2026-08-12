@@ -2,9 +2,9 @@
 
 ## Product statement
 
-HaloAI is a project-centered workspace where humans and persistent AI teammates discuss work, divide responsibilities, produce documents, and record decisions together.
+HaloAI is a project-centered collaboration workspace where a team and persistent AI members discuss work, divide responsibilities, produce documents, and record decisions together.
 
-The name represents a simple promise: AI should place a capability halo around human work. It should amplify judgment, clarity, and execution while keeping people visibly responsible for goals, permissions, and final decisions.
+The name evokes a halo, but the product promise is concrete: teams and their AI collaborators share one workspace, turn conversation into outcomes, and keep people visibly responsible for goals, permissions, and final decisions.
 
 ## Initial audience
 
@@ -33,4 +33,3 @@ Several people create a project room, invite specialist AI teammates, provide so
 - Co-author and review a shared document.
 - Approve sensitive AI proposals before execution.
 - Inspect who or what produced every durable change.
-

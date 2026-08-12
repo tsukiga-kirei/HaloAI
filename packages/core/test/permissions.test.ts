@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  authorize,
-  intersectCapabilities,
-  type Capability,
-  type Principal,
-} from "../src";
+import { authorize, intersectCapabilities, type Capability, type Principal } from "../src";
 
 const basePrincipal: Principal = {
   actorId: "human-1",
@@ -72,8 +67,6 @@ describe("授权策略", () => {
     const agent = new Set<Capability>(["document.read", "document.edit"]);
     const resource = new Set<Capability>(["document.read", "document.edit"]);
     const tool = new Set<Capability>(["document.read"]);
-    expect([...intersectCapabilities(delegator, agent, resource, tool)]).toEqual([
-      "document.read",
-    ]);
+    expect([...intersectCapabilities(delegator, agent, resource, tool)]).toEqual(["document.read"]);
   });
 });

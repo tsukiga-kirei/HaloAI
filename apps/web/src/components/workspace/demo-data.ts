@@ -1,14 +1,27 @@
-import type { DisplayMessage, Participant, RoomKey } from "./types";
+import type { DemoRoom, DisplayMessage, Participant } from "./types";
 
-export const demoRooms: ReadonlyArray<{
-  id: string;
-  key: RoomKey;
-  unread: number;
-  active?: boolean;
-}> = [
-  { id: "launch", key: "roomLaunch", unread: 0, active: true },
-  { id: "research", key: "roomResearch", unread: 3 },
-  { id: "website", key: "roomWebsite", unread: 0 },
+export const demoRooms: DemoRoom[] = [
+  {
+    id: "launch",
+    nameKey: "roomLaunch",
+    descriptionKey: "roomDescription",
+    goalKey: "goalText",
+    unread: 0,
+  },
+  {
+    id: "research",
+    nameKey: "roomResearch",
+    descriptionKey: "roomResearchDescription",
+    goalKey: "roomResearchGoal",
+    unread: 3,
+  },
+  {
+    id: "website",
+    nameKey: "roomWebsite",
+    descriptionKey: "roomWebsiteDescription",
+    goalKey: "roomWebsiteGoal",
+    unread: 0,
+  },
 ];
 
 export const demoParticipants: Participant[] = [

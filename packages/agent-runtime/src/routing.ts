@@ -28,9 +28,7 @@ export function routeTurn(input: RouteTurnInput): RouteTurnResult {
 
   const activeById = new Map(
     input.agents
-      .filter(
-        ({ actor, profile }) => actor.status === "active" && profile.status === "active",
-      )
+      .filter(({ actor, profile }) => actor.status === "active" && profile.status === "active")
       .map((agent) => [agent.actor.id, agent]),
   );
   const mentioned = [...new Set(input.mentionedActorIds)]

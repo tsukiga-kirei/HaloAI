@@ -138,10 +138,7 @@ export const approvals = pgTable(
       table.expiresAt,
       table.createdAt,
     ),
-    check(
-      "approvals_expiry_check",
-      sql`${table.expiresAt} > ${table.createdAt}`,
-    ),
+    check("approvals_expiry_check", sql`${table.expiresAt} > ${table.createdAt}`),
     check(
       "approvals_separation_check",
       sql`${table.reviewedByActorId} is null or ${table.reviewedByActorId} <> ${table.requestedByActorId}`,

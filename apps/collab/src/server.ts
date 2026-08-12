@@ -1,12 +1,14 @@
 import {
   Server,
   type afterHandleMessagePayload,
+  type beforeUnloadDocumentPayload,
   type beforeHandleAwarenessPayload,
   type beforeHandleMessagePayload,
   type beforeSyncPayload,
   type onAuthenticatePayload,
   type onDisconnectPayload,
   type onLoadDocumentPayload,
+  type onChangePayload,
   type onStoreDocumentPayload,
   type onTokenSyncPayload,
   type onUpgradePayload,
@@ -23,6 +25,7 @@ import {
 } from "./authorization";
 import type { CollaborationConfig } from "./config";
 import { formatDocumentName, parseDocumentName } from "./document-name";
+import { DocumentDurabilityGuard } from "./durability-guard";
 import { storeDocumentWithRetry } from "./persistence-retry";
 import { DocumentRevocationSchema, type DocumentAuthorizationPort } from "./ports/authorization";
 import type { DocumentPersistencePort } from "./ports/persistence";
@@ -90,6 +93,8 @@ export function createCollaborationService(
 ): CollaborationService {
   const persistence = requirePersistence(config, ports.persistence);
   const logger = suppliedLogger ?? pino({ level: config.LOG_LEVEL });
+  const durability = new DocumentDurabilityGuard();
+  let forceUnloading = false;
   const security = new RealtimeSecurityGuards({
     maxUpdateBytes: config.MAX_UPDATE_BYTES,
     maxDocumentBytes: config.MAX_DOCUMENT_BYTES,
@@ -229,6 +234,17 @@ export function createCollaborationService(
       return new Uint8Array(state);
     },
 
+    async onChange(data: onChangePayload<CollaborationConnectionContext>): Promise<void> {
+      /** 更新已进入权威内存文档后立即标脏；不能等待防抖保存开始才记录，否则断连窗口会丢状态。 */
+      durability.markDirty(data.documentName);
+    },
+
+    async beforeUnloadDocument(data: beforeUnloadDocumentPayload): Promise<void> {
+      if (!forceUnloading) {
+        durability.assertCanUnload(data.documentName);
+      }
+    },
+
     async onStoreDocument(
       data: onStoreDocumentPayload<CollaborationConnectionContext>,
     ): Promise<void> {
@@ -237,6 +253,7 @@ export function createCollaborationService(
        * 持久化身份只从规范 documentName 推导，绝不能用“最后一次连接上下文”决定租户归属或授权。
        */
       const document = parseDocumentName(data.documentName);
+      const storedGeneration = durability.beginStore(data.documentName);
       const state = encodeStateAsUpdate(data.document);
       if (state.byteLength > config.MAX_DOCUMENT_BYTES) {
         throw new Error("document-size-limit-exceeded");
@@ -256,6 +273,7 @@ export function createCollaborationService(
             baseDelayMs: config.STORE_RETRY_BASE_DELAY_MS,
           },
         });
+        durability.markStored(data.documentName, storedGeneration);
       } catch (error) {
         /**
          * v4 不会在保存 hook 抛错后自动重新调度，因此重试必须在上面的有界协调器内完成。
@@ -338,6 +356,7 @@ export function createCollaborationService(
                * 保存重试和正常卸载已耗尽期限时，显式卸载只用于让进程确定结束；调用方仍会
                * 收到失败并以非零状态退出，绝不能把此路径当成“最后更新已经耐久化”。
                */
+              forceUnloading = true;
               const documents = [...server.hocuspocus.documents.values()];
               for (const document of documents) {
                 await server.hocuspocus.unloadDocument(document);
@@ -347,6 +366,9 @@ export function createCollaborationService(
               }
             },
           });
+          if (durability.hasDirtyDocuments()) {
+            throw new Error("collaboration-dirty-documents-remain");
+          }
           logger.info("协作服务已关闭");
         } finally {
           unsubscribeRevocations();

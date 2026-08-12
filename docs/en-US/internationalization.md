@@ -12,12 +12,12 @@ The launch UI locales are zh-CN and en-US. The architecture MUST allow another l
 
 HaloAI distinguishes four values that MUST NOT be collapsed into one:
 
-| Value | Meaning | Scope | Example |
-| --- | --- | --- | --- |
-| UI locale | Language and formatting conventions for product chrome | Request and user preference | zh-CN |
-| Content language | Language of a message, document, comment, or source | Individual content record | fr |
-| Response language | Language requested for an AI result | Run or task | en-US |
-| Time zone | Civil-time rules used to display or schedule instants | User or workspace | Asia/Shanghai |
+| Value             | Meaning                                                | Scope                       | Example       |
+| ----------------- | ------------------------------------------------------ | --------------------------- | ------------- |
+| UI locale         | Language and formatting conventions for product chrome | Request and user preference | zh-CN         |
+| Content language  | Language of a message, document, comment, or source    | Individual content record   | fr            |
+| Response language | Language requested for an AI result                    | Run or task                 | en-US         |
+| Time zone         | Civil-time rules used to display or schedule instants  | User or workspace           | Asia/Shanghai |
 
 UI locales use canonical BCP 47 tags from a closed, typed allowlist. Content-language tags MAY represent languages that are not supported as UI locales. Unknown content language is stored as und rather than guessed with false confidence.
 
@@ -62,7 +62,7 @@ Localized HTML responses include the locale in the cache key and set an appropri
 
 The supported locale set and default are defined once in the internationalization package and imported by the web application, API presentation layer, worker, notification renderer, and tests.
 
-~~~ts
+```ts
 export const supportedLocales = ["zh-CN", "en-US"] as const;
 export type Locale = (typeof supportedLocales)[number];
 export const defaultLocale: Locale = "zh-CN";
@@ -72,7 +72,7 @@ export interface LocaleContext {
   timeZone: string;
   source: "account" | "cookie" | "header" | "default";
 }
-~~~
+```
 
 Code MUST use the Locale type after validation. Unvalidated strings remain strings. Casting request data to Locale is prohibited.
 
@@ -115,13 +115,13 @@ The canonical catalog schema generates or infers:
 
 The translation interface has this semantic contract:
 
-~~~ts
+```ts
 function translate<K extends MessageKey>(
   key: K,
   values: MessageArgs<K>,
   context: LocaleContext,
 ): string;
-~~~
+```
 
 Dynamic key construction, arbitrary string indexing, and fallbacks such as translate(valueFromApi) are prohibited. When a finite state maps to copy, code uses an exhaustive typed record from state to MessageKey.
 
@@ -162,7 +162,7 @@ Messages MUST NOT include secrets, access tokens, raw authorization details, hid
 
 Domain and API layers return stable machine-readable errors, not localized display prose:
 
-~~~ts
+```ts
 interface ApiError {
   code: ErrorCode;
   params?: Record<string, string | number | boolean>;
@@ -170,7 +170,7 @@ interface ApiError {
   retryAfterMs?: number;
   traceId: string;
 }
-~~~
+```
 
 ErrorCode is a versioned union. Each code maps exhaustively to a UI MessageKey and a safe argument adapter. The client localizes at the presentation boundary using its current locale.
 
@@ -295,10 +295,10 @@ Chinese and other input methods require composition-safe inputs. Enter MUST NOT 
 
 Two test-only locales are generated from the canonical catalog:
 
-| Pseudo-locale | Behavior | Detects |
-| --- | --- | --- |
-| en-XA | Accents text, expands ordinary copy by approximately 35–50 percent, preserves placeholders | clipping, fixed widths, concatenation, untranslated text |
-| ar-XB | Applies right-to-left direction, mirrors representative text, isolates variables | physical CSS, direction bugs, mixed-script failures |
+| Pseudo-locale | Behavior                                                                                   | Detects                                                  |
+| ------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| en-XA         | Accents text, expands ordinary copy by approximately 35–50 percent, preserves placeholders | clipping, fixed widths, concatenation, untranslated text |
+| ar-XB         | Applies right-to-left direction, mirrors representative text, isolates variables           | physical CSS, direction bugs, mixed-script failures      |
 
 Generation preserves ICU structure, rich tags, keyboard shortcuts, product name, code tokens, and test selectors. Pseudo-locales are never accepted as persisted production preferences and never sent to real users.
 

@@ -138,9 +138,7 @@ export const AgentRunSchema = z
     ]);
 
     if (
-      new Set<z.infer<typeof AgentRunStatusSchema>>(["created", "queued"]).has(
-        run.status,
-      ) &&
+      new Set<z.infer<typeof AgentRunStatusSchema>>(["created", "queued"]).has(run.status) &&
       run.startedAt !== undefined
     ) {
       context.addIssue({
@@ -210,10 +208,7 @@ export const AgentRunSchema = z
         message: "cancelled runs require a stable cancellation reason",
       });
     }
-    if (
-      run.startedAt !== undefined &&
-      !isAtOrAfter(run.startedAt, run.createdAt)
-    ) {
+    if (run.startedAt !== undefined && !isAtOrAfter(run.startedAt, run.createdAt)) {
       context.addIssue({
         code: "custom",
         path: ["startedAt"],
@@ -391,9 +386,7 @@ export type RunQueuedEvent = z.infer<typeof RunQueuedEventSchema>;
 export type RunStartedEvent = z.infer<typeof RunStartedEventSchema>;
 export type RunProgressEvent = z.infer<typeof RunProgressEventSchema>;
 export type RunTextDeltaEvent = z.infer<typeof RunTextDeltaEventSchema>;
-export type RunApprovalRequiredEvent = z.infer<
-  typeof RunApprovalRequiredEventSchema
->;
+export type RunApprovalRequiredEvent = z.infer<typeof RunApprovalRequiredEventSchema>;
 export type RunCompletedEvent = z.infer<typeof RunCompletedEventSchema>;
 export type RunCancelledEvent = z.infer<typeof RunCancelledEventSchema>;
 export type RunFailedEvent = z.infer<typeof RunFailedEventSchema>;

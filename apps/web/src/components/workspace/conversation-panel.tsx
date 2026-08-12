@@ -18,6 +18,10 @@ import { Avatar } from "./primitives";
 import type { DisplayMessage, Participant, WorkspaceViewProps } from "./types";
 
 interface ConversationPanelProps extends WorkspaceViewProps {
+  roomTitle: string;
+  roomDescription: string;
+  roomGoal: string;
+  memberSummary: string;
   participants: readonly Participant[];
   messages: readonly DisplayMessage[];
   input: string;
@@ -29,10 +33,15 @@ interface ConversationPanelProps extends WorkspaceViewProps {
   onOpenRooms: () => void;
   onOpenDocument: () => void;
   onOpenMemberDialog: () => void;
+  onNotify: (message: string) => void;
 }
 
 export function ConversationPanel({
   dictionary,
+  roomTitle,
+  roomDescription,
+  roomGoal,
+  memberSummary,
   participants,
   messages,
   input,
@@ -44,6 +53,7 @@ export function ConversationPanel({
   onOpenRooms,
   onOpenDocument,
   onOpenMemberDialog,
+  onNotify,
 }: ConversationPanelProps) {
   return (
     <main className="conversation-panel">
@@ -62,17 +72,17 @@ export function ConversationPanel({
           </div>
           <div>
             <div className="room-title-line">
-              <h1>{dictionary.roomLaunch}</h1>
+              <h1>{roomTitle}</h1>
               <span className="room-mode">
                 <AtSign size={12} /> {dictionary.mentionMode}
               </span>
             </div>
-            <p>{dictionary.roomDescription}</p>
+            <p>{roomDescription}</p>
           </div>
         </div>
 
         <div className="header-actions">
-          <div className="participant-stack" aria-label={dictionary.peopleAndAgents}>
+          <div className="participant-stack" aria-label={memberSummary}>
             {participants.slice(0, 4).map((participant) => (
               <Avatar
                 key={participant.id}
@@ -99,7 +109,12 @@ export function ConversationPanel({
           >
             <PanelRight size={18} />
           </button>
-          <button type="button" className="icon-button" aria-label={dictionary.moreActions}>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={dictionary.moreActions}
+            onClick={() => onNotify(dictionary.moreActionsPreview)}
+          >
             <MoreHorizontal size={19} />
           </button>
         </div>
@@ -110,14 +125,14 @@ export function ConversationPanel({
           <span className="context-label">
             <Sparkles size={13} /> {dictionary.goal}
           </span>
-          <strong>{dictionary.goalText}</strong>
+          <strong>{roomGoal}</strong>
         </div>
         <div className="context-meta">
           <span className="status-pill">
             <i /> {dictionary.activeNow}
           </span>
           <span className="member-summary">
-            <Users size={14} /> {dictionary.peopleAndAgents}
+            <Users size={14} /> {memberSummary}
           </span>
         </div>
       </div>
@@ -126,6 +141,12 @@ export function ConversationPanel({
         <div className="date-separator">
           <span>{dictionary.today}</span>
         </div>
+        {messages.length === 0 ? (
+          <div className="conversation-empty">
+            <Sparkles size={24} />
+            <p>{dictionary.conversationEmpty}</p>
+          </div>
+        ) : null}
         {messages.map((message) => {
           const author =
             message.nameKey === undefined
@@ -135,11 +156,7 @@ export function ConversationPanel({
             message.bodyKey === undefined ? (message.body ?? "") : dictionary[message.bodyKey];
           return (
             <article className={`message ${message.ai ? "is-ai" : "is-human"}`} key={message.id}>
-              <Avatar
-                initials={message.initials}
-                color={message.color}
-                ai={message.ai}
-              />
+              <Avatar initials={message.initials} color={message.color} ai={message.ai} />
               <div className="message-content">
                 <div className="message-meta">
                   <strong>{author}</strong>
@@ -196,6 +213,7 @@ export function ConversationPanel({
                 className="composer-tool"
                 aria-label={dictionary.addAttachment}
                 title={dictionary.addAttachment}
+                onClick={() => onNotify(dictionary.attachmentPreview)}
               >
                 <Paperclip size={18} />
               </button>
@@ -213,6 +231,7 @@ export function ConversationPanel({
                 className="composer-tool"
                 aria-label={dictionary.moreActions}
                 title={dictionary.moreActions}
+                onClick={() => onNotify(dictionary.moreActionsPreview)}
               >
                 <CirclePlus size={18} />
               </button>

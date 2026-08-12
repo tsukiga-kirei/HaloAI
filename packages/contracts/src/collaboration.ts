@@ -75,18 +75,8 @@ export const WorkspaceSchema = z
   });
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 
-export const CollaborationModeSchema = z.enum([
-  "mention",
-  "facilitated",
-  "workflow",
-  "roundtable",
-]);
-export const RoomStatusSchema = z.enum([
-  "active",
-  "waiting_approval",
-  "complete",
-  "archived",
-]);
+export const CollaborationModeSchema = z.enum(["mention", "facilitated", "workflow", "roundtable"]);
+export const RoomStatusSchema = z.enum(["active", "waiting_approval", "complete", "archived"]);
 
 export const RoomSchema = z
   .object({
@@ -138,10 +128,7 @@ export const RoomSchema = z
         message: "only archived rooms can have archivedAt",
       });
     }
-    if (
-      room.archivedAt !== undefined &&
-      !isAtOrAfter(room.archivedAt, room.createdAt)
-    ) {
+    if (room.archivedAt !== undefined && !isAtOrAfter(room.archivedAt, room.createdAt)) {
       context.addIssue({
         code: "custom",
         path: ["archivedAt"],
@@ -192,7 +179,11 @@ const ToolSummaryPartSchema = z
     type: z.literal("tool_summary"),
     toolId: ToolIdSchema,
     status: z.enum(["started", "completed", "failed", "approval_required"]),
-    summaryKey: z.string().min(3).max(160).regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)+$/),
+    summaryKey: z
+      .string()
+      .min(3)
+      .max(160)
+      .regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)+$/),
   })
   .strict();
 
@@ -206,7 +197,11 @@ const ApprovalReferencePartSchema = z
 const SystemEventPartSchema = z
   .object({
     type: z.literal("system_event"),
-    eventKey: z.string().min(3).max(160).regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)+$/),
+    eventKey: z
+      .string()
+      .min(3)
+      .max(160)
+      .regex(/^[a-z0-9]+(?:[._-][a-z0-9]+)+$/),
   })
   .strict();
 
@@ -309,20 +304,14 @@ export const MessageSchema = z
         message: "sent messages cannot have editedAt",
       });
     }
-    if (
-      message.editedAt !== undefined &&
-      !isAtOrAfter(message.editedAt, message.createdAt)
-    ) {
+    if (message.editedAt !== undefined && !isAtOrAfter(message.editedAt, message.createdAt)) {
       context.addIssue({
         code: "custom",
         path: ["editedAt"],
         message: "editedAt must not be before createdAt",
       });
     }
-    if (
-      message.deletedAt !== undefined &&
-      !isAtOrAfter(message.deletedAt, message.createdAt)
-    ) {
+    if (message.deletedAt !== undefined && !isAtOrAfter(message.deletedAt, message.createdAt)) {
       context.addIssue({
         code: "custom",
         path: ["deletedAt"],

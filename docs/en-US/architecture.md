@@ -63,4 +63,3 @@ Add a dedicated TypeScript realtime service for WebSocket presence, typing, mess
 ### Enterprise
 
 Add isolated workers, outbound network policy, secrets brokerage, SSO/SCIM, immutable audit export, data retention controls, and regional model/provider routing.
-

@@ -72,9 +72,7 @@ export const projectMemberships = pgTable(
     actorId: uuid("actor_id").notNull(),
     status: membershipStatus("status").notNull().default("active"),
     addedByActorId: uuid("added_by_actor_id").notNull(),
-    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     leftAt: timestamp("left_at", { withTimezone: true, mode: "date" }),
     ...lifecycleColumns(),
   },
@@ -100,11 +98,7 @@ export const projectMemberships = pgTable(
       table.projectId,
       table.actorId,
     ),
-    index("project_memberships_lookup_idx").on(
-      table.workspaceId,
-      table.projectId,
-      table.status,
-    ),
+    index("project_memberships_lookup_idx").on(table.workspaceId, table.projectId, table.status),
     workspacePolicy("project_memberships_tenant", table.workspaceId),
   ],
 );
@@ -165,9 +159,7 @@ export const roomMemberships = pgTable(
     addedByActorId: uuid("added_by_actor_id").notNull(),
     muted: boolean("muted").notNull().default(false),
     lastReadSequence: bigint("last_read_sequence", { mode: "number" }).notNull().default(0),
-    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     leftAt: timestamp("left_at", { withTimezone: true, mode: "date" }),
     ...lifecycleColumns(),
   },
@@ -188,20 +180,9 @@ export const roomMemberships = pgTable(
       foreignColumns: [actors.workspaceId, actors.id],
     }).onDelete("restrict"),
     uniqueIndex("room_memberships_workspace_id_unique").on(table.workspaceId, table.id),
-    uniqueIndex("room_memberships_actor_unique").on(
-      table.workspaceId,
-      table.roomId,
-      table.actorId,
-    ),
-    index("room_memberships_lookup_idx").on(
-      table.workspaceId,
-      table.roomId,
-      table.status,
-    ),
-    check(
-      "room_memberships_last_read_check",
-      sql`${table.lastReadSequence} >= 0`,
-    ),
+    uniqueIndex("room_memberships_actor_unique").on(table.workspaceId, table.roomId, table.actorId),
+    index("room_memberships_lookup_idx").on(table.workspaceId, table.roomId, table.status),
+    check("room_memberships_last_read_check", sql`${table.lastReadSequence} >= 0`),
     workspacePolicy("room_memberships_tenant", table.workspaceId),
   ],
 );
@@ -227,9 +208,7 @@ export const messages = pgTable(
     status: messageStatus("status").notNull().default("complete"),
     parts: jsonb("parts").$type<MessagePart[]>().notNull().default([]),
     contentDigest: text("content_digest").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -253,11 +232,7 @@ export const messages = pgTable(
       foreignColumns: [table.workspaceId, table.roomId, table.id],
     }).onDelete("restrict"),
     uniqueIndex("messages_workspace_id_unique").on(table.workspaceId, table.id),
-    uniqueIndex("messages_workspace_room_id_unique").on(
-      table.workspaceId,
-      table.roomId,
-      table.id,
-    ),
+    uniqueIndex("messages_workspace_room_id_unique").on(table.workspaceId, table.roomId, table.id),
     uniqueIndex("messages_room_sequence_unique").on(
       table.workspaceId,
       table.roomId,
@@ -289,9 +264,7 @@ export const messageRevisions = pgTable(
     parts: jsonb("parts").$type<MessagePart[]>().notNull(),
     contentDigest: text("content_digest").notNull(),
     reason: text("reason").notNull().default(""),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -310,10 +283,7 @@ export const messageRevisions = pgTable(
       table.messageId,
       table.revisionNumber,
     ),
-    check(
-      "message_revisions_number_positive_check",
-      sql`${table.revisionNumber} > 0`,
-    ),
+    check("message_revisions_number_positive_check", sql`${table.revisionNumber} > 0`),
     ...workspaceAppendOnlyPolicies("message_revisions", table.workspaceId),
   ],
 );
@@ -330,9 +300,7 @@ export const messageTombstones = pgTable(
     tombstonedByActorId: uuid("tombstoned_by_actor_id").notNull(),
     reasonCode: varchar("reason_code", { length: 96 }).notNull(),
     erasureJobReference: text("erasure_job_reference"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -367,9 +335,7 @@ export const mentions = pgTable(
     semanticNodeId: varchar("semantic_node_id", { length: 160 }).notNull(),
     rangeStart: integer("range_start"),
     rangeEnd: integer("range_end"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({

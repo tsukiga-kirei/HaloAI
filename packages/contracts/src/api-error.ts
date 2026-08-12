@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  JsonScalarSchema,
-  RequestIdSchema,
-} from "./primitives";
+import { JsonScalarSchema, RequestIdSchema } from "./primitives";
 
 export const ApiErrorCodeSchema = z.enum([
   "authentication_required",
@@ -41,7 +38,11 @@ const ApiErrorParamsSchema = z
 export const ApiFieldErrorSchema = z
   .object({
     path: z.array(z.union([z.string().max(128), z.number().int().nonnegative()])).max(16),
-    code: z.string().min(2).max(80).regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/),
+    code: z
+      .string()
+      .min(2)
+      .max(80)
+      .regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/),
     messageKey: z
       .string()
       .min(3)

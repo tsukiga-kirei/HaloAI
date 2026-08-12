@@ -4,13 +4,20 @@ export type MobileView = "rooms" | "chat" | "document";
 export type Theme = "light" | "dark";
 export type DocumentTab = "document" | "activity" | "versions";
 export type RoleKey =
-  | "roleProductLead"
-  | "roleResearchAgent"
-  | "roleWritingAgent"
-  | "roleFacilitator";
+  "roleProductLead" | "roleResearchAgent" | "roleWritingAgent" | "roleFacilitator";
 export type MessageBodyKey = "messageLeadBody" | "messageResearcherBody" | "messageWriterBody";
 export type MessageNameKey = "messageYou" | "messageLead" | "messageResearcher" | "messageWriter";
 export type RoomKey = "roomLaunch" | "roomResearch" | "roomWebsite";
+
+export interface DemoRoom {
+  id: string;
+  nameKey?: RoomKey;
+  name?: string;
+  descriptionKey?: "roomDescription" | "roomResearchDescription" | "roomWebsiteDescription";
+  goalKey?: "goalText" | "roomResearchGoal" | "roomWebsiteGoal";
+  goal?: string;
+  unread: number;
+}
 
 export interface Participant {
   id: string;

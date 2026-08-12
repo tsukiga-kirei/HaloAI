@@ -137,9 +137,7 @@ describe("AgentRun 事件信封", () => {
       payload: { status: "queued" },
     };
 
-    expect(
-      AgentRunEventSchema.safeParse({ ...validEvent, sequence: 0 }).success,
-    ).toBe(false);
+    expect(AgentRunEventSchema.safeParse({ ...validEvent, sequence: 0 }).success).toBe(false);
     const { runId: _runId, ...withoutRunId } = validEvent;
     expect(AgentRunEventSchema.safeParse(withoutRunId).success).toBe(false);
   });

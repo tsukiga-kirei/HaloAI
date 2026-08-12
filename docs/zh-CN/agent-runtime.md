@@ -29,14 +29,14 @@ Actor 是可以拥有消息、事件、决定和审计记录的可寻址参与�
 
 必需字段：
 
-| 字段 | 含义 |
-| --- | --- |
-| actorId | 一个租户内的稳定标识符 |
-| tenantId | 必填租户边界 |
-| kind | human、agent 或 system |
-| status | active、suspended 或 retired |
+| 字段            | 含义                           |
+| --------------- | ------------------------------ |
+| actorId         | 一个租户内的稳定标识符         |
+| tenantId        | 必填租户边界                   |
+| kind            | human、agent 或 system         |
+| status          | active、suspended 或 retired   |
 | displayIdentity | 本地化展示元数据；不得用于授权 |
-| createdAt | 创建时间 |
+| createdAt       | 创建时间                       |
 
 human Actor 绑定已认证用户。agent Actor 绑定一个 AgentProfile，但只能通过固定的 AgentVersion 执行。system Actor 只保留给具名内部过程，不得作为匿名授权绕过方式。
 
@@ -91,12 +91,12 @@ AgentVersion 是不可变的已发布配置，包含：
 
 ## 协作模式
 
-| 模式 | 参与者选择规则 | 完成规则 | 必要约束 |
-| --- | --- | --- | --- |
-| mention | 只有被明确提及的 AI Actor 参与 | 每个被提及参与者可以回答；可选择其中一个响应作为房间结果 | 默认模式；不得存在隐藏参与者 |
-| facilitated | 协调者选择最少的合格参与者 | 协调者在有限贡献后生成汇总 | 记录选择事件、限制参与者、协调者无额外权限 |
-| workflow | 版本化流程图控制顺序、分支、输入和审批点 | 已发布流程图到达终止节点 | 固定流程版本并审计确定性状态转换 |
-| roundtable | 固定参与者在有限轮次内讨论 | 具名汇总者生成最终响应 | 固定轮次、参与者上限、共享预算、不得自行扩员 |
+| 模式        | 参与者选择规则                           | 完成规则                                                 | 必要约束                                     |
+| ----------- | ---------------------------------------- | -------------------------------------------------------- | -------------------------------------------- |
+| mention     | 只有被明确提及的 AI Actor 参与           | 每个被提及参与者可以回答；可选择其中一个响应作为房间结果 | 默认模式；不得存在隐藏参与者                 |
+| facilitated | 协调者选择最少的合格参与者               | 协调者在有限贡献后生成汇总                               | 记录选择事件、限制参与者、协调者无额外权限   |
+| workflow    | 版本化流程图控制顺序、分支、输入和审批点 | 已发布流程图到达终止节点                                 | 固定流程版本并审计确定性状态转换             |
+| roundtable  | 固定参与者在有限轮次内讨论               | 具名汇总者生成最终响应                                   | 固定轮次、参与者上限、共享预算、不得自行扩员 |
 
 发起 Actor 和选定模式必须在房间中可见。任何被选中的 Agent 接收上下文之前，参与者选择必须先产生持久事件。协调者或汇总者只是路由职责，不是具有额外权限的安全角色。
 
@@ -106,32 +106,32 @@ mention 是首条生产路径的默认模式。其他模式必须复用相同的
 
 ### 运行状态
 
-| 状态 | 含义 |
-| --- | --- |
-| created | 持久运行记录已经存在，但尚未分发 |
-| queued | 工作可以被 Worker 租约领取 |
-| running | Worker 持有有效租约，可以执行受限计算 |
-| waiting_input | 需要人员输入；不得继续模型或工具工作 |
-| waiting_approval | 执行拟议操作前需要完成绑定审批 |
-| paused | 执行在安全检查点被主动暂停 |
-| completing | 正在进行最终验证、持久化和计量 |
-| completed | 成功终态 |
-| failed | 带稳定错误码的不可恢复终态 |
-| cancelled | 已确认取消，不得开始新的副作用 |
-| expired | 排队或等待期间超过截止时间 |
+| 状态             | 含义                                  |
+| ---------------- | ------------------------------------- |
+| created          | 持久运行记录已经存在，但尚未分发      |
+| queued           | 工作可以被 Worker 租约领取            |
+| running          | Worker 持有有效租约，可以执行受限计算 |
+| waiting_input    | 需要人员输入；不得继续模型或工具工作  |
+| waiting_approval | 执行拟议操作前需要完成绑定审批        |
+| paused           | 执行在安全检查点被主动暂停            |
+| completing       | 正在进行最终验证、持久化和计量        |
+| completed        | 成功终态                              |
+| failed           | 带稳定错误码的不可恢复终态            |
+| cancelled        | 已确认取消，不得开始新的副作用        |
+| expired          | 排队或等待期间超过截止时间            |
 
 ### 允许的转换
 
-| 起始状态 | 允许的下一状态 |
-| --- | --- |
-| created | queued、cancelled |
-| queued | running、cancelled、expired |
-| running | waiting_input、waiting_approval、paused、completing、failed、cancelled |
-| waiting_input | queued、cancelled、expired |
-| waiting_approval | queued、failed、cancelled、expired |
-| paused | queued、cancelled、expired |
-| completing | completed、failed |
-| completed、failed、cancelled、expired | 无 |
+| 起始状态                              | 允许的下一状态                                                         |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| created                               | queued、cancelled                                                      |
+| queued                                | running、cancelled、expired                                            |
+| running                               | waiting_input、waiting_approval、paused、completing、failed、cancelled |
+| waiting_input                         | queued、cancelled、expired                                             |
+| waiting_approval                      | queued、failed、cancelled、expired                                     |
+| paused                                | queued、cancelled、expired                                             |
+| completing                            | completed、failed                                                      |
+| completed、failed、cancelled、expired | 无                                                                     |
 
 服务端拥有状态转换权。每次转换必须比较 expected stateVersion，并在同一事务中追加持久事件和修改状态。过期命令必须返回冲突，不得覆盖较新的状态。
 
@@ -236,12 +236,12 @@ model delta、输入状态和 presence 可以是瞬时事件。状态改变、�
 
 ### 记忆作用域
 
-| 作用域 | 用途 | 写入规则 | 读取规则 |
-| --- | --- | --- | --- |
-| turn | 单次运行的临时材料 | 运行时可在本次运行内写入 | 按配置的运行保留期销毁或过期 |
-| actor | 单个 Actor 的私有偏好 | Actor 显式操作或经过治理的提案 | 仅该 Actor 和明确允许的助手 |
-| project | 已确认事实、决定和产出物 | 获得授权的人员批准，或显式低风险项目策略 | 资源过滤后的已授权项目成员 |
-| workspace | 在项目间共享的治理知识 | 工作空间知识管理员批准 | 仅工作空间策略允许的项目和 Actor |
+| 作用域    | 用途                     | 写入规则                                 | 读取规则                         |
+| --------- | ------------------------ | ---------------------------------------- | -------------------------------- |
+| turn      | 单次运行的临时材料       | 运行时可在本次运行内写入                 | 按配置的运行保留期销毁或过期     |
+| actor     | 单个 Actor 的私有偏好    | Actor 显式操作或经过治理的提案           | 仅该 Actor 和明确允许的助手      |
+| project   | 已确认事实、决定和产出物 | 获得授权的人员批准，或显式低风险项目策略 | 资源过滤后的已授权项目成员       |
+| workspace | 在项目间共享的治理知识   | 工作空间知识管理员批准                   | 仅工作空间策略允许的项目和 Actor |
 
 原始聊天记录不得自动成为长期记忆。持久 MemoryRecord 包含 scope、tenantId、适用时的 projectId、ownerActorId、content、contentHash、originReferences、createdByActorId、需要时的 approvedByActorId、sensitivity、retention policy、expiresAt、version 和 status。
 

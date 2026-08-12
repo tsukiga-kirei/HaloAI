@@ -12,23 +12,29 @@ import type { DocumentTab, WorkspaceViewProps } from "./types";
 
 interface DocumentPanelProps extends WorkspaceViewProps {
   tab: DocumentTab;
+  version: number;
   dirty: boolean;
   suggestionApplied: boolean;
   onTabChange: (tab: DocumentTab) => void;
   onDirtyChange: (dirty: boolean) => void;
+  onSave: () => void;
   onApplySuggestion: () => void;
   onCloseMobile: () => void;
+  onNotify: (message: string) => void;
 }
 
 export function DocumentPanel({
   dictionary,
   tab,
+  version,
   dirty,
   suggestionApplied,
   onTabChange,
   onDirtyChange,
+  onSave,
   onApplySuggestion,
   onCloseMobile,
+  onNotify,
 }: DocumentPanelProps) {
   return (
     <aside className="document-panel" aria-label={dictionary.sharedDocument}>
@@ -54,15 +60,15 @@ export function DocumentPanel({
           <span className={`save-state ${dirty ? "is-dirty" : ""}`}>
             <i /> {dirty ? dictionary.editing : dictionary.saved}
           </span>
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => onDirtyChange(false)}
-            disabled={!dirty}
-          >
+          <button type="button" className="secondary-button" onClick={onSave} disabled={!dirty}>
             {dictionary.save}
           </button>
-          <button type="button" className="icon-button" aria-label={dictionary.moreActions}>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label={dictionary.moreActions}
+            onClick={() => onNotify(dictionary.moreActionsPreview)}
+          >
             <MoreHorizontal size={18} />
           </button>
         </div>
@@ -88,7 +94,9 @@ export function DocumentPanel({
         <div className="document-scroll">
           <article className="document-canvas">
             <div className="document-kicker">
-              <span className="draft-pill">{dictionary.draft}</span>
+              <span className="draft-pill">
+                {dictionary.versionLabel.replace("{version}", String(version))}
+              </span>
               <div className="doc-collaborators">
                 <Avatar initials="ML" color="coral" size="small" />
                 <Avatar initials="M" color="cyan" ai size="small" />
@@ -110,7 +118,11 @@ export function DocumentPanel({
 
             <section className="document-section">
               <span className="section-number">01</span>
-              <h3 contentEditable suppressContentEditableWarning onInput={() => onDirtyChange(true)}>
+              <h3
+                contentEditable
+                suppressContentEditableWarning
+                onInput={() => onDirtyChange(true)}
+              >
                 {dictionary.docSectionOne}
               </h3>
               <p contentEditable suppressContentEditableWarning onInput={() => onDirtyChange(true)}>
@@ -120,7 +132,11 @@ export function DocumentPanel({
 
             <section className="document-section">
               <span className="section-number">02</span>
-              <h3 contentEditable suppressContentEditableWarning onInput={() => onDirtyChange(true)}>
+              <h3
+                contentEditable
+                suppressContentEditableWarning
+                onInput={() => onDirtyChange(true)}
+              >
                 {dictionary.docSectionTwo}
               </h3>
               <p contentEditable suppressContentEditableWarning onInput={() => onDirtyChange(true)}>
@@ -146,20 +162,47 @@ export function DocumentPanel({
 
             <section className="document-sources">
               <h3>{dictionary.sources}</h3>
-              <a href="#source-interviews">
+              <a
+                href="#source-interviews"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onNotify(dictionary.sourcePreview);
+                }}
+              >
                 <Link2 size={14} /> {dictionary.sourceOne}
               </a>
-              <a href="#source-model">
+              <a
+                href="#source-model"
+                onClick={(event) => {
+                  event.preventDefault();
+                  onNotify(dictionary.sourcePreview);
+                }}
+              >
                 <Link2 size={14} /> {dictionary.sourceTwo}
               </a>
             </section>
           </article>
         </div>
       ) : (
-        <div className="document-empty-state">
+        <div className="document-empty-state" role="tabpanel">
           {tab === "activity" ? <MessageCircleMore size={32} /> : <FileText size={32} />}
           <strong>{dictionary[tab]}</strong>
-          <p>{tab === "activity" ? dictionary.suggestionText : dictionary.draft}</p>
+          <p>
+            {tab === "activity" ? dictionary.activityDescription : dictionary.versionsDescription}
+          </p>
+          {tab === "versions" ? (
+            <ol className="version-list">
+              {Array.from({ length: Math.min(version, 4) }, (_, index) => version - index).map(
+                (item) => (
+                  <li key={item}>
+                    <FileText size={15} />
+                    <span>{dictionary.versionLabel.replace("{version}", String(item))}</span>
+                    {item === version ? <Check size={14} /> : null}
+                  </li>
+                ),
+              )}
+            </ol>
+          ) : null}
         </div>
       )}
     </aside>

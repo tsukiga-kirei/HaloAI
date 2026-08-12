@@ -70,12 +70,12 @@ Route identifiers and slugs are stable and are not translated.
 
 Breakpoints describe layout behavior rather than device identity. The interface must remain usable between the named checkpoints, not only at the exact test widths.
 
-| Viewport | Required layout |
-| --- | --- |
-| `>= 1440px` | 64px workspace rail, 256–288px room navigation, conversation pane, document pane, and an optional 320–380px contextual drawer |
-| `1200–1439px` | Workspace rail, 240–256px room navigation, one primary work surface, optional conversation/document split, contextual content in a drawer |
-| `768–1199px` | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet |
-| `< 768px` | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
+| Viewport      | Required layout                                                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `>= 1440px`   | 64px workspace rail, 256–288px room navigation, conversation pane, document pane, and an optional 320–380px contextual drawer                      |
+| `1200–1439px` | Workspace rail, 240–256px room navigation, one primary work surface, optional conversation/document split, contextual content in a drawer          |
+| `768–1199px`  | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet             |
+| `< 768px`     | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
 
 ### Wide desktop
 
@@ -355,14 +355,14 @@ PingFang SC, Microsoft YaHei, sans-serif
 
 Type scale:
 
-| Role | Size / line height | Weight |
-| --- | --- | --- |
-| Page title | `28 / 36` | 600 |
-| Secondary title | `22 / 30` | 600 |
-| Section title | `16 / 24` | 600 |
-| Body | `15 / 24` | 400 |
-| Supporting text | `13 / 18` | 400–500 |
-| Code and technical values | `13 / 20` | monospace |
+| Role                      | Size / line height | Weight    |
+| ------------------------- | ------------------ | --------- |
+| Page title                | `28 / 36`          | 600       |
+| Secondary title           | `22 / 30`          | 600       |
+| Section title             | `16 / 24`          | 600       |
+| Body                      | `15 / 24`          | 400       |
+| Supporting text           | `13 / 18`          | 400–500   |
+| Code and technical values | `13 / 20`          | monospace |
 
 Normal interface text does not go below 12px. A page uses no more than four font weights. Critical information may wrap and must not become understandable only after opening a tooltip.
 
@@ -423,16 +423,16 @@ All conditions are mandatory:
 
 Score each dimension from 0 to 2:
 
-| Dimension | 0 | 1 | 2 |
-| --- | --- | --- | --- |
-| Hierarchy | No clear starting point | Mostly understandable | Page, state, and primary action are clear within three seconds |
-| Alignment | Visibly inconsistent | Minor inconsistencies | Grid, edges, and baselines feel deliberate |
-| Spacing | Crowded or loose | Generally workable | Grouping and rhythm are consistently clear |
-| Typography | Mixed and difficult | Readable | Titles, body, and supporting text form a natural hierarchy |
-| Color | Competing accents | Mostly coherent | Neutral surfaces dominate and accent has explicit meaning |
-| Brand | Generic template feel | Some identity | Halo signature is distinct but restrained |
-| State polish | Only the happy path | Some alternate states | Loading, failure, offline, streaming, and approval are equally considered |
-| Responsiveness | Desktop squeezed smaller | Functional | Information is reorganized for each form factor |
+| Dimension      | 0                        | 1                     | 2                                                                         |
+| -------------- | ------------------------ | --------------------- | ------------------------------------------------------------------------- |
+| Hierarchy      | No clear starting point  | Mostly understandable | Page, state, and primary action are clear within three seconds            |
+| Alignment      | Visibly inconsistent     | Minor inconsistencies | Grid, edges, and baselines feel deliberate                                |
+| Spacing        | Crowded or loose         | Generally workable    | Grouping and rhythm are consistently clear                                |
+| Typography     | Mixed and difficult      | Readable              | Titles, body, and supporting text form a natural hierarchy                |
+| Color          | Competing accents        | Mostly coherent       | Neutral surfaces dominate and accent has explicit meaning                 |
+| Brand          | Generic template feel    | Some identity         | Halo signature is distinct but restrained                                 |
+| State polish   | Only the happy path      | Some alternate states | Loading, failure, offline, streaming, and approval are equally considered |
+| Responsiveness | Desktop squeezed smaller | Functional            | Information is reorganized for each form factor                           |
 
 Core pages require at least 14 of 16 points, with no zero in any dimension. A visual regression baseline may be created only after this first human review passes. Screenshot equality prevents regressions; it does not prove that the initial design is good.
 
@@ -531,4 +531,3 @@ A user-facing feature is complete only when:
 - Document changes remain reviewable and attributable.
 - Performance budgets and accessibility gates pass.
 - The visual review score reaches at least 14 of 16 with no zero dimension.
-

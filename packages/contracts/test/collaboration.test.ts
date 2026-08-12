@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  ActorSchema,
-  MentionSchema,
-  MessageSchema,
-  RoomSchema,
-  WorkspaceSchema,
-} from "../src";
+import { ActorSchema, MentionSchema, MessageSchema, RoomSchema, WorkspaceSchema } from "../src";
 
 const createdAt = "2026-08-09T10:00:00.000Z";
 const humanActorId = "actor_human_001";
@@ -132,9 +126,7 @@ describe("消息与提及", () => {
   });
 
   it("拒绝缺少删除时间的已删除消息", () => {
-    expect(
-      MessageSchema.safeParse({ ...agentMessage, status: "deleted" }).success,
-    ).toBe(false);
+    expect(MessageSchema.safeParse({ ...agentMessage, status: "deleted" }).success).toBe(false);
   });
 
   it("只允许提及 AI 时使用 invoke 意图", () => {

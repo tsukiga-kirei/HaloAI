@@ -1,10 +1,6 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const workspaceStatus = pgEnum("workspace_status", [
-  "active",
-  "suspended",
-  "archived",
-]);
+export const workspaceStatus = pgEnum("workspace_status", ["active", "suspended", "archived"]);
 
 export const userStatus = pgEnum("user_status", ["active", "suspended", "deleted"]);
 export const actorKind = pgEnum("actor_kind", ["human", "agent", "system"]);
@@ -22,12 +18,7 @@ export const grantScope = pgEnum("grant_scope", ["workspace", "project", "room",
 export const grantStatus = pgEnum("grant_status", ["active", "revoked", "expired"]);
 
 export const projectStatus = pgEnum("project_status", ["active", "completed", "archived"]);
-export const roomStatus = pgEnum("room_status", [
-  "active",
-  "waiting",
-  "completed",
-  "archived",
-]);
+export const roomStatus = pgEnum("room_status", ["active", "waiting", "completed", "archived"]);
 export const roomVisibility = pgEnum("room_visibility", ["workspace", "private"]);
 export const collaborationMode = pgEnum("collaboration_mode", [
   "mention",
@@ -44,16 +35,8 @@ export const messageKind = pgEnum("message_kind", [
 ]);
 export const messageStatus = pgEnum("message_status", ["complete", "partial", "tombstoned"]);
 
-export const agentProfileStatus = pgEnum("agent_profile_status", [
-  "draft",
-  "active",
-  "archived",
-]);
-export const agentVersionStatus = pgEnum("agent_version_status", [
-  "draft",
-  "published",
-  "retired",
-]);
+export const agentProfileStatus = pgEnum("agent_profile_status", ["draft", "active", "archived"]);
+export const agentVersionStatus = pgEnum("agent_version_status", ["draft", "published", "retired"]);
 export const toolCapabilityStatus = pgEnum("tool_capability_status", [
   "draft",
   "active",
@@ -131,12 +114,7 @@ export const contextTrustClass = pgEnum("context_trust_class", [
   "authorized_content",
   "untrusted_content",
 ]);
-export const runMessageRole = pgEnum("run_message_role", [
-  "trigger",
-  "input",
-  "output",
-  "partial",
-]);
+export const runMessageRole = pgEnum("run_message_role", ["trigger", "input", "output", "partial"]);
 
 export const documentStatus = pgEnum("document_status", ["active", "archived", "deleted"]);
 export const documentSnapshotKind = pgEnum("document_snapshot_kind", [
@@ -200,12 +178,7 @@ export const policyDecision = pgEnum("policy_decision", [
   "require_approval",
   "not_applicable",
 ]);
-export const auditOutcome = pgEnum("audit_outcome", [
-  "succeeded",
-  "failed",
-  "denied",
-  "cancelled",
-]);
+export const auditOutcome = pgEnum("audit_outcome", ["succeeded", "failed", "denied", "cancelled"]);
 export const usageLedgerEntryType = pgEnum("usage_ledger_entry_type", [
   "reservation",
   "settlement",

@@ -184,11 +184,7 @@ export const proposalOperations = pgTable(
       table.proposalId,
       table.ordinal,
     ),
-    index("proposal_operations_status_idx").on(
-      table.workspaceId,
-      table.proposalId,
-      table.status,
-    ),
+    index("proposal_operations_status_idx").on(table.workspaceId, table.proposalId, table.status),
     check("proposal_operations_ordinal_check", sql`${table.ordinal} >= 0`),
     workspacePolicy("proposal_operations_tenant", table.workspaceId),
   ],

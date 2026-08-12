@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "HaloAI",
     short_name: "HaloAI",
-    description: "Human and AI collaboration workspace",
+    description: "Team and AI collaboration workspace",
     start_url: "/",
     display: "standalone",
     background_color: "#f6f7fb",
@@ -18,4 +18,3 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
   };
 }
-

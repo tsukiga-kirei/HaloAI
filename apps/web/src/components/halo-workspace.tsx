@@ -5,11 +5,13 @@ import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useStat
 import { z } from "zod";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { ConversationPanel } from "./workspace/conversation-panel";
-import { demoMessages, demoParticipants } from "./workspace/demo-data";
+import { demoMessages, demoParticipants, demoRooms } from "./workspace/demo-data";
 import { DocumentPanel } from "./workspace/document-panel";
 import { MemberDialog } from "./workspace/member-dialog";
 import { MobileNavigation, UtilityRail } from "./workspace/navigation";
+import { RoomDialog } from "./workspace/room-dialog";
 import type {
+  DemoRoom,
   DisplayMessage,
   DocumentTab,
   MobileView,
@@ -31,17 +33,43 @@ export function HaloWorkspace() {
   const [theme, setTheme] = useState<Theme>("light");
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [documentTab, setDocumentTab] = useState<DocumentTab>("document");
-  const [messages, setMessages] = useState<DisplayMessage[]>(demoMessages);
+  const [rooms, setRooms] = useState<DemoRoom[]>(demoRooms);
+  const [activeRoomId, setActiveRoomId] = useState("launch");
+  const [messagesByRoom, setMessagesByRoom] = useState<Record<string, DisplayMessage[]>>(() => ({
+    launch: demoMessages,
+    research: [],
+    website: [],
+  }));
   const [participants, setParticipants] = useState<Participant[]>(demoParticipants);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [memberDialogOpen, setMemberDialogOpen] = useState(false);
+  const [roomDialogOpen, setRoomDialogOpen] = useState(false);
   const [newMemberKind, setNewMemberKind] = useState<"human" | "agent">("agent");
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [documentDirty, setDocumentDirty] = useState(false);
+  const [documentVersion, setDocumentVersion] = useState(3);
   const [notice, setNotice] = useState<string | null>(null);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const dictionary = useMemo(() => getDictionary(locale), [locale]);
+  const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
+  const activeMessages = messagesByRoom[activeRoomId] ?? [];
+  const roomTitle =
+    activeRoom?.name ??
+    (activeRoom?.nameKey === undefined ? dictionary.roomLaunch : dictionary[activeRoom.nameKey]);
+  const roomDescription =
+    activeRoom?.descriptionKey === undefined
+      ? dictionary.roomDescription
+      : dictionary[activeRoom.descriptionKey];
+  const roomGoal =
+    activeRoom?.goal ??
+    (activeRoom?.goalKey === undefined ? dictionary.goalText : dictionary[activeRoom.goalKey]);
+  const peopleCount = participants.filter((participant) => participant.kind === "human").length;
+  const agentCount = participants.length - peopleCount;
+  const memberSummary = dictionary.peopleAndAgents
+    .replace("{total}", String(participants.length))
+    .replace("{people}", String(peopleCount))
+    .replace("{agents}", String(agentCount));
 
   useEffect(() => {
     const savedLocale = window.localStorage.getItem("haloai.locale");
@@ -67,7 +95,7 @@ export function HaloWorkspace() {
       behavior: reduceMotion ? "auto" : "smooth",
       block: "end",
     });
-  }, [messages]);
+  }, [activeMessages]);
 
   useEffect(() => {
     if (notice === null) return;
@@ -76,13 +104,16 @@ export function HaloWorkspace() {
   }, [notice]);
 
   useEffect(() => {
-    if (!memberDialogOpen) return;
+    if (!memberDialogOpen && !roomDialogOpen) return;
     const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setMemberDialogOpen(false);
+      if (event.key === "Escape") {
+        setMemberDialogOpen(false);
+        setRoomDialogOpen(false);
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [memberDialogOpen]);
+  }, [memberDialogOpen, roomDialogOpen]);
 
   const toggleLocale = () => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"));
   const toggleTheme = () => setTheme((current) => (current === "light" ? "dark" : "light"));
@@ -91,7 +122,17 @@ export function HaloWorkspace() {
    * Foundation Demo 仍按正式 SSE 信封消费事件：校验 JSON、去重序号并拒绝事件缺口。
    * 正式客户端遇到缺口会携带 Last-Event-ID 重连；当前无持久服务，因此直接显示可重试错误。
    */
-  async function streamAgentReply(message: string): Promise<void> {
+  function updateRoomMessages(
+    roomId: string,
+    update: (current: DisplayMessage[]) => DisplayMessage[],
+  ): void {
+    setMessagesByRoom((current) => ({
+      ...current,
+      [roomId]: update(current[roomId] ?? []),
+    }));
+  }
+
+  async function streamAgentReply(message: string, roomId: string): Promise<void> {
     const replyId = crypto.randomUUID();
     const pendingReply: DisplayMessage = {
       id: replyId,
@@ -108,7 +149,7 @@ export function HaloWorkspace() {
       pending: true,
     };
 
-    setMessages((current) => [...current, pendingReply]);
+    updateRoomMessages(roomId, (current) => [...current, pendingReply]);
     setIsStreaming(true);
 
     try {
@@ -141,7 +182,7 @@ export function HaloWorkspace() {
             lastSequence = event.sequence;
           }
           if (event.type === "message.delta" && event.delta !== undefined) {
-            setMessages((current) =>
+            updateRoomMessages(roomId, (current) =>
               current.map((item) =>
                 item.id === replyId ? { ...item, body: `${item.body ?? ""}${event.delta}` } : item,
               ),
@@ -151,15 +192,13 @@ export function HaloWorkspace() {
         }
       }
 
-      setMessages((current) =>
+      updateRoomMessages(roomId, (current) =>
         current.map((item) => (item.id === replyId ? { ...item, pending: false } : item)),
       );
     } catch {
-      setMessages((current) =>
+      updateRoomMessages(roomId, (current) =>
         current.map((item) =>
-          item.id === replyId
-            ? { ...item, body: dictionary.errorReply, pending: false }
-            : item,
+          item.id === replyId ? { ...item, body: dictionary.errorReply, pending: false } : item,
         ),
       );
     } finally {
@@ -184,9 +223,10 @@ export function HaloWorkspace() {
       color: "ink",
       initials: "AY",
     };
-    setMessages((current) => [...current, userMessage]);
+    const roomId = activeRoomId;
+    updateRoomMessages(roomId, (current) => [...current, userMessage]);
     setInput("");
-    await streamAgentReply(trimmed);
+    await streamAgentReply(trimmed, roomId);
   }
 
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
@@ -218,13 +258,54 @@ export function HaloWorkspace() {
     setNotice(dictionary.teammateAdded);
   }
 
+  function handleCreateRoom(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const name = String(form.get("name") ?? "").trim();
+    const goal = String(form.get("goal") ?? "").trim();
+    if (name.length === 0 || goal.length === 0) return;
+
+    const room: DemoRoom = {
+      id: crypto.randomUUID(),
+      name,
+      goal,
+      unread: 0,
+    };
+    setRooms((current) => [...current, room]);
+    setMessagesByRoom((current) => ({ ...current, [room.id]: [] }));
+    setActiveRoomId(room.id);
+    setRoomDialogOpen(false);
+    setMobileView("chat");
+    setNotice(dictionary.roomCreated);
+  }
+
+  function selectRoom(roomId: string): void {
+    setActiveRoomId(roomId);
+    setRooms((current) =>
+      current.map((room) => (room.id === roomId ? { ...room, unread: 0 } : room)),
+    );
+    setMobileView("chat");
+  }
+
   return (
     <div className={`halo-shell view-${mobileView}`} id="workspace">
-      <WorkspaceSidebar dictionary={dictionary} onOpenChat={() => setMobileView("chat")} />
+      <WorkspaceSidebar
+        dictionary={dictionary}
+        rooms={rooms}
+        activeRoomId={activeRoomId}
+        onRoomSelect={selectRoom}
+        onCreateRoom={() => setRoomDialogOpen(true)}
+        onOpenMemberDialog={() => setMemberDialogOpen(true)}
+        onNotify={setNotice}
+      />
       <ConversationPanel
         dictionary={dictionary}
+        roomTitle={roomTitle}
+        roomDescription={roomDescription}
+        roomGoal={roomGoal}
+        memberSummary={memberSummary}
         participants={participants}
-        messages={messages}
+        messages={activeMessages}
         input={input}
         isStreaming={isStreaming}
         endOfMessagesRef={endOfMessagesRef}
@@ -234,19 +315,27 @@ export function HaloWorkspace() {
         onOpenRooms={() => setMobileView("rooms")}
         onOpenDocument={() => setMobileView("document")}
         onOpenMemberDialog={() => setMemberDialogOpen(true)}
+        onNotify={setNotice}
       />
       <DocumentPanel
         dictionary={dictionary}
         tab={documentTab}
+        version={documentVersion}
         dirty={documentDirty}
         suggestionApplied={suggestionApplied}
         onTabChange={setDocumentTab}
         onDirtyChange={setDocumentDirty}
+        onSave={() => {
+          setDocumentDirty(false);
+          setDocumentVersion((current) => current + 1);
+          setNotice(dictionary.versionSaved);
+        }}
         onApplySuggestion={() => {
           setSuggestionApplied(true);
           setDocumentDirty(true);
         }}
         onCloseMobile={() => setMobileView("chat")}
+        onNotify={setNotice}
       />
       <UtilityRail
         dictionary={dictionary}
@@ -264,6 +353,14 @@ export function HaloWorkspace() {
           onKindChange={setNewMemberKind}
           onClose={() => setMemberDialogOpen(false)}
           onSubmit={handleAddMember}
+        />
+      ) : null}
+
+      {roomDialogOpen ? (
+        <RoomDialog
+          dictionary={dictionary}
+          onClose={() => setRoomDialogOpen(false)}
+          onSubmit={handleCreateRoom}
         />
       ) : null}
 

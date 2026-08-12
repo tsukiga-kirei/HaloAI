@@ -22,7 +22,12 @@ export function MemberDialog({
 
   return (
     <div className="dialog-backdrop" onMouseDown={closeFromBackdrop}>
-      <div className="member-dialog" role="dialog" aria-modal="true" aria-labelledby="member-dialog-title">
+      <div
+        className="member-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="member-dialog-title"
+      >
         <div className="dialog-heading">
           <div>
             <span className="dialog-icon">
@@ -33,7 +38,12 @@ export function MemberDialog({
               <p>{dictionary.teammateSubtitle}</p>
             </div>
           </div>
-          <button type="button" className="icon-button" onClick={onClose} aria-label={dictionary.cancel}>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onClose}
+            aria-label={dictionary.cancel}
+          >
             <X size={19} />
           </button>
         </div>
@@ -58,7 +68,12 @@ export function MemberDialog({
         <form onSubmit={onSubmit}>
           <label>
             <span>{dictionary.name}</span>
-            <input name="name" required autoFocus placeholder={kind === "agent" ? "Atlas" : "Alex"} />
+            <input
+              name="name"
+              required
+              autoFocus
+              placeholder={kind === "agent" ? "Atlas" : "Alex"}
+            />
           </label>
           <label>
             <span>{dictionary.role}</span>
@@ -76,7 +91,11 @@ export function MemberDialog({
               </label>
               <label>
                 <span>{dictionary.instructions}</span>
-                <textarea name="instructions" rows={4} placeholder={dictionary.instructionsPlaceholder} />
+                <textarea
+                  name="instructions"
+                  rows={4}
+                  placeholder={dictionary.instructionsPlaceholder}
+                />
               </label>
             </>
           ) : null}

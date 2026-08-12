@@ -20,20 +20,15 @@ export const RoomIdSchema = createOpaqueIdSchema<"RoomId">();
 export const MessageIdSchema = createOpaqueIdSchema<"MessageId">();
 export const MentionIdSchema = createOpaqueIdSchema<"MentionId">();
 export const AgentRunIdSchema = createOpaqueIdSchema<"AgentRunId">();
-export const AgentProfileVersionIdSchema =
-  createOpaqueIdSchema<"AgentProfileVersionId">();
-export const AuthorizationSnapshotIdSchema =
-  createOpaqueIdSchema<"AuthorizationSnapshotId">();
+export const AgentProfileVersionIdSchema = createOpaqueIdSchema<"AgentProfileVersionId">();
+export const AuthorizationSnapshotIdSchema = createOpaqueIdSchema<"AuthorizationSnapshotId">();
 export const EventIdSchema = createOpaqueIdSchema<"EventId">();
 export const StreamIdSchema = createOpaqueIdSchema<"StreamId">();
 export const DocumentIdSchema = createOpaqueIdSchema<"DocumentId">();
-export const DocumentVersionIdSchema =
-  createOpaqueIdSchema<"DocumentVersionId">();
+export const DocumentVersionIdSchema = createOpaqueIdSchema<"DocumentVersionId">();
 export const DocumentNodeIdSchema = createOpaqueIdSchema<"DocumentNodeId">();
-export const DocumentProposalIdSchema =
-  createOpaqueIdSchema<"DocumentProposalId">();
-export const ProposalOperationIdSchema =
-  createOpaqueIdSchema<"ProposalOperationId">();
+export const DocumentProposalIdSchema = createOpaqueIdSchema<"DocumentProposalId">();
+export const ProposalOperationIdSchema = createOpaqueIdSchema<"ProposalOperationId">();
 export const ApprovalIdSchema = createOpaqueIdSchema<"ApprovalId">();
 export const AttachmentIdSchema = createOpaqueIdSchema<"AttachmentId">();
 export const SourceIdSchema = createOpaqueIdSchema<"SourceId">();
@@ -47,12 +42,8 @@ export type RoomId = z.infer<typeof RoomIdSchema>;
 export type MessageId = z.infer<typeof MessageIdSchema>;
 export type MentionId = z.infer<typeof MentionIdSchema>;
 export type AgentRunId = z.infer<typeof AgentRunIdSchema>;
-export type AgentProfileVersionId = z.infer<
-  typeof AgentProfileVersionIdSchema
->;
-export type AuthorizationSnapshotId = z.infer<
-  typeof AuthorizationSnapshotIdSchema
->;
+export type AgentProfileVersionId = z.infer<typeof AgentProfileVersionIdSchema>;
+export type AuthorizationSnapshotId = z.infer<typeof AuthorizationSnapshotIdSchema>;
 export type EventId = z.infer<typeof EventIdSchema>;
 export type StreamId = z.infer<typeof StreamIdSchema>;
 export type DocumentId = z.infer<typeof DocumentIdSchema>;
@@ -77,18 +68,10 @@ export type ISODateTime = z.infer<typeof ISODateTimeSchema>;
 export const LocaleSchema = z.enum(["zh-CN", "en-US"]);
 export type Locale = z.infer<typeof LocaleSchema>;
 
-export const SequenceSchema = z
-  .number()
-  .int()
-  .nonnegative()
-  .max(Number.MAX_SAFE_INTEGER);
+export const SequenceSchema = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export type Sequence = z.infer<typeof SequenceSchema>;
 
-export const PositiveSequenceSchema = z
-  .number()
-  .int()
-  .positive()
-  .max(Number.MAX_SAFE_INTEGER);
+export const PositiveSequenceSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 export type PositiveSequence = z.infer<typeof PositiveSequenceSchema>;
 
 export const Sha256DigestSchema = z

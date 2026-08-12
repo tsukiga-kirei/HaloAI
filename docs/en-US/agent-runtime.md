@@ -29,14 +29,14 @@ An Actor is an addressable participant that can own messages, events, decisions,
 
 Required fields:
 
-| Field | Meaning |
-| --- | --- |
-| actorId | Stable identifier within one tenant |
-| tenantId | Mandatory tenant boundary |
-| kind | human, agent, or system |
-| status | active, suspended, or retired |
+| Field           | Meaning                                                  |
+| --------------- | -------------------------------------------------------- |
+| actorId         | Stable identifier within one tenant                      |
+| tenantId        | Mandatory tenant boundary                                |
+| kind            | human, agent, or system                                  |
+| status          | active, suspended, or retired                            |
 | displayIdentity | Localized display metadata; never used for authorization |
-| createdAt | Creation timestamp |
+| createdAt       | Creation timestamp                                       |
 
 A human Actor is bound to an authenticated user. An agent Actor is bound to one AgentProfile but executes only through a pinned AgentVersion. A system Actor is reserved for named internal processes and MUST NOT be used as an anonymous authorization bypass.
 
@@ -91,12 +91,12 @@ Delegation grants no rights beyond the server-computed authorization intersectio
 
 ## Collaboration modes
 
-| Mode | Selection rule | Completion rule | Required guardrails |
-| --- | --- | --- | --- |
-| mention | Only explicitly mentioned AI Actors participate | Each mentioned participant may answer; one selected response may become the room result | Default mode; no hidden participants |
-| facilitated | A coordinator selects the smallest eligible participant set | Coordinator produces a synthesis after bounded contributions | Selection event, participant cap, no extra coordinator permissions |
-| workflow | A versioned graph selects order, branching, inputs, and approval gates | Published graph reaches a terminal node | Pinned workflow version and deterministic transition audit |
-| roundtable | A fixed participant list discusses for bounded rounds | A named synthesizer produces the final response | Fixed rounds, participant cap, shared budget, no self-extension |
+| Mode        | Selection rule                                                         | Completion rule                                                                         | Required guardrails                                                |
+| ----------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| mention     | Only explicitly mentioned AI Actors participate                        | Each mentioned participant may answer; one selected response may become the room result | Default mode; no hidden participants                               |
+| facilitated | A coordinator selects the smallest eligible participant set            | Coordinator produces a synthesis after bounded contributions                            | Selection event, participant cap, no extra coordinator permissions |
+| workflow    | A versioned graph selects order, branching, inputs, and approval gates | Published graph reaches a terminal node                                                 | Pinned workflow version and deterministic transition audit         |
+| roundtable  | A fixed participant list discusses for bounded rounds                  | A named synthesizer produces the final response                                         | Fixed rounds, participant cap, shared budget, no self-extension    |
 
 The initiating Actor and selected mode MUST be visible in the room. Participant selection MUST produce a durable event before any selected Agent receives context. A coordinator or synthesizer is a routing responsibility, not a privileged security role.
 
@@ -106,32 +106,32 @@ Mention is the default mode for the first production path. Other modes MUST reus
 
 ### Run states
 
-| State | Meaning |
-| --- | --- |
-| created | Durable run record exists but has not been dispatched |
-| queued | Work is eligible for a worker lease |
-| running | A worker owns a valid lease and may perform bounded computation |
-| waiting_input | Human input is required; no model or tool work may continue |
+| State            | Meaning                                                          |
+| ---------------- | ---------------------------------------------------------------- |
+| created          | Durable run record exists but has not been dispatched            |
+| queued           | Work is eligible for a worker lease                              |
+| running          | A worker owns a valid lease and may perform bounded computation  |
+| waiting_input    | Human input is required; no model or tool work may continue      |
 | waiting_approval | A bound approval decision is required before the proposed action |
-| paused | Execution was intentionally suspended at a safe checkpoint |
-| completing | Final validation, persistence, and accounting are in progress |
-| completed | Successful terminal state |
-| failed | Unrecoverable terminal state with a stable error code |
-| cancelled | Cancellation was acknowledged and no new side effect may start |
-| expired | A deadline passed while waiting or queued |
+| paused           | Execution was intentionally suspended at a safe checkpoint       |
+| completing       | Final validation, persistence, and accounting are in progress    |
+| completed        | Successful terminal state                                        |
+| failed           | Unrecoverable terminal state with a stable error code            |
+| cancelled        | Cancellation was acknowledged and no new side effect may start   |
+| expired          | A deadline passed while waiting or queued                        |
 
 ### Allowed transitions
 
-| From | Allowed next states |
-| --- | --- |
-| created | queued, cancelled |
-| queued | running, cancelled, expired |
-| running | waiting_input, waiting_approval, paused, completing, failed, cancelled |
-| waiting_input | queued, cancelled, expired |
-| waiting_approval | queued, failed, cancelled, expired |
-| paused | queued, cancelled, expired |
-| completing | completed, failed |
-| completed, failed, cancelled, expired | none |
+| From                                  | Allowed next states                                                    |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| created                               | queued, cancelled                                                      |
+| queued                                | running, cancelled, expired                                            |
+| running                               | waiting_input, waiting_approval, paused, completing, failed, cancelled |
+| waiting_input                         | queued, cancelled, expired                                             |
+| waiting_approval                      | queued, failed, cancelled, expired                                     |
+| paused                                | queued, cancelled, expired                                             |
+| completing                            | completed, failed                                                      |
+| completed, failed, cancelled, expired | none                                                                   |
 
 The server owns transitions. Every transition MUST compare an expected stateVersion and append a durable event in the same transaction as the state change. A stale command MUST return a conflict and MUST NOT overwrite a newer state.
 
@@ -236,12 +236,12 @@ Untrusted content MUST remain distinguishable from server instructions. Text ins
 
 ### Memory scopes
 
-| Scope | Purpose | Write rule | Read rule |
-| --- | --- | --- | --- |
-| turn | Temporary material for one run | Runtime may write within the run | Destroy or expire after the configured run retention |
-| actor | Preferences private to one Actor | Explicit Actor action or governed proposal | Only that Actor and explicitly allowed assistants |
-| project | Confirmed facts, decisions, and artifacts | Authorized human approval or explicit low-risk project policy | Authorized project members after resource filtering |
-| workspace | Governed knowledge shared across projects | Workspace curator approval | Only projects and Actors allowed by workspace policy |
+| Scope     | Purpose                                   | Write rule                                                    | Read rule                                            |
+| --------- | ----------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| turn      | Temporary material for one run            | Runtime may write within the run                              | Destroy or expire after the configured run retention |
+| actor     | Preferences private to one Actor          | Explicit Actor action or governed proposal                    | Only that Actor and explicitly allowed assistants    |
+| project   | Confirmed facts, decisions, and artifacts | Authorized human approval or explicit low-risk project policy | Authorized project members after resource filtering  |
+| workspace | Governed knowledge shared across projects | Workspace curator approval                                    | Only projects and Actors allowed by workspace policy |
 
 Raw chat history MUST NOT become durable memory automatically. A durable MemoryRecord includes scope, tenantId, projectId where applicable, ownerActorId, content, contentHash, originReferences, createdByActorId, approvedByActorId when required, sensitivity, retention policy, expiresAt, version, and status.
 

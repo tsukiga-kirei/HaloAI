@@ -1,27 +1,17 @@
 import { describe, expect, it } from "vitest";
-import {
-  ActorIdSchema,
-  ApiErrorSchema,
-  ISODateTimeSchema,
-} from "../src";
+import { ActorIdSchema, ApiErrorSchema, ISODateTimeSchema } from "../src";
 
 describe("基础跨边界值", () => {
   it("接受不透明 ID 与带时区的 ISO 时间", () => {
     expect(ActorIdSchema.parse("actor_human_001")).toBe("actor_human_001");
-    expect(ISODateTimeSchema.parse("2026-08-09T10:15:30.000Z")).toBe(
-      "2026-08-09T10:15:30.000Z",
-    );
-    expect(ISODateTimeSchema.parse("2026-08-09T18:15:30+08:00")).toBe(
-      "2026-08-09T18:15:30+08:00",
-    );
+    expect(ISODateTimeSchema.parse("2026-08-09T10:15:30.000Z")).toBe("2026-08-09T10:15:30.000Z");
+    expect(ISODateTimeSchema.parse("2026-08-09T18:15:30+08:00")).toBe("2026-08-09T18:15:30+08:00");
   });
 
   it("拒绝过短、含路径字符的 ID 与无时区时间", () => {
     expect(ActorIdSchema.safeParse("short").success).toBe(false);
     expect(ActorIdSchema.safeParse("actor/../../admin").success).toBe(false);
-    expect(
-      ISODateTimeSchema.safeParse("2026-08-09T10:15:30").success,
-    ).toBe(false);
+    expect(ISODateTimeSchema.safeParse("2026-08-09T10:15:30").success).toBe(false);
   });
 });
 

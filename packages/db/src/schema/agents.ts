@@ -94,9 +94,7 @@ export const agentVersions = pgTable(
     publishedByActorId: uuid("published_by_actor_id"),
     publishedAt: timestamp("published_at", { withTimezone: true, mode: "date" }),
     retiredAt: timestamp("retired_at", { withTimezone: true, mode: "date" }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -130,11 +128,7 @@ export const agentVersions = pgTable(
       "agent_versions_publish_fields_check",
       sql`((${table.status} = 'draft' and ${table.publishedAt} is null and ${table.publishedByActorId} is null) or (${table.status} in ('published', 'retired') and ${table.publishedAt} is not null and ${table.publishedByActorId} is not null))`,
     ),
-    ...workspaceDraftVersionPolicies(
-      "agent_versions",
-      table.workspaceId,
-      table.status,
-    ),
+    ...workspaceDraftVersionPolicies("agent_versions", table.workspaceId, table.status),
   ],
 );
 
@@ -150,9 +144,7 @@ export const agentActors = pgTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     agentProfileId: uuid("agent_profile_id").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -245,9 +237,7 @@ export const agentVersionCapabilityGrants = pgTable(
     effect: grantEffect("effect").notNull(),
     constraints: sanitizedJsonColumn("constraints"),
     createdByActorId: uuid("created_by_actor_id").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -260,10 +250,7 @@ export const agentVersionCapabilityGrants = pgTable(
       columns: [table.workspaceId, table.createdByActorId],
       foreignColumns: [actors.workspaceId, actors.id],
     }).onDelete("restrict"),
-    uniqueIndex("agent_version_cap_grants_workspace_id_unique").on(
-      table.workspaceId,
-      table.id,
-    ),
+    uniqueIndex("agent_version_cap_grants_workspace_id_unique").on(table.workspaceId, table.id),
     uniqueIndex("agent_version_cap_grants_cap_unique").on(
       table.workspaceId,
       table.agentVersionId,
@@ -285,9 +272,7 @@ export const agentVersionToolGrants = pgTable(
     constraints: sanitizedJsonColumn("constraints"),
     maxCallsPerRun: integer("max_calls_per_run"),
     createdByActorId: uuid("created_by_actor_id").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -305,10 +290,7 @@ export const agentVersionToolGrants = pgTable(
       columns: [table.workspaceId, table.createdByActorId],
       foreignColumns: [actors.workspaceId, actors.id],
     }).onDelete("restrict"),
-    uniqueIndex("agent_version_tool_grants_workspace_id_unique").on(
-      table.workspaceId,
-      table.id,
-    ),
+    uniqueIndex("agent_version_tool_grants_workspace_id_unique").on(table.workspaceId, table.id),
     uniqueIndex("agent_version_tool_grants_tool_unique").on(
       table.workspaceId,
       table.agentVersionId,

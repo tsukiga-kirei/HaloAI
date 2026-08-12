@@ -49,9 +49,7 @@ export const contextManifests = pgTable(
     includedItemCount: integer("included_item_count").notNull(),
     truncatedItemCount: integer("truncated_item_count").notNull().default(0),
     tokenEstimate: integer("token_estimate").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({
@@ -93,9 +91,7 @@ export const contextManifestItems = pgTable(
     decision: policyDecision("decision").notNull(),
     decisionReasonCode: varchar("decision_reason_code", { length: 120 }).notNull(),
     included: boolean("included").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [
     foreignKey({

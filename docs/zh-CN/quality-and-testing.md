@@ -22,12 +22,12 @@
 
 每项功能与变更采用所适用的最高等级：
 
-| 等级 | 示例 | 最低证据要求 |
-| --- | --- | --- |
-| Q0 — 边界关键 | 认证、租户隔离、授权、凭据、审批、审计、保留期、用量结算、外部副作用 | 不变量与分支测试、真实数据库集成、攻击测试、负向多人 E2E、安全负责人审阅 |
-| Q1 — 协作关键 | 消息、Agent Run、队列、SSE、WebSocket、CRDT、提案、通知、离线恢复 | 单元/属性测试、包含恢复与并发的集成、多 Context E2E、负载或故障证据 |
-| Q2 — 用户流程关键 | 工作空间设置、角色编辑、文档流程、设置、导出 | 组件/契约测试、主路径与错误路径 E2E、无障碍、视觉与 locale 检查 |
-| Q3 — 仅展示 | 不改变语义的样式和独立文案 | 静态检查、受影响组件测试、视觉与 locale 审阅 |
+| 等级              | 示例                                                                 | 最低证据要求                                                             |
+| ----------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Q0 — 边界关键     | 认证、租户隔离、授权、凭据、审批、审计、保留期、用量结算、外部副作用 | 不变量与分支测试、真实数据库集成、攻击测试、负向多人 E2E、安全负责人审阅 |
+| Q1 — 协作关键     | 消息、Agent Run、队列、SSE、WebSocket、CRDT、提案、通知、离线恢复    | 单元/属性测试、包含恢复与并发的集成、多 Context E2E、负载或故障证据      |
+| Q2 — 用户流程关键 | 工作空间设置、角色编辑、文档流程、设置、导出                         | 组件/契约测试、主路径与错误路径 E2E、无障碍、视觉与 locale 检查          |
+| Q3 — 仅展示       | 不改变语义的样式和独立文案                                           | 静态检查、受影响组件测试、视觉与 locale 审阅                             |
 
 风险等级记录在变更说明中。降低等级必须给出明确理由。任何涉及策略、租户键、状态迁移、金额或用量单位、Migration、加密或保留期的变更，无论 Diff 多小都属于 Q0。
 
@@ -37,14 +37,14 @@
 
 目标分布表达意图，而不是指标配额：
 
-| 层级 | 大致占比 | 用途 | 常见运行时间 |
-| --- | ---: | --- | --- |
-| 静态分析 | 每次变更 | 类型、Lint、依赖边界、目录/Schema 一致性、不安全模式 | 秒级 |
-| 单元、不变量、属性测试 | 行为测试的 60–70% | 纯策略、状态、Reducer、Parser、预算、格式化 | 毫秒级 |
-| 组件与契约 | 15–25% | UI 状态、无障碍语义、API/Event/供应商契约 | 毫秒到秒级 |
-| 集成 | 10–15% | 数据库隔离、队列、对象存储、事务、实时恢复 | 秒级 |
-| 端到端 | 5–10% | 跨真实应用边界的关键多人旅程 | 秒到分钟级 |
-| 负载、韧性、攻击、探索 | 风险驱动 Suite | 容量、恢复、滥用、可用性与涌现行为 | 定时或候选发布阶段 |
+| 层级                   |          大致占比 | 用途                                                 | 常见运行时间       |
+| ---------------------- | ----------------: | ---------------------------------------------------- | ------------------ |
+| 静态分析               |          每次变更 | 类型、Lint、依赖边界、目录/Schema 一致性、不安全模式 | 秒级               |
+| 单元、不变量、属性测试 | 行为测试的 60–70% | 纯策略、状态、Reducer、Parser、预算、格式化          | 毫秒级             |
+| 组件与契约             |            15–25% | UI 状态、无障碍语义、API/Event/供应商契约            | 毫秒到秒级         |
+| 集成                   |            10–15% | 数据库隔离、队列、对象存储、事务、实时恢复           | 秒级               |
+| 端到端                 |             5–10% | 跨真实应用边界的关键多人旅程                         | 秒到分钟级         |
+| 负载、韧性、攻击、探索 |    风险驱动 Suite | 容量、恢复、滥用、可用性与涌现行为                   | 定时或候选发布阶段 |
 
 规则：
 
@@ -69,16 +69,16 @@
 
 仓库脚本至少暴露：
 
-| 命令意图 | 必需作用域 |
-| --- | --- |
-| typecheck | 严格编译设置下的全部 Workspace Package |
-| test | 快速单元、不变量与契约 Suite |
-| test:integration | 数据库、队列、存储、实时与 Adapter 边界 |
-| test:e2e | 关键 Playwright 旅程 |
-| test:visual | 确定性 Viewport 与 locale 截图 |
-| test:a11y | 自动无障碍检查及键盘断言 |
-| test:security | 攻击验收与不安全模式扫描 |
-| check | Format/Lint、类型检查、测试、构建与必需规格验证 |
+| 命令意图         | 必需作用域                                      |
+| ---------------- | ----------------------------------------------- |
+| typecheck        | 严格编译设置下的全部 Workspace Package          |
+| test             | 快速单元、不变量与契约 Suite                    |
+| test:integration | 数据库、队列、存储、实时与 Adapter 边界         |
+| test:e2e         | 关键 Playwright 旅程                            |
+| test:visual      | 确定性 Viewport 与 locale 截图                  |
+| test:a11y        | 自动无障碍检查及键盘断言                        |
+| test:security    | 攻击验收与不安全模式扫描                        |
+| check            | Format/Lint、类型检查、测试、构建与必需规格验证 |
 
 启动阶段的名称可以不同，但 CI 必须分别展示这些作用域，确保失败可以定位。
 
@@ -144,12 +144,12 @@ Fuzz 目标包括 API 输入、工具参数、上传 Metadata、SSE Event、WebS
 
 覆盖率是护栏，不是证明：
 
-| 作用域 | 最低要求 |
-| --- | ---: |
+| 作用域                                           |                                  最低要求 |
+| ------------------------------------------------ | ----------------------------------------: |
 | 策略、租户 Guard、审批、用量账本、保留期 Planner | 95% Branch Coverage，并覆盖全部具名不变量 |
-| 状态机 | 100% 已声明迁移与终态结果 |
-| 变更的可执行行 | 90% Line 与 85% Branch Coverage |
-| 仓库应用代码 | 80% Line 与 75% Branch Coverage |
+| 状态机                                           |                 100% 已声明迁移与终态结果 |
+| 变更的可执行行                                   |           90% Line 与 85% Branch Coverage |
+| 仓库应用代码                                     |           80% Line 与 75% Branch Coverage |
 
 生成代码、仅类型声明与平凡配置可以通过已说明的模式排除。禁止通过测试不可达或无意义语句来提高覆盖率。
 
@@ -184,16 +184,16 @@ Fuzz 目标包括 API 输入、工具参数、上传 Metadata、SSE Event、WebS
 
 授权测试矩阵从 Subject × Role × Resource × Action × Condition 生成，必须包含显式允许、显式拒绝、默认拒绝、已撤销授权、过期授权、分类约束、审批要求与项目限制。
 
-| 边界 | 强制攻击 | 通过条件 |
-| --- | --- | --- |
-| REST 与 Server Action | 把 workspace、project、Actor、owner、role 与 resource ID 替换为已知外部值 | 拒绝，且不泄露外部资源细节 |
-| 数据库 | 省略租户上下文、伪造 Session Context、跨租户 Join、使用 Worker/Application Role 调用 | 查询 Fail Closed，不泄露行或 Aggregate |
-| 缓存、搜索与向量检索 | 复用 Key、查询外部 UUID、污染缓存、省略策略过滤 | 不出现外部候选、Count、Snippet 或 Timing Oracle |
-| 对象与导出 | 猜测 Key、重放 URL、改变 Content-Disposition、使用已过期 Membership | 在内容暴露前拒绝下载与导出 |
-| 通知与未读状态 | 切换 Membership、订阅旧 Channel、标记外部通知 | List、Count、Stream 与 Mutation 均保持隔离 |
-| SSE 与 WebSocket | 重用 Cursor/Ticket、Stream 中途撤销 Membership、在消息内切换租户 | Stream 停止或重新认证，不出现外部 Event |
-| 队列与 Worker | 修改 Payload 租户、重放过期 Job、Grant 移除后恢复 | Worker 重新授权并拒绝过期权限 |
-| AI 与工具 | 要求模型冒充、扩权、检索外部上下文或自我审批 | 有效权限仍为服务端求得的交集 |
+| 边界                  | 强制攻击                                                                             | 通过条件                                        |
+| --------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| REST 与 Server Action | 把 workspace、project、Actor、owner、role 与 resource ID 替换为已知外部值            | 拒绝，且不泄露外部资源细节                      |
+| 数据库                | 省略租户上下文、伪造 Session Context、跨租户 Join、使用 Worker/Application Role 调用 | 查询 Fail Closed，不泄露行或 Aggregate          |
+| 缓存、搜索与向量检索  | 复用 Key、查询外部 UUID、污染缓存、省略策略过滤                                      | 不出现外部候选、Count、Snippet 或 Timing Oracle |
+| 对象与导出            | 猜测 Key、重放 URL、改变 Content-Disposition、使用已过期 Membership                  | 在内容暴露前拒绝下载与导出                      |
+| 通知与未读状态        | 切换 Membership、订阅旧 Channel、标记外部通知                                        | List、Count、Stream 与 Mutation 均保持隔离      |
+| SSE 与 WebSocket      | 重用 Cursor/Ticket、Stream 中途撤销 Membership、在消息内切换租户                     | Stream 停止或重新认证，不出现外部 Event         |
+| 队列与 Worker         | 修改 Payload 租户、重放过期 Job、Grant 移除后恢复                                    | Worker 重新授权并拒绝过期权限                   |
+| AI 与工具             | 要求模型冒充、扩权、检索外部上下文或自我审批                                         | 有效权限仍为服务端求得的交集                    |
 
 至少一个 Suite 在不同工作空间创建本地名称相同、ID 刻意相似的两个资源。Aggregate Endpoint、错误措辞、Pagination Total、Autocomplete、Presence 与时序敏感查询都要纳入。
 
@@ -295,16 +295,16 @@ Simulator 永远不能绕过生产策略引擎。小型 Provider Contract Suite 
 
 强制旅程：
 
-| 旅程 | 并发 Actor | 必须证明 |
-| --- | --- | --- |
-| 房间协作 | Owner、Member、AI | 规范排序、Streaming 恢复、Attribution、未读隔离 |
-| 审批 | Requester、Approver、AI | AI 不能自批；精确绑定参数；过期/撤销生效 |
-| 共享文档 | 两个 Editor、Viewer、AI | CRDT 收敛、只读拒绝、提案审阅、Version 与 Audit |
-| 权限变更 | Admin、活跃 Member、AI Run | 活跃 Stream/Editor/Run 在下一受保护步骤失权 |
-| 租户攻击 | Member 与外部工作空间 | 已知 ID、Deep Link、搜索、下载、通知全部拒绝 |
-| 离线恢复 | Editor 与另一在线 Editor | Draft 恢复、重新授权、确定性合并 |
-| 用量上限 | 并发发起者 | 原子预留阻止超支，UI 展示规范结果 |
-| 账户切换 | 同一浏览器、不同身份 | 私有缓存、Draft、Connection 与 Notification 不跨账户 |
+| 旅程     | 并发 Actor                 | 必须证明                                             |
+| -------- | -------------------------- | ---------------------------------------------------- |
+| 房间协作 | Owner、Member、AI          | 规范排序、Streaming 恢复、Attribution、未读隔离      |
+| 审批     | Requester、Approver、AI    | AI 不能自批；精确绑定参数；过期/撤销生效             |
+| 共享文档 | 两个 Editor、Viewer、AI    | CRDT 收敛、只读拒绝、提案审阅、Version 与 Audit      |
+| 权限变更 | Admin、活跃 Member、AI Run | 活跃 Stream/Editor/Run 在下一受保护步骤失权          |
+| 租户攻击 | Member 与外部工作空间      | 已知 ID、Deep Link、搜索、下载、通知全部拒绝         |
+| 离线恢复 | Editor 与另一在线 Editor   | Draft 恢复、重新授权、确定性合并                     |
+| 用量上限 | 并发发起者                 | 原子预留阻止超支，UI 展示规范结果                    |
+| 账户切换 | 同一浏览器、不同身份       | 私有缓存、Draft、Connection 与 Notification 不跨账户 |
 
 测试断言可见行为与耐久服务端状态。禁止访问 React 内部，也禁止使用特权数据库写入绕过正在测试的流程。
 
@@ -314,15 +314,15 @@ Simulator 永远不能绕过生产策略引擎。小型 Provider Contract Suite 
 
 最低确定性截图矩阵：
 
-| Profile | Viewport | Locale | Theme |
-| --- | --- | --- | --- |
-| Desktop Chromium | 1440×900 | zh-CN | Light |
-| Desktop WebKit | 1440×900 | en-US | Dark |
-| Desktop Firefox | 1440×900 | en-US | Light |
-| Tablet | 768×1024 | zh-CN | 受影响时测试两种主题 |
-| Mobile | 390×844 | zh-CN 与 en-US | Light |
-| Small mobile | 320×568 | en-XA 文本扩展 | Light |
-| RTL readiness | 390×844 与 1440×900 | ar-XB | Light |
+| Profile          | Viewport            | Locale         | Theme                |
+| ---------------- | ------------------- | -------------- | -------------------- |
+| Desktop Chromium | 1440×900            | zh-CN          | Light                |
+| Desktop WebKit   | 1440×900            | en-US          | Dark                 |
+| Desktop Firefox  | 1440×900            | en-US          | Light                |
+| Tablet           | 768×1024            | zh-CN          | 受影响时测试两种主题 |
+| Mobile           | 390×844             | zh-CN 与 en-US | Light                |
+| Small mobile     | 320×568             | en-XA 文本扩展 | Light                |
+| RTL readiness    | 390×844 与 1440×900 | ar-XB          | Light                |
 
 关键行为还要在带触摸输入和 Reduced Motion 的 Chromium Mobile Emulation 中运行。大版本发布前，Real-device Smoke Test 至少覆盖一个当前 iOS Safari 和一个当前 Android Chromium 类设备。
 
@@ -361,18 +361,18 @@ HaloAI 目标为 WCAG 2.2 AA。自动 axe-core 扫描不允许出现 Serious 或
 
 安全 Suite 使用合成密钥与 Canary 数据对生产等价边界执行攻击。
 
-| 威胁 | 攻击用例 | 必需控制证据 |
-| --- | --- | --- |
-| 跨租户访问 | 外部 ID、混合 Join、缓存/搜索/向量/对象/实时/队列复用 | 每层 Default-deny，且没有存在性 Oracle |
-| 会话窃取 | XSS 探针、读取 Cookie、Refresh Replay、CSRF、已撤销 Session、被盗 Connection Ticket | 凭据不可读、轮换、撤销、Origin 与 CSRF 强制执行 |
-| 权限提升 | 客户端伪造 Role/Actor/Approval、自批、过期 Delegated Run | 服务端解析身份、不可扩权授予、重新授权 |
-| Prompt Injection | 消息、文件、网页、Memory、Tool Output 要求密钥或策略绕过 | 内容始终是数据；权限与工具策略不变 |
-| 凭据泄露 | 在 Broker 中植入 Seed Secret，并扫描浏览器、Prompt、Queue、Log、Notification、Audit | 不出现明文，只使用 Opaque Binding |
-| SSRF 与不安全出口 | Loopback、Private、Metadata、Redirect、DNS Rebind、Slow/Oversized Response | Destination 解析、Allowlist、网络边界、大小/时间限制 |
-| 内容攻击 | XSS、Markdown/HTML/SVG、MIME 混淆、路径穿越、解压炸弹 | Sanitization、Isolation、类型与大小校验 |
-| Replay 与重复副作用 | 重复 Command、Callback、Job、Approval、Provider Result | 幂等规范结果和一次副作用 |
-| 资源耗尽 | Prompt、Upload、Update、Stream、Fan-out、Connection 与 Run Flood | Quota、Rate Limit、Backpressure、Cancellation、有界内存 |
-| 审计与删除失败 | 尝试修改、遗漏 Event、Hold 下 Purge、保留派生副本 | Append-only Trail、Reconciliation、Hold 强制、删除传播 |
+| 威胁                | 攻击用例                                                                            | 必需控制证据                                            |
+| ------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| 跨租户访问          | 外部 ID、混合 Join、缓存/搜索/向量/对象/实时/队列复用                               | 每层 Default-deny，且没有存在性 Oracle                  |
+| 会话窃取            | XSS 探针、读取 Cookie、Refresh Replay、CSRF、已撤销 Session、被盗 Connection Ticket | 凭据不可读、轮换、撤销、Origin 与 CSRF 强制执行         |
+| 权限提升            | 客户端伪造 Role/Actor/Approval、自批、过期 Delegated Run                            | 服务端解析身份、不可扩权授予、重新授权                  |
+| Prompt Injection    | 消息、文件、网页、Memory、Tool Output 要求密钥或策略绕过                            | 内容始终是数据；权限与工具策略不变                      |
+| 凭据泄露            | 在 Broker 中植入 Seed Secret，并扫描浏览器、Prompt、Queue、Log、Notification、Audit | 不出现明文，只使用 Opaque Binding                       |
+| SSRF 与不安全出口   | Loopback、Private、Metadata、Redirect、DNS Rebind、Slow/Oversized Response          | Destination 解析、Allowlist、网络边界、大小/时间限制    |
+| 内容攻击            | XSS、Markdown/HTML/SVG、MIME 混淆、路径穿越、解压炸弹                               | Sanitization、Isolation、类型与大小校验                 |
+| Replay 与重复副作用 | 重复 Command、Callback、Job、Approval、Provider Result                              | 幂等规范结果和一次副作用                                |
+| 资源耗尽            | Prompt、Upload、Update、Stream、Fan-out、Connection 与 Run Flood                    | Quota、Rate Limit、Backpressure、Cancellation、有界内存 |
+| 审计与删除失败      | 尝试修改、遗漏 Event、Hold 下 Purge、保留派生副本                                   | Append-only Trail、Reconciliation、Hold 强制、删除传播  |
 
 权限与安全规范中的强制攻击测试继续作为发布门禁，并通过稳定 ID 调用。每个已修复漏洞都要增加回归，并在适用时加入属性测试或 Fuzz Corpus。
 
@@ -384,36 +384,36 @@ HaloAI 目标为 WCAG 2.2 AA。自动 axe-core 扫描不允许出现 Serious 或
 
 生产第 75 百分位目标：
 
-| 指标 | 预算 |
-| --- | ---: |
-| LCP | ≤ 2.5 秒 |
-| INP | ≤ 200 毫秒 |
-| CLS | ≤ 0.05 |
+| 指标 |       预算 |
+| ---- | ---------: |
+| LCP  |   ≤ 2.5 秒 |
+| INP  | ≤ 200 毫秒 |
+| CLS  |     ≤ 0.05 |
 | TTFB | ≤ 800 毫秒 |
 
 交互与协作目标：
 
-| 操作 | 预算 |
-| --- | ---: |
-| 导航确认输入 | ≤ 100 ms |
-| 乐观消息可见 | ≤ 100 ms |
-| 已接收 SSE Chunk 提交到 UI | ≤ 100 ms |
-| 本地编辑器输入反馈 | ≤ 50 ms |
-| 同地域协作 Update | 通常 ≤ 250 ms |
-| 主线程 Long Task | < 50 ms |
-| 规范消息确认 | 同地域通常 ≤ 500 ms |
-| 正常 SSE 或 CRDT 重连收敛 | ≤ 5 秒 |
+| 操作                       |                预算 |
+| -------------------------- | ------------------: |
+| 导航确认输入               |            ≤ 100 ms |
+| 乐观消息可见               |            ≤ 100 ms |
+| 已接收 SSE Chunk 提交到 UI |            ≤ 100 ms |
+| 本地编辑器输入反馈         |             ≤ 50 ms |
+| 同地域协作 Update          |       通常 ≤ 250 ms |
+| 主线程 Long Task           |             < 50 ms |
+| 规范消息确认               | 同地域通常 ≤ 500 ms |
+| 正常 SSE 或 CRDT 重连收敛  |              ≤ 5 秒 |
 
 建议压缩传输预算：
 
-| Surface | 预算 |
-| --- | ---: |
-| 认证与入口 | ≤ 170 KB JavaScript |
+| Surface              |                预算 |
+| -------------------- | ------------------: |
+| 认证与入口           | ≤ 170 KB JavaScript |
 | 工作空间与房间 Shell | ≤ 220 KB JavaScript |
-| 会话 Route | ≤ 250 KB JavaScript |
-| 编辑器增量 Chunk | ≤ 280 KB JavaScript |
-| 初始字体 | ≤ 120 KB |
-| 普通首屏图片 | ≤ 200 KB |
+| 会话 Route           | ≤ 250 KB JavaScript |
+| 编辑器增量 Chunk     | ≤ 280 KB JavaScript |
+| 初始字体             |            ≤ 120 KB |
+| 普通首屏图片         |            ≤ 200 KB |
 
 ### 16.2 测量
 
@@ -462,14 +462,14 @@ Fault Injection 在每个耐久边界终止进程或中断依赖：Transaction S
 
 ### 18.1 Pipeline 阶段
 
-| 阶段 | 强制检查 |
-| --- | --- |
-| Change Validation | Format、Lint、Type、生成树干净、单元/不变量/属性、目录/Schema 对齐、变更代码覆盖率 |
-| Pull Request | Build、Contract、选定 Integration、Migration Dry Run、受影响 Playwright 旅程、axe、Visual Diff、密钥/依赖扫描 |
-| Main Branch | 完整 Integration、Chromium 全部关键 E2E、租户与攻击 Suite、完整 locale 与视觉矩阵 |
-| Nightly | WebKit/Firefox 广度、Fuzz Corpus、Load、Soak、Queue Fault Injection、Provider Contract、Flaky Test 检测 |
-| Release Candidate | 生产等价 Migration、完整 Q0/Q1 矩阵、Backup Restore、Deletion/Hold、跨浏览器/移动端、人工无障碍与视觉审阅 |
-| Canary | Health、Error、Latency、Saturation、租户拒绝、Usage Reconciliation、Queue Lag、Client Error、Rollback Signal |
+| 阶段              | 强制检查                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| Change Validation | Format、Lint、Type、生成树干净、单元/不变量/属性、目录/Schema 对齐、变更代码覆盖率                            |
+| Pull Request      | Build、Contract、选定 Integration、Migration Dry Run、受影响 Playwright 旅程、axe、Visual Diff、密钥/依赖扫描 |
+| Main Branch       | 完整 Integration、Chromium 全部关键 E2E、租户与攻击 Suite、完整 locale 与视觉矩阵                             |
+| Nightly           | WebKit/Firefox 广度、Fuzz Corpus、Load、Soak、Queue Fault Injection、Provider Contract、Flaky Test 检测       |
+| Release Candidate | 生产等价 Migration、完整 Q0/Q1 矩阵、Backup Restore、Deletion/Hold、跨浏览器/移动端、人工无障碍与视觉审阅     |
+| Canary            | Health、Error、Latency、Saturation、租户拒绝、Usage Reconciliation、Queue Lag、Client Error、Rollback Signal  |
 
 CI Job 使用最小权限身份和隔离租户。密钥必须短期有效。包含 Screenshot、Trace、Video、Payload 或数据库诊断的 Artifact 遵循访问与保留策略。
 

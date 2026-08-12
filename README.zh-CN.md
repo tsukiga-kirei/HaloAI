@@ -1,14 +1,14 @@
 <div align="center">
   <img src="apps/web/public/icon.svg" width="88" height="88" alt="HaloAI 标志" />
   <h1>HaloAI</h1>
-  <p><strong>让 AI 为人的工作协作增添一圈能力光环。</strong></p>
-  <p>一个将团队聊天、专业 AI 协作者与实时文档放在同一工作空间的项目。</p>
+  <p><strong>团队与 AI 并肩，让想法成为成果。</strong></p>
+  <p>一个让团队成员与专业 AI 协作者共同聊天、推进任务并编辑实时文档的共享工作空间。</p>
 
   <p>
     <a href="README.md">English</a> ·
-    <a href="docs/README.zh-CN.md">文档</a> ·
-    <a href="docs/roadmap.zh-CN.md">路线图</a> ·
-    <a href="docs/security.zh-CN.md">安全基线</a>
+    <a href="docs/zh-CN/README.md">文档</a> ·
+    <a href="docs/zh-CN/roadmap.md">路线图</a> ·
+    <a href="docs/zh-CN/security.md">安全基线</a>
   </p>
 
   <p>
@@ -60,21 +60,23 @@ HaloAI 是一个以项目房间为中心的协作工具。真实人员和具名�
 
 HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于验证纯 TypeScript、权限策略、流式事件和响应式工作台是否能形成一条完整链路；在产品、领域、安全和 UX 规格评审完成前，接口与目录仍可能调整。
 
-| 范围                         | 状态              | 说明                                                |
-| ---------------------------- | ----------------- | --------------------------------------------------- |
-| 产品、UX、安全和架构规格     | Draft 0.1 完成    | 完整中英文对照与可执行验收门槛                      |
-| pnpm TypeScript 工作区       | 已建立            | 严格类型检查和独立领域包                            |
-| Actor / Role / AgentProfile  | Foundation 已实现 | 身份、权限、人设和房间成员关系分离                  |
-| 权限策略与测试               | Foundation 已实现 | 默认拒绝策略与委托权限交集                          |
-| API 与耐久 Worker            | 框架已实现        | Fastify 边界、可恢复 SSE 和 Graphile 任务边界       |
-| 数据库 schema                | Foundation 已实现 | 显式租户协作、运行时与治理数据表                    |
-| 响应式工作台                 | Foundation 已实现 | 拆分组件、明暗主题和移动端单栈布局                  |
-| CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口 |
-| 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商            |
-| 真实认证与数据库             | 未开始            | 规格冻结后进入内部 Alpha                            |
-| 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL              |
+| 范围                         | 状态              | 说明                                                               |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------ |
+| 产品、UX、安全和架构规格     | Draft 0.1 完成    | 完整中英文对照与可执行验收门槛                                     |
+| pnpm TypeScript 工作区       | 已建立            | 严格类型检查和独立领域包                                           |
+| Actor / Role / AgentProfile  | Foundation 已实现 | 身份、权限、人设和房间成员关系分离                                 |
+| 权限策略与测试               | Foundation 已实现 | 默认拒绝策略与委托权限交集                                         |
+| API 与耐久 Worker            | 框架已实现        | Fastify 边界、可恢复 SSE 和 Graphile 任务边界                      |
+| 数据库 schema                | Foundation 已实现 | 显式租户协作、运行时与治理数据表                                   |
+| 响应式工作台                 | Foundation 已实现 | 房间搜索/创建/切换、独立消息、流式回复、文档版本、主题和移动端布局 |
+| CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口                |
+| 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                           |
+| 真实认证与数据库             | 未开始            | 规格冻结后进入内部 Alpha                                           |
+| 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL                             |
 
 > 当前演示运行时不会调用真实模型或外部工具，因此不需要 API Key，也不代表已经达到生产安全等级。
+
+当前页面不是纯静态稿。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。登录、跨用户共享与长期保存仍要等待真实认证和 PostgreSQL repository 接入。尚未接后端的次要入口会显示阶段说明，不会静默执行或伪装成功。
 
 ## 技术路线
 
@@ -168,7 +170,9 @@ HaloAI/
 │  ├─ agent-runtime/       # 状态机、显式路由与运行时端口
 │  ├─ model-gateway/       # 与供应商无关的模型流式边界
 │  └─ db/                  # Drizzle 多租户 schema 与持久化边界
-├─ docs/                   # 中英文成对维护的产品与技术文档
+├─ docs/
+│  ├─ zh-CN/              # 中文产品与技术规格
+│  └─ en-US/              # 使用同名文件维护的英文规格
 ├─ scripts/                # TypeScript 仓库验证脚本
 ├─ tests/e2e/              # 桌面与移动端 Playwright 验收
 ├─ AGENTS.md               # 面向编码 Agent 的仓库约束
@@ -241,6 +245,8 @@ pnpm check        # 检查文档、格式、类型、单元测试和构建
 pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 ```
 
+Turborepo 会把可复用的任务结果写入 `.turbo/`。它是自动生成的本地缓存目录，已被 Git 忽略，不属于项目源码；需要释放空间或排查缓存问题时可以安全删除，下次运行命令会自动重新生成。
+
 ## 国际化、移动端和视觉标准
 
 - 首发语言为 `zh-CN` 与 `en-US`，用户设置优先于 Cookie 和 `Accept-Language`。
@@ -261,26 +267,26 @@ pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 7. 凭据只在服务端最终调用点注入，禁止进入消息、队列载荷或日志。
 8. 审计记录委托人、AI 身份、策略版本、模型、工具、审批和结果，但不旁路保存完整秘密。
 
-真实模型、数据库、文件上传或外部工具启用前，必须达到 [安全基线](docs/security.zh-CN.md) 中的上线门槛。
+真实模型、数据库、文件上传或外部工具启用前，必须达到 [安全基线](docs/zh-CN/security.md) 中的上线门槛。
 
 ## 文档
 
-| 中文                                                 | English                                                      | 内容                                |
-| ---------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------- |
-| [文档索引](docs/README.zh-CN.md)                     | [Documentation](docs/README.md)                              | 文档导航与维护规则                  |
-| [产品概要](docs/product-brief.zh-CN.md)              | [Product brief](docs/product-brief.md)                       | 用户、首个任务和产品原则            |
-| [产品需求](docs/product-requirements.zh-CN.md)       | [Product requirements](docs/product-requirements.md)         | 功能、指标与 MVP 验收               |
-| [用户体验与视觉](docs/ux-and-visual.zh-CN.md)        | [UX and visual](docs/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
-| [领域模型](docs/domain-model.zh-CN.md)               | [Domain model](docs/domain-model.md)                         | Actor、资源、不变量与生命周期       |
-| [系统架构](docs/architecture.zh-CN.md)               | [Architecture](docs/architecture.md)                         | 领域边界和演进路径                  |
-| [技术决策](docs/technical-decisions.zh-CN.md)        | [Technical decisions](docs/technical-decisions.md)           | 技术选型与替换触发条件              |
-| [实时协作](docs/realtime-collaboration.zh-CN.md)     | [Realtime collaboration](docs/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
-| [Agent 运行时](docs/agent-runtime.zh-CN.md)          | [Agent runtime](docs/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
-| [安全基线](docs/security.zh-CN.md)                   | [Security](docs/security.md)                                 | 权限、提示词注入和上线门槛          |
-| [权限与安全](docs/permissions-and-security.zh-CN.md) | [Permissions and security](docs/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
-| [国际化](docs/internationalization.zh-CN.md)         | [Internationalization](docs/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
-| [质量与测试](docs/quality-and-testing.zh-CN.md)      | [Quality and testing](docs/quality-and-testing.md)           | 测试分层与发布门禁                  |
-| [交付路线](docs/roadmap.zh-CN.md)                    | [Roadmap](docs/roadmap.md)                                   | Foundation 到企业部署阶段           |
+| 中文                                                 | English                                                            | 内容                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
+| [文档索引](docs/zh-CN/README.md)                     | [Documentation](docs/en-US/README.md)                              | 文档导航与维护规则                  |
+| [产品概要](docs/zh-CN/product-brief.md)              | [Product brief](docs/en-US/product-brief.md)                       | 用户、首个任务和产品原则            |
+| [产品需求](docs/zh-CN/product-requirements.md)       | [Product requirements](docs/en-US/product-requirements.md)         | 功能、指标与 MVP 验收               |
+| [用户体验与视觉](docs/zh-CN/ux-and-visual.md)        | [UX and visual](docs/en-US/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
+| [领域模型](docs/zh-CN/domain-model.md)               | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
+| [系统架构](docs/zh-CN/architecture.md)               | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
+| [技术决策](docs/zh-CN/technical-decisions.md)        | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
+| [实时协作](docs/zh-CN/realtime-collaboration.md)     | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
+| [Agent 运行时](docs/zh-CN/agent-runtime.md)          | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
+| [安全基线](docs/zh-CN/security.md)                   | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |
+| [权限与安全](docs/zh-CN/permissions-and-security.md) | [Permissions and security](docs/en-US/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
+| [国际化](docs/zh-CN/internationalization.md)         | [Internationalization](docs/en-US/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
+| [质量与测试](docs/zh-CN/quality-and-testing.md)      | [Quality and testing](docs/en-US/quality-and-testing.md)           | 测试分层与发布门禁                  |
+| [交付路线](docs/zh-CN/roadmap.md)                    | [Roadmap](docs/en-US/roadmap.md)                                   | Foundation 到企业部署阶段           |
 
 ## 开发约束
 
@@ -290,7 +296,7 @@ pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 - 领域代码不依赖具体 UI、数据库和模型 SDK。
 - 复杂状态机、安全边界和非显然取舍使用完整中文注释。
 - 所有用户可见文案进入类型化国际化目录。
-- `docs/` 下英文文档与 `.zh-CN.md` 中文版本必须同步。
+- `docs/zh-CN/` 与 `docs/en-US/` 使用相同文件名并保持语义同步。
 - 重要交付前运行 `pnpm check` 并完成多视口视觉验收。
 
 ## 路线图摘要
@@ -300,7 +306,7 @@ pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 - **Team Beta**：把 SSE 与 Yjs 基础接入真实持久化，增加多人编辑、知识与用量控制。
 - **Controlled Action**：增加受控工具、MCP、隔离 Worker、审批中心和企业治理。
 
-详细计划见 [交付路线](docs/roadmap.zh-CN.md)。
+详细计划见 [交付路线](docs/zh-CN/roadmap.md)。
 
 ## 贡献
 

@@ -1,10 +1,4 @@
-import type {
-  ActorKind,
-  ActorStatus,
-  BuiltInWorkspaceRole,
-  Capability,
-  Id,
-} from "./models";
+import type { ActorKind, ActorStatus, BuiltInWorkspaceRole, Capability, Id } from "./models";
 
 const roleCapabilities: Record<BuiltInWorkspaceRole, ReadonlySet<Capability>> = {
   owner: new Set<Capability>([

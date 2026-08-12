@@ -48,21 +48,14 @@ export const outboxEvents = pgTable(
     uniqueIndex("outbox_events_workspace_id_unique").on(table.workspaceId, table.id),
     uniqueIndex("outbox_events_event_id_unique").on(table.workspaceId, table.eventId),
     uniqueIndex("outbox_events_idempotency_unique").on(table.workspaceId, table.idempotencyKey),
-    index("outbox_events_dispatch_idx").on(
-      table.status,
-      table.availableAt,
-      table.leaseExpiresAt,
-    ),
+    index("outbox_events_dispatch_idx").on(table.status, table.availableAt, table.leaseExpiresAt),
     index("outbox_events_aggregate_idx").on(
       table.workspaceId,
       table.aggregateType,
       table.aggregateId,
       table.createdAt,
     ),
-    check(
-      "outbox_events_values_check",
-      sql`${table.schemaVersion} > 0 and ${table.attempts} >= 0`,
-    ),
+    check("outbox_events_values_check", sql`${table.schemaVersion} > 0 and ${table.attempts} >= 0`),
     check(
       "outbox_events_publish_check",
       sql`((${table.status} = 'published' and ${table.publishedAt} is not null) or (${table.status} <> 'published' and ${table.publishedAt} is null))`,

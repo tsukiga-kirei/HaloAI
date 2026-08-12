@@ -13,13 +13,7 @@ import {
 
 import { lifecycleColumns, sanitizedJsonColumn, workspacePolicy } from "./common";
 import { actors, workspaces } from "./identity";
-import {
-  grantEffect,
-  grantScope,
-  grantStatus,
-  riskClass,
-  roleStatus,
-} from "./enums";
+import { grantEffect, grantScope, grantStatus, riskClass, roleStatus } from "./enums";
 
 /**
  * Capability 是协议级动作目录，不属于单个租户，因此没有 workspace_id。
@@ -31,9 +25,7 @@ export const capabilities = pgTable(
     key: varchar("key", { length: 160 }).primaryKey(),
     descriptionKey: text("description_key").notNull(),
     risk: riskClass("risk").notNull().default("low"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [index("capabilities_risk_idx").on(table.risk)],
 );
@@ -118,9 +110,7 @@ export const actorRoleAssignments = pgTable(
     scopeId: uuid("scope_id").notNull(),
     status: grantStatus("status").notNull().default("active"),
     grantedByActorId: uuid("granted_by_actor_id").notNull(),
-    validFrom: timestamp("valid_from", { withTimezone: true, mode: "date" })
-      .notNull()
-      .defaultNow(),
+    validFrom: timestamp("valid_from", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }),
     revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "date" }),
     ...lifecycleColumns(),

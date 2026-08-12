@@ -16,7 +16,10 @@ export class DemoModelAdapter implements ModelAdapter {
     yield { type: "text.delta", delta: response };
     yield {
       type: "usage",
-      inputTokens: request.context.reduce((total, item) => total + Math.ceil(item.content.length / 3), 0),
+      inputTokens: request.context.reduce(
+        (total, item) => total + Math.ceil(item.content.length / 3),
+        0,
+      ),
       outputTokens: Math.ceil(response.length / 3),
       costMicros: 0,
     };

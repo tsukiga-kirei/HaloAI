@@ -44,9 +44,7 @@ export const createdAtColumn = () =>
 
 export const lifecycleColumns = () => ({
   createdAt: createdAtColumn(),
-  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-    .notNull()
-    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
 export const schemaVersionColumn = () => integer("schema_version").notNull().default(1);

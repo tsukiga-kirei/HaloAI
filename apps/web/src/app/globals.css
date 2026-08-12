@@ -442,12 +442,11 @@ a {
   letter-spacing: -0.02em;
 }
 .brand-copy small {
-  overflow: hidden;
   margin-top: 4px;
   color: var(--text-muted);
   font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  text-wrap: balance;
 }
 .workspace-switcher {
   display: grid;
@@ -593,6 +592,12 @@ a {
 .room-list {
   display: grid;
   gap: 2px;
+}
+.sidebar-empty {
+  margin: 14px 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
 }
 .room-item {
   grid-template-columns: 22px minmax(0, 1fr) auto;
@@ -841,6 +846,26 @@ a {
   padding: 16px clamp(18px, 3vw, 42px) 28px;
   overscroll-behavior: contain;
   scroll-padding-bottom: 24px;
+}
+.conversation-empty {
+  display: grid;
+  max-width: 460px;
+  min-height: 180px;
+  place-content: center;
+  place-items: center;
+  gap: 10px;
+  margin: 24px auto;
+  padding: 28px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-panel);
+  color: var(--text-muted);
+  text-align: center;
+}
+.conversation-empty svg {
+  color: var(--accent);
+}
+.conversation-empty p {
+  margin: 0;
 }
 .date-separator {
   display: flex;
@@ -1332,6 +1357,32 @@ a {
 .document-empty-state p {
   max-width: 360px;
   margin: 6px 0 0;
+}
+.version-list {
+  display: grid;
+  width: min(320px, 100%);
+  gap: 7px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.version-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--text-soft);
+  text-align: left;
+}
+.version-list li:first-child {
+  border-color: var(--halo-border);
+  background: var(--halo-soft);
+  color: var(--accent);
 }
 
 /* 08. 弹窗、表单与 Toast：只在浮层使用两级阴影，状态仍由文字与图标表达。 */

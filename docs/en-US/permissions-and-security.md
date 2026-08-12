@@ -24,55 +24,55 @@ Obligations can require redaction, read-only access, a spending cap, a specific 
 
 ### 2.1 Subject types
 
-| Subject | Authentication source | Allowed role types | Mandatory constraints |
-|---|---|---|---|
-| Human user | Enterprise SSO or a first-party user session | Workspace and project roles | Session assurance, membership status, and optional device/IP conditions |
-| AI actor | Dedicated agent identity and immutable agent version | Agent-scoped roles | No interactive login; every run records its delegator or sponsor |
-| Service account | OAuth client or workload identity | Integration-specific roles | Short-lived, audience-bound, revocable credentials |
-| External integration | OAuth grant, signed webhook, or approved connector | Connector-scoped roles | Tool allowlist, egress policy, and credential isolation |
-| System worker | Internal workload identity | Queue-worker capabilities | May process only the workspace and resource named by a durable job |
-| Support operator | Strong internal authentication | Time-bound break-glass grant | Dual approval, customer-visible audit, and automatic expiry |
+| Subject              | Authentication source                                | Allowed role types           | Mandatory constraints                                                   |
+| -------------------- | ---------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------- |
+| Human user           | Enterprise SSO or a first-party user session         | Workspace and project roles  | Session assurance, membership status, and optional device/IP conditions |
+| AI actor             | Dedicated agent identity and immutable agent version | Agent-scoped roles           | No interactive login; every run records its delegator or sponsor        |
+| Service account      | OAuth client or workload identity                    | Integration-specific roles   | Short-lived, audience-bound, revocable credentials                      |
+| External integration | OAuth grant, signed webhook, or approved connector   | Connector-scoped roles       | Tool allowlist, egress policy, and credential isolation                 |
+| System worker        | Internal workload identity                           | Queue-worker capabilities    | May process only the workspace and resource named by a durable job      |
+| Support operator     | Strong internal authentication                       | Time-bound break-glass grant | Dual approval, customer-visible audit, and automatic expiry             |
 
 An AI actor MUST NOT obtain, copy, simulate, or refresh a human login session. A system worker MUST NOT inherit broad application-administrator authority merely because it runs trusted code.
 
 ### 2.2 Built-in role templates
 
-| Role template | Default purpose |
-|---|---|
-| Workspace Owner | Workspace lifecycle, ownership, security, membership, billing, export, and deletion |
+| Role template   | Default purpose                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Workspace Owner | Workspace lifecycle, ownership, security, membership, billing, export, and deletion                              |
 | Workspace Admin | Membership, projects, agents, and integrations, excluding secret disclosure and destructive ownership operations |
-| Security Admin | Policies, session revocation, audit, retention, and integration approval |
-| Billing Admin | Usage, budgets, and billing without automatic access to conversation or document contents |
-| Agent Manager | Agent creation, versioning, model assignment, and tool-scope configuration |
-| Member | Collaboration in explicitly accessible projects, rooms, and artifacts |
-| Guest | Access only to resources explicitly shared with the guest membership |
-| Auditor | Read-only audit and compliance export; content access requires a separate grant |
-| Agent Member | Messaging and artifact actions within an explicitly delegated scope |
+| Security Admin  | Policies, session revocation, audit, retention, and integration approval                                         |
+| Billing Admin   | Usage, budgets, and billing without automatic access to conversation or document contents                        |
+| Agent Manager   | Agent creation, versioning, model assignment, and tool-scope configuration                                       |
+| Member          | Collaboration in explicitly accessible projects, rooms, and artifacts                                            |
+| Guest           | Access only to resources explicitly shared with the guest membership                                             |
+| Auditor         | Read-only audit and compliance export; content access requires a separate grant                                  |
+| Agent Member    | Messaging and artifact actions within an explicitly delegated scope                                              |
 
 Built-in roles are templates over capabilities. Custom roles MUST be capability sets, not page paths or UI menu definitions. A principal MUST NOT assign capabilities it does not hold, except through a separately authorized administrative workflow.
 
 ## 3. Resource and action matrix
 
-| Resource | Actions | Typical holders | Required conditions |
-|---|---|---|---|
-| Workspace | `read`, `update`, `export`, `delete` | Owner; selected Admin roles | Active membership; deletion requires step-up authentication and confirmation |
-| Membership | `invite`, `read`, `update`, `remove` | Owner, Workspace Admin | Cannot remove the last Owner or grant above the caller's delegation ceiling |
-| Role and policy | `create`, `read`, `update`, `delete`, `assign` | Owner, Security Admin | No self-elevation; policy version and changes are audited |
-| Project and room | `create`, `read`, `update`, `archive`, `manage_members` | Authorized workspace members | Matching workspace, project scope, room ACL, and classification |
-| Message and thread | `read`, `create`, `edit_own`, `delete_own`, `moderate` | Room participants and delegated agents | Membership is rechecked on read and send; edits preserve history |
-| Artifact and document | `create`, `read`, `update`, `comment`, `approve`, `publish`, `delete`, `restore` | Project members and delegated agents | Artifact ACL, current version, classification, and approval policy |
-| Artifact version | `read`, `compare`, `restore` | Artifact readers; editors for restore | Restore creates a new version and never overwrites history |
-| File and attachment | `upload`, `read`, `download`, `delete` | Room or artifact participants | Malware scan, type/size limits, and short-lived signed delivery |
-| Knowledge and memory | `read`, `write`, `mount`, `delete` | Explicit members and agents | Authorization filtering occurs before ranking or model context assembly |
-| Agent profile and version | `create`, `read`, `update`, `delete`, `invoke` | Agent Manager; authorized invokers | Configuration and invocation are separate capabilities; run uses an immutable version |
-| Secret and credential binding | `bind`, `rotate`, `revoke` | Owner, Security Admin | Plaintext is never returned; binding scope is narrower than the managing actor |
-| Tool and integration | `install`, `configure`, `invoke`, `disable` | Admin for management; agents for scoped invocation | Allowlist, argument policy, risk class, egress policy, and approval state |
-| Run and job | `create`, `read`, `cancel`, `retry` | Initiator, sponsor, project administrator | Budget, concurrency, idempotency, delegation, and current authorization |
-| Approval | `request`, `read`, `approve`, `reject` | Named approvers | Requesting agent cannot approve; bound parameters and expiry still match |
-| Usage and budget | `read`, `manage`, `export` | Owner, Billing Admin; scoped personal view | Workspace and reporting scope are explicit |
-| Notification | `read`, `mark_read`, `delete` | Intended membership only | User, workspace, and membership all match |
-| Audit event | `read`, `export` | Security Admin, Auditor | Read-only; sensitive fields are redacted by content permission |
-| Retention policy | `read`, `update`, `legal_hold` | Owner, Security Admin | Legal hold overrides ordinary expiry and deletion |
+| Resource                      | Actions                                                                          | Typical holders                                    | Required conditions                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Workspace                     | `read`, `update`, `export`, `delete`                                             | Owner; selected Admin roles                        | Active membership; deletion requires step-up authentication and confirmation          |
+| Membership                    | `invite`, `read`, `update`, `remove`                                             | Owner, Workspace Admin                             | Cannot remove the last Owner or grant above the caller's delegation ceiling           |
+| Role and policy               | `create`, `read`, `update`, `delete`, `assign`                                   | Owner, Security Admin                              | No self-elevation; policy version and changes are audited                             |
+| Project and room              | `create`, `read`, `update`, `archive`, `manage_members`                          | Authorized workspace members                       | Matching workspace, project scope, room ACL, and classification                       |
+| Message and thread            | `read`, `create`, `edit_own`, `delete_own`, `moderate`                           | Room participants and delegated agents             | Membership is rechecked on read and send; edits preserve history                      |
+| Artifact and document         | `create`, `read`, `update`, `comment`, `approve`, `publish`, `delete`, `restore` | Project members and delegated agents               | Artifact ACL, current version, classification, and approval policy                    |
+| Artifact version              | `read`, `compare`, `restore`                                                     | Artifact readers; editors for restore              | Restore creates a new version and never overwrites history                            |
+| File and attachment           | `upload`, `read`, `download`, `delete`                                           | Room or artifact participants                      | Malware scan, type/size limits, and short-lived signed delivery                       |
+| Knowledge and memory          | `read`, `write`, `mount`, `delete`                                               | Explicit members and agents                        | Authorization filtering occurs before ranking or model context assembly               |
+| Agent profile and version     | `create`, `read`, `update`, `delete`, `invoke`                                   | Agent Manager; authorized invokers                 | Configuration and invocation are separate capabilities; run uses an immutable version |
+| Secret and credential binding | `bind`, `rotate`, `revoke`                                                       | Owner, Security Admin                              | Plaintext is never returned; binding scope is narrower than the managing actor        |
+| Tool and integration          | `install`, `configure`, `invoke`, `disable`                                      | Admin for management; agents for scoped invocation | Allowlist, argument policy, risk class, egress policy, and approval state             |
+| Run and job                   | `create`, `read`, `cancel`, `retry`                                              | Initiator, sponsor, project administrator          | Budget, concurrency, idempotency, delegation, and current authorization               |
+| Approval                      | `request`, `read`, `approve`, `reject`                                           | Named approvers                                    | Requesting agent cannot approve; bound parameters and expiry still match              |
+| Usage and budget              | `read`, `manage`, `export`                                                       | Owner, Billing Admin; scoped personal view         | Workspace and reporting scope are explicit                                            |
+| Notification                  | `read`, `mark_read`, `delete`                                                    | Intended membership only                           | User, workspace, and membership all match                                             |
+| Audit event                   | `read`, `export`                                                                 | Security Admin, Auditor                            | Read-only; sensitive fields are redacted by content permission                        |
+| Retention policy              | `read`, `update`, `legal_hold`                                                   | Owner, Security Admin                              | Legal hold overrides ordinary expiry and deletion                                     |
 
 ## 4. Conditions and AI authority intersection
 
@@ -215,37 +215,37 @@ Audit records MUST NOT contain plaintext secrets. Full prompts, responses, and t
 
 Retention is an enforced lifecycle, not a configuration-only field. Recommended defaults are:
 
-| Data class | Recommended default | Required deletion behavior |
-|---|---:|---|
-| Access credential | 15 minutes | Invalid after expiry |
-| Refresh session | Up to 30 days | Rotation and revocation invalidate immediately |
-| Notification | 90 days | Remove body and metadata at expiry |
-| Diagnostic log | 30 days | Must not contain secrets or full prompts |
-| Full AI prompt/response payload | 30–90 days | Workspace may disable storage; encrypt separately |
-| Chat and artifact content | Workspace policy | Soft-delete window followed by complete purge |
-| Audit event | At least 365 days or enterprise policy | Append-only until expiry or legal-hold release |
-| Usage ledger | Applicable accounting period | Preserve immutable accounting fields; minimize content |
-| Backup | 30–35 day rolling window | Automatic expiry; support cryptographic erasure where required |
+| Data class                      |                    Recommended default | Required deletion behavior                                     |
+| ------------------------------- | -------------------------------------: | -------------------------------------------------------------- |
+| Access credential               |                             15 minutes | Invalid after expiry                                           |
+| Refresh session                 |                          Up to 30 days | Rotation and revocation invalidate immediately                 |
+| Notification                    |                                90 days | Remove body and metadata at expiry                             |
+| Diagnostic log                  |                                30 days | Must not contain secrets or full prompts                       |
+| Full AI prompt/response payload |                             30–90 days | Workspace may disable storage; encrypt separately              |
+| Chat and artifact content       |                       Workspace policy | Soft-delete window followed by complete purge                  |
+| Audit event                     | At least 365 days or enterprise policy | Append-only until expiry or legal-hold release                 |
+| Usage ledger                    |           Applicable accounting period | Preserve immutable accounting fields; minimize content         |
+| Backup                          |               30–35 day rolling window | Automatic expiry; support cryptographic erasure where required |
 
 Deletion MUST propagate to primary rows, object storage, search indexes, vector stores, caches, derived memories, projections, and pending jobs. A legal hold prevents ordinary deletion and records who applied or released it. Cleanup jobs MUST be resumable, observable, and idempotent. The system MUST produce a deletion record without reproducing the deleted content. Backups MUST expire on schedule; urgent erasure MAY use per-workspace envelope-key destruction where physical backup rewriting is impractical.
 
 ## 13. Threat, control, and acceptance matrix
 
-| Threat | Required controls | Acceptance evidence |
-|---|---|---|
-| Cross-tenant IDOR and data leakage | Server-derived scope, RLS, namespaced storage/cache/search/vector/realtime/queue | A workspace A credential cannot read, infer, subscribe to, retry, or mutate any known workspace B resource ID |
-| Token theft, fixation, or replay | HttpOnly cookies, rotation, reuse detection, CSRF, revocation, MFA | XSS cannot read credentials; replayed refresh token revokes its family; logout terminates API and realtime use |
-| Privilege escalation or confused deputy | Capability policy, delegation intersection, reauthorization, no self-elevation | Client-supplied role/workspace is ignored; revoked human authority blocks the next agent retrieval or tool call |
-| Prompt injection and tool exfiltration | Treat content as data, external policy, argument schemas, sandbox, egress allowlist, approval | Malicious documents and webpages cannot reveal secrets, widen tools, or cause unapproved external writes |
-| Retrieval leakage | ACL before ranking, scoped embeddings and caches | Forbidden chunks never appear in search candidates, citations, logs, or model context |
-| Credential disclosure | Secret broker, encryption, redaction, short-lived bindings | Automated scans find no plaintext key in browser output, database payloads, queues, prompts, logs, or notifications |
-| SSRF and hostile endpoints | Destination policy, DNS/IP checks, timeout, redirect and size limits | Loopback, metadata, private-address, and DNS-rebinding attempts are rejected |
-| XSS and hostile files | Output sanitization, CSP, MIME/magic checks, malware scan, parser sandbox and limits | Markdown/SVG/HTML payloads do not execute; disguised files and decompression bombs are quarantined |
-| Duplicate jobs and repeated side effects | Durable state, idempotency, lease, effect record, bounded retry | Process termination at each job boundary eventually completes once without duplicate publish, email, delete, or payment |
-| Runaway agents and budget exhaustion | Atomic reservation, multi-scope limits, concurrency lanes, cancellation | Concurrent load cannot exceed budget; cancellation releases unused reservation and prevents further tool calls |
-| Audit tampering | Append-only permissions, integrity protection, separate storage | Workspace administrators cannot alter or delete security events; traces reconstruct the action and delegation chain |
-| Incomplete deletion | Enforced retention, deletion fan-out, legal hold, backup expiry | Time-based tests verify removal from every online store while held data remains until hold release |
-| Insider support abuse | JIT break-glass, dual approval, expiry, customer-visible audit | Support access without a valid grant fails; expired access is immediately denied and every read/export is recorded |
+| Threat                                   | Required controls                                                                             | Acceptance evidence                                                                                                     |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Cross-tenant IDOR and data leakage       | Server-derived scope, RLS, namespaced storage/cache/search/vector/realtime/queue              | A workspace A credential cannot read, infer, subscribe to, retry, or mutate any known workspace B resource ID           |
+| Token theft, fixation, or replay         | HttpOnly cookies, rotation, reuse detection, CSRF, revocation, MFA                            | XSS cannot read credentials; replayed refresh token revokes its family; logout terminates API and realtime use          |
+| Privilege escalation or confused deputy  | Capability policy, delegation intersection, reauthorization, no self-elevation                | Client-supplied role/workspace is ignored; revoked human authority blocks the next agent retrieval or tool call         |
+| Prompt injection and tool exfiltration   | Treat content as data, external policy, argument schemas, sandbox, egress allowlist, approval | Malicious documents and webpages cannot reveal secrets, widen tools, or cause unapproved external writes                |
+| Retrieval leakage                        | ACL before ranking, scoped embeddings and caches                                              | Forbidden chunks never appear in search candidates, citations, logs, or model context                                   |
+| Credential disclosure                    | Secret broker, encryption, redaction, short-lived bindings                                    | Automated scans find no plaintext key in browser output, database payloads, queues, prompts, logs, or notifications     |
+| SSRF and hostile endpoints               | Destination policy, DNS/IP checks, timeout, redirect and size limits                          | Loopback, metadata, private-address, and DNS-rebinding attempts are rejected                                            |
+| XSS and hostile files                    | Output sanitization, CSP, MIME/magic checks, malware scan, parser sandbox and limits          | Markdown/SVG/HTML payloads do not execute; disguised files and decompression bombs are quarantined                      |
+| Duplicate jobs and repeated side effects | Durable state, idempotency, lease, effect record, bounded retry                               | Process termination at each job boundary eventually completes once without duplicate publish, email, delete, or payment |
+| Runaway agents and budget exhaustion     | Atomic reservation, multi-scope limits, concurrency lanes, cancellation                       | Concurrent load cannot exceed budget; cancellation releases unused reservation and prevents further tool calls          |
+| Audit tampering                          | Append-only permissions, integrity protection, separate storage                               | Workspace administrators cannot alter or delete security events; traces reconstruct the action and delegation chain     |
+| Incomplete deletion                      | Enforced retention, deletion fan-out, legal hold, backup expiry                               | Time-based tests verify removal from every online store while held data remains until hold release                      |
+| Insider support abuse                    | JIT break-glass, dual approval, expiry, customer-visible audit                                | Support access without a valid grant fails; expired access is immediately denied and every read/export is recorded      |
 
 ## 14. Mandatory attack acceptance suite
 

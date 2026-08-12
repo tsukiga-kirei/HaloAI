@@ -1,6 +1,6 @@
 # Domain Model
 
-简体中文 · [English](domain-model.md)
+[简体中文](../zh-CN/domain-model.md) · English
 
 This document is the semantic source of truth for HaloAI. Database tables, API contracts, UI labels, and agent prompts may project this model, but must not invent alternative meanings for the same concept.
 
@@ -19,17 +19,17 @@ This document is the semantic source of truth for HaloAI. Database tables, API c
 
 ## 2. Bounded contexts
 
-| Context | Owns | May reference | Must not own |
-| --- | --- | --- | --- |
-| Identity | users, sessions, authentication factors | actor link | workspace authorization |
-| Workspace | workspaces, membership, invitations | human identity | prompt/persona details |
-| Authorization | roles, capabilities, resource grants, policy decisions | actor, resource descriptor | UI routes as permission truth |
-| Conversation | projects, rooms, messages, revisions, mentions, attachments | actor, run, document | model-provider details |
-| Agent catalog | AI actors, profiles, versions, capability configuration | workspace, credential reference | human sessions or raw secrets |
-| Agent runtime | runs, steps, events, context manifests, tool calls, budgets | pinned agent version, delegator | mutable published configuration |
-| Documents | documents, CRDT state, projections, versions, proposals, comments | actor, run, source | silent AI overwrite |
-| Governance | approvals, audit events, usage ledger, retention and export jobs | any resource descriptor | secret plaintext |
-| Integration | connection metadata, tool catalog, credential references | workspace policy | direct authorization decisions |
+| Context       | Owns                                                              | May reference                   | Must not own                    |
+| ------------- | ----------------------------------------------------------------- | ------------------------------- | ------------------------------- |
+| Identity      | users, sessions, authentication factors                           | actor link                      | workspace authorization         |
+| Workspace     | workspaces, membership, invitations                               | human identity                  | prompt/persona details          |
+| Authorization | roles, capabilities, resource grants, policy decisions            | actor, resource descriptor      | UI routes as permission truth   |
+| Conversation  | projects, rooms, messages, revisions, mentions, attachments       | actor, run, document            | model-provider details          |
+| Agent catalog | AI actors, profiles, versions, capability configuration           | workspace, credential reference | human sessions or raw secrets   |
+| Agent runtime | runs, steps, events, context manifests, tool calls, budgets       | pinned agent version, delegator | mutable published configuration |
+| Documents     | documents, CRDT state, projections, versions, proposals, comments | actor, run, source              | silent AI overwrite             |
+| Governance    | approvals, audit events, usage ledger, retention and export jobs  | any resource descriptor         | secret plaintext                |
+| Integration   | connection metadata, tool catalog, credential references          | workspace policy                | direct authorization decisions  |
 
 Cross-context writes use an application service and one transaction where possible. Durable asynchronous consequences are emitted through a transactional outbox.
 

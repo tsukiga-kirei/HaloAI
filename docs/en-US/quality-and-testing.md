@@ -22,12 +22,12 @@ All application test harnesses, fixtures, simulators, and load drivers SHOULD be
 
 Every feature and change receives the highest applicable tier:
 
-| Tier | Examples | Minimum required evidence |
-| --- | --- | --- |
-| Q0 — boundary critical | Authentication, tenant isolation, authorization, credentials, approvals, audit, retention, usage settlement, external effects | Invariant and branch tests, real-database integration, attack tests, negative multi-user E2E, review by a security owner |
-| Q1 — collaboration critical | Messages, Agent runs, queues, SSE, WebSocket, CRDT, proposals, notifications, offline recovery | Unit/property tests, integration with recovery and concurrency, multi-context E2E, load or fault evidence |
-| Q2 — user-flow critical | Workspace setup, role editing, document workflows, settings, exports | Component/contract tests, primary and error-path E2E, accessibility, visual and locale checks |
-| Q3 — presentation limited | Non-semantic styling and isolated copy | Static checks, affected component tests, visual and locale review |
+| Tier                        | Examples                                                                                                                      | Minimum required evidence                                                                                                |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Q0 — boundary critical      | Authentication, tenant isolation, authorization, credentials, approvals, audit, retention, usage settlement, external effects | Invariant and branch tests, real-database integration, attack tests, negative multi-user E2E, review by a security owner |
+| Q1 — collaboration critical | Messages, Agent runs, queues, SSE, WebSocket, CRDT, proposals, notifications, offline recovery                                | Unit/property tests, integration with recovery and concurrency, multi-context E2E, load or fault evidence                |
+| Q2 — user-flow critical     | Workspace setup, role editing, document workflows, settings, exports                                                          | Component/contract tests, primary and error-path E2E, accessibility, visual and locale checks                            |
+| Q3 — presentation limited   | Non-semantic styling and isolated copy                                                                                        | Static checks, affected component tests, visual and locale review                                                        |
 
 Risk tier is recorded in the change description. Lowering the tier requires an explicit rationale. A change touching policy, tenant keys, state transitions, money or usage units, migrations, encryption, or retention is always Q0 even when the code diff is small.
 
@@ -37,14 +37,14 @@ Requirements link to named tests or suites. A release decision must be traceable
 
 The target distribution describes intent, not a quota:
 
-| Layer | Approximate share | Purpose | Typical runtime |
-| --- | ---: | --- | --- |
-| Static analysis | Every change | Types, lint, dependency boundaries, catalog/schema consistency, unsafe patterns | Seconds |
-| Unit, invariant, property | 60–70% of behavioral tests | Pure policy, state, reducers, parsers, budgets, formatting | Milliseconds |
-| Component and contract | 15–25% | UI states, accessibility semantics, API/event/provider contracts | Milliseconds to seconds |
-| Integration | 10–15% | Database isolation, queues, object storage, transactions, realtime recovery | Seconds |
-| End-to-end | 5–10% | Critical multi-user journeys across real application boundaries | Seconds to minutes |
-| Load, resilience, attack, exploratory | Risk-driven suites | Capacity, recovery, abuse, usability, and emergent behavior | Scheduled or release candidate |
+| Layer                                 |          Approximate share | Purpose                                                                         | Typical runtime                |
+| ------------------------------------- | -------------------------: | ------------------------------------------------------------------------------- | ------------------------------ |
+| Static analysis                       |               Every change | Types, lint, dependency boundaries, catalog/schema consistency, unsafe patterns | Seconds                        |
+| Unit, invariant, property             | 60–70% of behavioral tests | Pure policy, state, reducers, parsers, budgets, formatting                      | Milliseconds                   |
+| Component and contract                |                     15–25% | UI states, accessibility semantics, API/event/provider contracts                | Milliseconds to seconds        |
+| Integration                           |                     10–15% | Database isolation, queues, object storage, transactions, realtime recovery     | Seconds                        |
+| End-to-end                            |                      5–10% | Critical multi-user journeys across real application boundaries                 | Seconds to minutes             |
+| Load, resilience, attack, exploratory |         Risk-driven suites | Capacity, recovery, abuse, usability, and emergent behavior                     | Scheduled or release candidate |
 
 Rules:
 
@@ -69,16 +69,16 @@ Tool choice may evolve, but suite responsibilities and evidence MUST remain. Tes
 
 Repository scripts expose at least:
 
-| Command intent | Required scope |
-| --- | --- |
-| typecheck | Every workspace package under strict compiler settings |
-| test | Fast unit, invariant, and contract suites |
-| test:integration | Database, queue, storage, realtime, and adapter boundaries |
-| test:e2e | Critical Playwright journeys |
-| test:visual | Deterministic viewport and locale screenshots |
-| test:a11y | Automated accessibility plus keyboard assertions |
-| test:security | Attack acceptance and unsafe-pattern scans |
-| check | Formatting/lint, typecheck, tests, build, and required spec validation |
+| Command intent   | Required scope                                                         |
+| ---------------- | ---------------------------------------------------------------------- |
+| typecheck        | Every workspace package under strict compiler settings                 |
+| test             | Fast unit, invariant, and contract suites                              |
+| test:integration | Database, queue, storage, realtime, and adapter boundaries             |
+| test:e2e         | Critical Playwright journeys                                           |
+| test:visual      | Deterministic viewport and locale screenshots                          |
+| test:a11y        | Automated accessibility plus keyboard assertions                       |
+| test:security    | Attack acceptance and unsafe-pattern scans                             |
+| check            | Formatting/lint, typecheck, tests, build, and required spec validation |
 
 Names may differ during bootstrapping, but CI presents these scopes separately so failures are attributable.
 
@@ -144,12 +144,12 @@ Fuzz targets include parsers for API input, tool arguments, uploaded metadata, S
 
 Coverage is a guardrail, not proof:
 
-| Scope | Required floor |
-| --- | ---: |
-| Policy, tenant guards, approval, usage ledger, retention planners | 95% branch coverage plus every named invariant |
-| State machines | 100% declared transitions and terminal outcomes |
-| Changed executable lines | 90% line and 85% branch coverage |
-| Repository application code | 80% line and 75% branch coverage |
+| Scope                                                             |                                  Required floor |
+| ----------------------------------------------------------------- | ----------------------------------------------: |
+| Policy, tenant guards, approval, usage ledger, retention planners |  95% branch coverage plus every named invariant |
+| State machines                                                    | 100% declared transitions and terminal outcomes |
+| Changed executable lines                                          |                90% line and 85% branch coverage |
+| Repository application code                                       |                80% line and 75% branch coverage |
 
 Generated code, type-only declarations, and trivial configuration may be excluded with documented patterns. Raising coverage by testing unreachable or meaningless statements is prohibited.
 
@@ -184,16 +184,16 @@ Every migration suite proves:
 
 The authorization test matrix is generated from Subject × role × resource × action × condition. It must include explicit allows, explicit denies, default denies, revoked grants, expired grants, classification constraints, approval requirements, and project restrictions.
 
-| Boundary | Mandatory attacks | Pass condition |
-| --- | --- | --- |
-| REST and server actions | Replace workspace, project, Actor, owner, role, and resource IDs with foreign known values | Denied without revealing foreign-resource detail |
-| Database | Omit tenant context, forge session context, join across tenants, call under worker/application roles | Query fails closed; no row or aggregate leaks |
-| Cache, search, and vector retrieval | Reuse keys, query foreign UUIDs, poison cache, omit policy filter | No foreign candidate, count, snippet, or timing oracle |
-| Object and export | Guess key, replay URL, change content disposition, use expired membership | Download and export fail before content exposure |
-| Notification and unread state | Switch membership, subscribe to old channels, mark foreign notification | List, count, stream, and mutation remain isolated |
-| SSE and WebSocket | Reuse cursor/ticket, revoke membership midstream, switch tenant in message | Stream stops or reauthenticates; no foreign event |
-| Queue and worker | Alter payload tenant, replay stale job, resume after grant removal | Worker reauthorizes and denies stale authority |
-| AI and tools | Ask model to impersonate, expand scope, retrieve foreign context, self-approve | Effective authority remains the server-side intersection |
+| Boundary                            | Mandatory attacks                                                                                    | Pass condition                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| REST and server actions             | Replace workspace, project, Actor, owner, role, and resource IDs with foreign known values           | Denied without revealing foreign-resource detail         |
+| Database                            | Omit tenant context, forge session context, join across tenants, call under worker/application roles | Query fails closed; no row or aggregate leaks            |
+| Cache, search, and vector retrieval | Reuse keys, query foreign UUIDs, poison cache, omit policy filter                                    | No foreign candidate, count, snippet, or timing oracle   |
+| Object and export                   | Guess key, replay URL, change content disposition, use expired membership                            | Download and export fail before content exposure         |
+| Notification and unread state       | Switch membership, subscribe to old channels, mark foreign notification                              | List, count, stream, and mutation remain isolated        |
+| SSE and WebSocket                   | Reuse cursor/ticket, revoke membership midstream, switch tenant in message                           | Stream stops or reauthenticates; no foreign event        |
+| Queue and worker                    | Alter payload tenant, replay stale job, resume after grant removal                                   | Worker reauthorizes and denies stale authority           |
+| AI and tools                        | Ask model to impersonate, expand scope, retrieve foreign context, self-approve                       | Effective authority remains the server-side intersection |
 
 At least one suite uses two resources with identical local names and intentionally similar IDs in different workspaces. Aggregate endpoints, error wording, pagination totals, autocomplete, presence, and timing-sensitive lookups are included.
 
@@ -295,16 +295,16 @@ The baseline actors are:
 
 Required journeys:
 
-| Journey | Concurrent actors | Required proof |
-| --- | --- | --- |
-| Room collaboration | Owner, Member, AI | Canonical ordering, streaming recovery, attribution, unread isolation |
-| Approval | Requester, Approver, AI | AI cannot self-approve; exact parameters bind; expiry/revocation works |
-| Shared document | Two editors, Viewer, AI | CRDT convergence, read-only denial, proposal review, version and audit |
-| Permission change | Admin, active Member, AI run | Active stream/editor/run loses authority at next protected step |
-| Tenant attack | Member and foreign workspace | Known IDs, deep links, search, downloads, notifications all deny |
-| Offline recovery | Editor and another online editor | Draft recovery, reauthorization, deterministic merge |
-| Usage limit | Concurrent initiators | Atomic reservation prevents overspend and UI shows canonical result |
-| Account switch | Same browser, different identities | Private cache, drafts, connections, and notifications do not cross |
+| Journey            | Concurrent actors                  | Required proof                                                         |
+| ------------------ | ---------------------------------- | ---------------------------------------------------------------------- |
+| Room collaboration | Owner, Member, AI                  | Canonical ordering, streaming recovery, attribution, unread isolation  |
+| Approval           | Requester, Approver, AI            | AI cannot self-approve; exact parameters bind; expiry/revocation works |
+| Shared document    | Two editors, Viewer, AI            | CRDT convergence, read-only denial, proposal review, version and audit |
+| Permission change  | Admin, active Member, AI run       | Active stream/editor/run loses authority at next protected step        |
+| Tenant attack      | Member and foreign workspace       | Known IDs, deep links, search, downloads, notifications all deny       |
+| Offline recovery   | Editor and another online editor   | Draft recovery, reauthorization, deterministic merge                   |
+| Usage limit        | Concurrent initiators              | Atomic reservation prevents overspend and UI shows canonical result    |
+| Account switch     | Same browser, different identities | Private cache, drafts, connections, and notifications do not cross     |
 
 Tests assert visible behavior and durable server state. They do not reach into React internals or use privileged database writes to skip the workflow being tested.
 
@@ -314,15 +314,15 @@ Tests assert visible behavior and durable server state. They do not reach into R
 
 The minimum deterministic screenshot matrix is:
 
-| Profile | Viewport | Locale | Theme |
-| --- | --- | --- | --- |
-| Desktop Chromium | 1440×900 | zh-CN | Light |
-| Desktop WebKit | 1440×900 | en-US | Dark |
-| Desktop Firefox | 1440×900 | en-US | Light |
-| Tablet | 768×1024 | zh-CN | Both where affected |
-| Mobile | 390×844 | zh-CN and en-US | Light |
-| Small mobile | 320×568 | en-XA text expansion | Light |
-| RTL readiness | 390×844 and 1440×900 | ar-XB | Light |
+| Profile          | Viewport             | Locale               | Theme               |
+| ---------------- | -------------------- | -------------------- | ------------------- |
+| Desktop Chromium | 1440×900             | zh-CN                | Light               |
+| Desktop WebKit   | 1440×900             | en-US                | Dark                |
+| Desktop Firefox  | 1440×900             | en-US                | Light               |
+| Tablet           | 768×1024             | zh-CN                | Both where affected |
+| Mobile           | 390×844              | zh-CN and en-US      | Light               |
+| Small mobile     | 320×568              | en-XA text expansion | Light               |
+| RTL readiness    | 390×844 and 1440×900 | ar-XB                | Light               |
 
 Critical behavior also runs under Chromium mobile emulation with touch input and reduced motion. Real-device smoke tests cover at least one current iOS Safari and one current Android Chromium class before a major release.
 
@@ -361,18 +361,18 @@ Both launch locales, en-XA, and ar-XB run through core visual and accessibility 
 
 Security suites operate against production-equivalent boundaries with synthetic secrets and canary data.
 
-| Threat | Attack cases | Required control evidence |
-| --- | --- | --- |
-| Cross-tenant access | Foreign IDs, mixed joins, cache/search/vector/object/realtime/queue reuse | Default-deny at every layer and no existence oracle |
-| Session theft | XSS probes, cookie read, refresh replay, CSRF, revoked session, stolen connection ticket | Credential unreadability, rotation, revocation, origin and CSRF enforcement |
-| Privilege escalation | Client-forged role/Actor/approval, self-approval, stale delegated run | Server-derived identity, non-escalating grants, fresh authorization |
-| Prompt injection | Messages, files, web pages, memory, tool output request secrets or policy bypass | Content remains data; authority and tool policy unchanged |
-| Credential leakage | Seed secrets in broker and scan browser, prompt, queue, logs, notifications, audit | No plaintext occurrence; opaque bindings only |
-| SSRF and unsafe egress | Loopback, private, metadata, redirect, DNS rebind, slow and oversized response | Destination resolution, allowlist, network boundary, size/time limits |
-| Content attacks | XSS, Markdown/HTML/SVG, MIME confusion, path traversal, decompression bomb | Sanitization, isolation, type and size validation |
-| Replay and duplicate effect | Repeat command, callback, job, approval, provider result | Idempotent canonical result and one effect |
-| Resource exhaustion | Prompt, upload, update, stream, fan-out, connection and run floods | Quotas, rate limits, backpressure, cancellation, bounded memory |
-| Audit and deletion failure | Attempt mutation, omit event, purge under hold, retain derived copy | Append-only trail, reconciliation, hold enforcement, deletion fan-out |
+| Threat                      | Attack cases                                                                             | Required control evidence                                                   |
+| --------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Cross-tenant access         | Foreign IDs, mixed joins, cache/search/vector/object/realtime/queue reuse                | Default-deny at every layer and no existence oracle                         |
+| Session theft               | XSS probes, cookie read, refresh replay, CSRF, revoked session, stolen connection ticket | Credential unreadability, rotation, revocation, origin and CSRF enforcement |
+| Privilege escalation        | Client-forged role/Actor/approval, self-approval, stale delegated run                    | Server-derived identity, non-escalating grants, fresh authorization         |
+| Prompt injection            | Messages, files, web pages, memory, tool output request secrets or policy bypass         | Content remains data; authority and tool policy unchanged                   |
+| Credential leakage          | Seed secrets in broker and scan browser, prompt, queue, logs, notifications, audit       | No plaintext occurrence; opaque bindings only                               |
+| SSRF and unsafe egress      | Loopback, private, metadata, redirect, DNS rebind, slow and oversized response           | Destination resolution, allowlist, network boundary, size/time limits       |
+| Content attacks             | XSS, Markdown/HTML/SVG, MIME confusion, path traversal, decompression bomb               | Sanitization, isolation, type and size validation                           |
+| Replay and duplicate effect | Repeat command, callback, job, approval, provider result                                 | Idempotent canonical result and one effect                                  |
+| Resource exhaustion         | Prompt, upload, update, stream, fan-out, connection and run floods                       | Quotas, rate limits, backpressure, cancellation, bounded memory             |
+| Audit and deletion failure  | Attempt mutation, omit event, purge under hold, retain derived copy                      | Append-only trail, reconciliation, hold enforcement, deletion fan-out       |
 
 Mandatory attack tests from the permissions and security specification remain release gates and are invoked by stable IDs. Each fixed vulnerability adds a regression and, where suitable, a property or fuzz corpus entry.
 
@@ -384,36 +384,36 @@ Dependency and build checks detect known critical risk, malicious install behavi
 
 Production 75th-percentile objectives:
 
-| Metric | Budget |
-| --- | ---: |
-| LCP | ≤ 2.5 seconds |
-| INP | ≤ 200 milliseconds |
-| CLS | ≤ 0.05 |
-| TTFB | ≤ 800 milliseconds |
+| Metric |             Budget |
+| ------ | -----------------: |
+| LCP    |      ≤ 2.5 seconds |
+| INP    | ≤ 200 milliseconds |
+| CLS    |             ≤ 0.05 |
+| TTFB   | ≤ 800 milliseconds |
 
 Interaction and collaboration objectives:
 
-| Operation | Budget |
-| --- | ---: |
-| Navigation acknowledgement | ≤ 100 ms |
-| Optimistic message visible | ≤ 100 ms |
-| Received SSE chunk committed to UI | ≤ 100 ms |
-| Local editor input feedback | ≤ 50 ms |
-| Same-region collaboration update | normally ≤ 250 ms |
-| Main-thread long task | < 50 ms |
-| Canonical message acknowledgement | normally ≤ 500 ms in-region |
-| Normal SSE or CRDT reconnect convergence | ≤ 5 seconds |
+| Operation                                |                      Budget |
+| ---------------------------------------- | --------------------------: |
+| Navigation acknowledgement               |                    ≤ 100 ms |
+| Optimistic message visible               |                    ≤ 100 ms |
+| Received SSE chunk committed to UI       |                    ≤ 100 ms |
+| Local editor input feedback              |                     ≤ 50 ms |
+| Same-region collaboration update         |           normally ≤ 250 ms |
+| Main-thread long task                    |                     < 50 ms |
+| Canonical message acknowledgement        | normally ≤ 500 ms in-region |
+| Normal SSE or CRDT reconnect convergence |                 ≤ 5 seconds |
 
 Suggested compressed transfer budgets:
 
-| Surface | Budget |
-| --- | ---: |
-| Authentication and entry | ≤ 170 KB JavaScript |
-| Workspace and room shell | ≤ 220 KB JavaScript |
-| Conversation route | ≤ 250 KB JavaScript |
-| Editor incremental chunk | ≤ 280 KB JavaScript |
-| Initial fonts | ≤ 120 KB |
-| Ordinary above-fold image | ≤ 200 KB |
+| Surface                   |              Budget |
+| ------------------------- | ------------------: |
+| Authentication and entry  | ≤ 170 KB JavaScript |
+| Workspace and room shell  | ≤ 220 KB JavaScript |
+| Conversation route        | ≤ 250 KB JavaScript |
+| Editor incremental chunk  | ≤ 280 KB JavaScript |
+| Initial fonts             |            ≤ 120 KB |
+| Ordinary above-fold image |            ≤ 200 KB |
 
 ### 16.2 Measurement
 
@@ -462,14 +462,14 @@ Disaster-recovery exercises record recovery-point and recovery-time results agai
 
 ### 18.1 Pipeline stages
 
-| Stage | Required checks |
-| --- | --- |
-| Change validation | Formatting, lint, types, generated clean tree, unit/invariant/property, catalog/schema parity, changed-code coverage |
-| Pull request | Build, contracts, selected integration, migration dry run, affected Playwright journeys, axe, visual diffs, secret/dependency scan |
-| Main branch | Full integration, all critical E2E in Chromium, tenant and attack suite, complete locale and visual matrix |
-| Nightly | WebKit/Firefox breadth, fuzz corpus, load, soak, queue fault injection, provider contracts, flaky-test detection |
+| Stage             | Required checks                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Change validation | Formatting, lint, types, generated clean tree, unit/invariant/property, catalog/schema parity, changed-code coverage                       |
+| Pull request      | Build, contracts, selected integration, migration dry run, affected Playwright journeys, axe, visual diffs, secret/dependency scan         |
+| Main branch       | Full integration, all critical E2E in Chromium, tenant and attack suite, complete locale and visual matrix                                 |
+| Nightly           | WebKit/Firefox breadth, fuzz corpus, load, soak, queue fault injection, provider contracts, flaky-test detection                           |
 | Release candidate | Production-like migrations, full Q0/Q1 matrix, backup restore, deletion/hold, cross-browser/mobile, manual accessibility and visual review |
-| Canary | Health, error, latency, saturation, tenant-denial, usage reconciliation, queue lag, client errors, rollback signal |
+| Canary            | Health, error, latency, saturation, tenant-denial, usage reconciliation, queue lag, client errors, rollback signal                         |
 
 CI jobs use least-privilege identities and isolated tenants. Secrets are short-lived. Artifacts containing screenshots, traces, videos, payloads, or database diagnostics follow access and retention policy.
 

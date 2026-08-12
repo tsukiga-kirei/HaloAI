@@ -35,4 +35,3 @@ Every AI teammate is an untrusted service principal with narrowly delegated auth
 ## Launch gates
 
 Before enabling real model or tool execution, add authenticated sessions, row-level tenant tests, encrypted secrets, rate limits, abuse controls, dependency scanning, CSP/security headers, and a tested incident-response procedure.
-
