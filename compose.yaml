@@ -6,18 +6,22 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: haloai
-      POSTGRES_USER: haloai
-      # 仅用于本机开发；生产部署必须由密钥管理系统提供高强度凭据。
-      POSTGRES_PASSWORD: haloai
+      POSTGRES_USER: haloai_admin
+      # 仅用于本机开发；生产部署必须由密钥管理系统提供独立高强度凭据。
+      POSTGRES_PASSWORD: haloai_admin_local
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - haloai_postgres:/var/lib/postgresql/data
+      # PostgreSQL 18 在该目录下使用主版本子目录，便于未来执行 pg_upgrade。
+      - haloai_postgres_v18:/var/lib/postgresql
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U haloai -d haloai"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U haloai_admin -d haloai"]
+      interval: 2s
       timeout: 3s
-      retries: 12
+      retries: 20
+      start_period: 5s
+    stop_grace_period: 20s
 
 volumes:
-  haloai_postgres:
+  haloai_postgres_v18:

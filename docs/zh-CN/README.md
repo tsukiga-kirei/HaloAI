@@ -28,6 +28,7 @@
 | [领域模型](domain-model.md)           | 限界上下文、实体、不变量、责任链、生命周期和关系概览           |
 | [系统架构](architecture.md)           | 系统边界、请求路径、部署形态与演进方式                         |
 | [技术决策](technical-decisions.md)    | 已采用技术、暂不引入的复杂度、替换条件和失败边界               |
+| [持久化与租户事务](persistence.md)    | 数据库角色、迁移、RLS 上下文、Repository 与验收                |
 | [实时协作](realtime-collaboration.md) | REST/SSE/WebSocket 分工、重放、Presence、CRDT 持久化和离线行为 |
 | [Agent 运行时](agent-runtime.md)      | 版本、路由、耐久状态机、事件、记忆、预算、工具、审批与恢复     |
 

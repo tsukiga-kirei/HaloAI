@@ -6,20 +6,27 @@
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts"
+    "./schema": "./src/schema/index.ts",
+    "./client": "./src/client.ts",
+    "./repositories": "./src/repositories/index.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run --root ../.. packages/db/src/schema/schema.smoke.test.ts",
+    "test": "vitest run --root ../.. packages/db/src --exclude '**/*.integration.test.ts'",
+    "test:integration": "vitest run --root ../.. packages/db/src/repositories/collaboration-repository.integration.test.ts",
+    "generate": "drizzle-kit generate --config drizzle.config.ts",
+    "migrate": "tsx --env-file-if-exists=../../.env.local src/migrate.ts",
     "check": "pnpm typecheck && pnpm test"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.11",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }

@@ -1,5 +1,7 @@
 # HaloAI 交付路线
 
+> 当前进度：阶段 0 已形成可运行框架；阶段 1 已完成 PostgreSQL schema、首个迁移、租户事务与项目/房间/消息 repository，真实认证和 HTTP 数据链路仍待接入。
+
 ## 阶段 0——规格与基础
 
 - 完整的中英文产品、UX、领域、安全与架构规格。
@@ -11,7 +13,7 @@
 
 ## 阶段 1——可用的内部 Alpha
 
-- PostgreSQL repository 与 migration。
+- PostgreSQL repository 与 migration（基础已完成，继续扩展身份、文档与运行 repository）。
 - 认证、工作空间邀请和项目成员关系。
 - 真实房间、消息和文档 API。
 - 一个可配置模型供应商和流式输出。

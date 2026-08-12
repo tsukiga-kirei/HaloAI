@@ -71,12 +71,12 @@ HaloAI is currently in the **Foundation / specification and framework phase**. E
 | Responsive workspace                      | Foundation implemented | Room search/create/switching, isolated messages, SSE replies, document versions, themes, mobile layout |
 | CRDT collaboration service                | Foundation implemented | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                          |
 | Provider-neutral model boundary           | Foundation implemented | Streaming protocol and demo adapter; no live provider yet                                              |
-| Real authentication and persistence       | Not started            | Internal Alpha scope                                                                                   |
+| Real authentication and persistence       | Alpha in progress      | Migration, RLS transactions, and collaboration repositories are complete; auth and APIs remain         |
 | Rich-text editor and durable CRDT storage | Not started            | Web/PostgreSQL integration in Team Beta                                                                |
 
 > The current demo runtime calls no real model or external tool. It needs no API key and is not a claim of production readiness.
 
-The current page is not a static mock. Rooms, messages, members, and document versions use real in-browser state, while demo replies stream through a server route over SSE. Reloading resets that demo state. Sign-in, cross-user sharing, and durable persistence still require the authentication and PostgreSQL repositories. Secondary actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
+The current page is not a static mock. Rooms, messages, members, and document versions use real in-browser state, while demo replies stream through a server route over SSE. Reloading resets that demo state. PostgreSQL migrations and the initial collaboration repositories now exist, but the page is not connected to those APIs yet; sign-in, cross-user sharing, and durable persistence still require the authentication and HTTP data path. Secondary actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
 
 ## Technology direction
 
@@ -86,21 +86,21 @@ PostgreSQL, SQL migrations, CSS, Markdown, container configuration, and compiled
 
 ### Target stack
 
-| Layer                | Technology                                  | Purpose                                            | Phase                                          |
-| -------------------- | ------------------------------------------- | -------------------------------------------------- | ---------------------------------------------- |
-| Runtime              | Node.js 22+, strict TypeScript, ESM         | One type system across client and server           | Established                                    |
-| Workspace            | pnpm workspace, Turborepo                   | Package boundaries, caching, parallel checks       | Established                                    |
-| Web / PWA            | Next.js App Router, React                   | Chat, documents, routing, SSR, PWA shell           | Foundation                                     |
-| API                  | Fastify, Zod                                | REST/SSE service, runtime contracts, auth hooks    | Framework                                      |
-| Authentication       | Better Auth                                 | Human sessions, organizations, invitations         | Planned                                        |
-| Database             | PostgreSQL, Drizzle ORM, Row-Level Security | Relational collaboration data and tenant isolation | Foundation schema                              |
-| Jobs                 | Graphile Worker, transactional outbox       | Durable retries, recovery, schedules, idempotency  | Framework                                      |
-| AI gateway           | Vercel AI SDK Core behind `ModelGateway`    | Multi-provider streaming and structured responses  | Internal boundary built; live adapters planned |
-| Documents            | Tiptap, Yjs, Hocuspocus                     | Rich text, CRDT merge, presence, self-hosted sync  | Collaboration service built; editor planned    |
-| Realtime             | REST mutations, SSE, WebSocket              | Auditable writes, recoverable events, CRDT channel | SSE and CRDT service foundations built         |
-| Internationalization | next-intl, ICU Message, Intl                | Typed copy, plurals, dates, route locale           | Typed demo dictionaries; routing planned       |
-| Testing              | Vitest, Playwright, axe-core                | Domain rules, multi-context E2E, visual and a11y   | Unit and E2E foundations                       |
-| Observability        | OpenTelemetry, structured audit events      | Trace people, agents, models, tools, approvals     | Planned                                        |
+| Layer                | Technology                                  | Purpose                                            | Phase                                            |
+| -------------------- | ------------------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
+| Runtime              | Node.js 22+, strict TypeScript, ESM         | One type system across client and server           | Established                                      |
+| Workspace            | pnpm workspace, Turborepo                   | Package boundaries, caching, parallel checks       | Established                                      |
+| Web / PWA            | Next.js App Router, React                   | Chat, documents, routing, SSR, PWA shell           | Foundation                                       |
+| API                  | Fastify, Zod                                | REST/SSE service, runtime contracts, auth hooks    | Framework                                        |
+| Authentication       | Better Auth                                 | Human sessions, organizations, invitations         | Planned                                          |
+| Database             | PostgreSQL, Drizzle ORM, Row-Level Security | Relational collaboration data and tenant isolation | Initial migration and collaboration repositories |
+| Jobs                 | Graphile Worker, transactional outbox       | Durable retries, recovery, schedules, idempotency  | Framework                                        |
+| AI gateway           | Vercel AI SDK Core behind `ModelGateway`    | Multi-provider streaming and structured responses  | Internal boundary built; live adapters planned   |
+| Documents            | Tiptap, Yjs, Hocuspocus                     | Rich text, CRDT merge, presence, self-hosted sync  | Collaboration service built; editor planned      |
+| Realtime             | REST mutations, SSE, WebSocket              | Auditable writes, recoverable events, CRDT channel | SSE and CRDT service foundations built           |
+| Internationalization | next-intl, ICU Message, Intl                | Typed copy, plurals, dates, route locale           | Typed demo dictionaries; routing planned         |
+| Testing              | Vitest, Playwright, axe-core                | Domain rules, multi-context E2E, visual and a11y   | Unit and E2E foundations                         |
+| Observability        | OpenTelemetry, structured audit events      | Trace people, agents, models, tools, approvals     | Planned                                          |
 
 The first usable release stays a modular monolith around one PostgreSQL instance. Redis, Temporal, a dedicated vector database, Kubernetes, and native mobile clients are intentionally deferred until identity, document, and agent authority are stable.
 
@@ -221,7 +221,9 @@ cp .env.example .env.local
 | `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional           | API binding and exact browser origin                                                |
 | `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional           | CRDT endpoint and exact WebSocket origin                                            |
 | `DEMO_*`                                            | Collaboration demo | Fixed local ticket, actor, workspace, document, and access; forbidden in production |
-| `DATABASE_URL`                                      | Worker             | Server-only PostgreSQL connection                                                   |
+| `DATABASE_URL`                                      | Worker             | Server-only PostgreSQL application connection                                       |
+| `DATABASE_ADMIN_URL`                                | Migration          | Migration process only; forbidden in API, Web, and Worker request paths             |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | Integration tests  | PostgreSQL security tests in local development and CI                               |
 | `OPENAI_API_KEY`                                    | Optional           | Read by the server-side provider adapter when enabled                               |
 | `ANTHROPIC_API_KEY`                                 | Optional           | Read by the server-side provider adapter when enabled                               |
 
@@ -234,6 +236,9 @@ Never commit real workspace keys or put them in browsers, prompts, or ordinary l
 ```bash
 pnpm dev          # Start the web development environment
 pnpm dev:collab   # Start the CRDT service (complete demo config required)
+pnpm infra:up     # Start local PostgreSQL 18
+pnpm db:migrate   # Apply pending migrations with the separate migration connection
+pnpm db:test:integration # Verify RLS, idempotency, revocation, and tenant isolation
 pnpm typecheck    # Type-check every workspace package
 pnpm test         # Run domain and runtime tests
 pnpm test:e2e     # Verify desktop, mobile, theme, locale, and SSE flows
@@ -277,6 +282,7 @@ Read the [security baseline](docs/en-US/security.md) before enabling real models
 | [Domain model](docs/en-US/domain-model.md)                         | [领域模型](docs/zh-CN/domain-model.md)               | Actors, resources, invariants and lifecycle          |
 | [Architecture](docs/en-US/architecture.md)                         | [系统架构](docs/zh-CN/architecture.md)               | Domain boundaries and evolution                      |
 | [Technical decisions](docs/en-US/technical-decisions.md)           | [技术决策](docs/zh-CN/technical-decisions.md)        | Technology choices and replacement triggers          |
+| [Persistence and tenant transactions](docs/en-US/persistence.md)   | [持久化与租户事务](docs/zh-CN/persistence.md)        | Database roles, migrations, RLS, and repositories    |
 | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | [实时协作](docs/zh-CN/realtime-collaboration.md)     | SSE recovery, CRDT, presence and offline behavior    |
 | [Agent runtime](docs/en-US/agent-runtime.md)                       | [Agent 运行时](docs/zh-CN/agent-runtime.md)          | State machine, tools, budgets and recovery           |
 | [Security](docs/en-US/security.md)                                 | [安全基线](docs/zh-CN/security.md)                   | Authorization and launch gates                       |

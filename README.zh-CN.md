@@ -71,12 +71,12 @@ HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于�
 | 响应式工作台                 | Foundation 已实现 | 房间搜索/创建/切换、独立消息、流式回复、文档版本、主题和移动端布局 |
 | CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口                |
 | 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                           |
-| 真实认证与数据库             | 未开始            | 规格冻结后进入内部 Alpha                                           |
+| 真实认证与数据库             | Alpha 进行中      | 数据库迁移、RLS 事务与协作 repository 已完成；认证和 API 待接入    |
 | 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL                             |
 
 > 当前演示运行时不会调用真实模型或外部工具，因此不需要 API Key，也不代表已经达到生产安全等级。
 
-当前页面不是纯静态稿。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。登录、跨用户共享与长期保存仍要等待真实认证和 PostgreSQL repository 接入。尚未接后端的次要入口会显示阶段说明，不会静默执行或伪装成功。
+当前页面不是纯静态稿。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。PostgreSQL 迁移与首批协作 repository 已完成，当前页面尚未接入这些 API；登录、跨用户共享与长期保存仍需继续完成认证和 HTTP 数据链路。尚未接后端的次要入口会显示阶段说明，不会静默执行或伪装成功。
 
 ## 技术路线
 
@@ -93,7 +93,7 @@ PostgreSQL、SQL migration、CSS、Markdown、容器配置和浏览器编译产�
 | Web / PWA | Next.js App Router、React                   | 聊天与文档界面、服务端渲染、路由、PWA 外壳             | Foundation                     |
 | API       | Fastify、Zod                                | 独立 REST/SSE 服务、输入输出契约和统一授权 hook        | 框架已建                       |
 | 身份认证  | Better Auth                                 | 人类登录、会话、组织邀请；资源权限仍由 HaloAI 策略负责 | 计划中                         |
-| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                   | Foundation schema              |
+| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                   | 首个迁移与协作 repository 已建 |
 | 后台任务  | Graphile Worker、Transactional Outbox       | 复用 PostgreSQL，提供重试、恢复、调度和幂等            | 框架已建                       |
 | AI 网关   | Vercel AI SDK Core + 内部 `ModelGateway`    | 多供应商、流式输出、结构化响应；领域模型不绑定 SDK     | 内部边界已建，真实适配器计划中 |
 | 文档编辑  | Tiptap、Yjs、Hocuspocus                     | 富文本体验、CRDT 并发合并、在线状态和自托管同步        | 协作服务已建，编辑器计划中     |
@@ -224,7 +224,9 @@ cp .env.example .env.local
 | `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选         | API 监听地址与精确允许的浏览器来源                             |
 | `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选         | CRDT 服务入口与精确 WebSocket Origin                           |
 | `DEMO_*`                                            | 协作演示必填 | 固定本地 ticket、Actor、工作空间、文档和访问级别；生产环境禁止 |
-| `DATABASE_URL`                                      | Worker 必填  | PostgreSQL 连接，仅服务端使用                                  |
+| `DATABASE_URL`                                      | Worker 必填  | PostgreSQL 应用连接，仅服务端使用                              |
+| `DATABASE_ADMIN_URL`                                | 迁移必填     | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径           |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | 集成测试     | 仅本地与 CI 的 PostgreSQL 安全测试                             |
 | `OPENAI_API_KEY`                                    | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
 | `ANTHROPIC_API_KEY`                                 | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
 
@@ -237,6 +239,9 @@ cp .env.example .env.local
 ```bash
 pnpm dev          # 启动 Web 开发环境
 pnpm dev:collab   # 启动 CRDT 协作服务（需要完整 Demo 配置）
+pnpm infra:up     # 启动本地 PostgreSQL 18
+pnpm db:migrate   # 使用独立迁移连接执行待处理迁移
+pnpm db:test:integration # 验证 RLS、幂等、撤权与租户隔离
 pnpm typecheck    # 检查所有 TypeScript 包
 pnpm test         # 运行领域与运行时测试
 pnpm test:e2e     # 验收桌面端、移动端、主题、语言和 SSE
@@ -280,6 +285,7 @@ Turborepo 会把可复用的任务结果写入 `.turbo/`。它是自动生成的
 | [领域模型](docs/zh-CN/domain-model.md)               | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
 | [系统架构](docs/zh-CN/architecture.md)               | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
 | [技术决策](docs/zh-CN/technical-decisions.md)        | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
+| [持久化与租户事务](docs/zh-CN/persistence.md)        | [Persistence](docs/en-US/persistence.md)                           | 数据库角色、迁移、RLS 与 Repository |
 | [实时协作](docs/zh-CN/realtime-collaboration.md)     | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
 | [Agent 运行时](docs/zh-CN/agent-runtime.md)          | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
 | [安全基线](docs/zh-CN/security.md)                   | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |

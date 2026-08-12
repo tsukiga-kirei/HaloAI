@@ -36,6 +36,20 @@ jobs:
       - name: 安装锁定依赖
         run: pnpm install --frozen-lockfile
 
+      - name: 启动 PostgreSQL
+        run: docker compose up -d --wait postgres
+
+      - name: 执行数据库迁移
+        env:
+          DATABASE_ADMIN_URL: postgresql://haloai_admin:haloai_admin_local@localhost:5432/haloai
+        run: pnpm db:migrate
+
+      - name: 验证租户隔离与持久化
+        env:
+          DATABASE_TEST_URL: postgresql://haloai_app:haloai_app_local@localhost:5432/haloai
+          DATABASE_TEST_ADMIN_URL: postgresql://haloai_admin:haloai_admin_local@localhost:5432/haloai
+        run: pnpm db:test:integration
+
       - name: 运行基础质量门禁
         run: pnpm check
 

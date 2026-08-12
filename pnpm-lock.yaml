@@ -179,7 +179,10 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@types/pg@8.21.0)(pg@8.23.0)
+        version: 0.45.2(@types/pg@8.21.0)(pg@8.23.0)(postgres@3.4.9)
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.9
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -187,6 +190,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      tsx:
+        specifier: ^4.23.11
+        version: 4.23.11
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1368,6 +1374,11 @@ packages:
     cpu: [x64]
     os: [darwin]
 
+  '@turbo/darwin-arm64@2.10.9':
+    resolution: {integrity: sha512-aqtpPkiIC4IUas8Vv27oJ3aDfTuP1d5wofd01dZ7gfhHRrIKuFdqQb4imvNnVFahcOViF9Jh8Oi7feDoz8/ciA==, tarball: https://registry.npmmirror.com/@turbo/darwin-arm64/-/darwin-arm64-2.10.9.tgz}
+    cpu: [arm64]
+    os: [darwin]
+
   '@turbo/linux-64@2.10.9':
     resolution: {integrity: sha512-XyAneUBsS5uNOUOjBSs81zyigMVwwhVUd3u7F2JFMKGQk6F7eNAiOEBASJ+aHLldjYsOEjhfW+5gWIqwziyFFw==, tarball: https://registry.npmmirror.com/@turbo/linux-64/-/linux-64-2.10.9.tgz}
     cpu: [x64]
@@ -2298,6 +2309,10 @@ packages:
   postgres-interval@1.2.0:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==, tarball: https://registry.npmmirror.com/postgres-interval/-/postgres-interval-1.2.0.tgz}
     engines: {node: '>=0.10.0'}
+
+  postgres@3.4.9:
+    resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==, tarball: https://registry.npmmirror.com/postgres/-/postgres-3.4.9.tgz}
+    engines: {node: '>=12'}
 
   prettier@3.9.6:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==, tarball: https://registry.npmmirror.com/prettier/-/prettier-3.9.6.tgz}
@@ -3346,6 +3361,9 @@ snapshots:
   '@turbo/darwin-64@2.10.9':
     optional: true
 
+  '@turbo/darwin-arm64@2.10.9':
+    optional: true
+
   '@turbo/linux-64@2.10.9':
     optional: true
 
@@ -3634,10 +3652,11 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.11
 
-  drizzle-orm@0.45.2(@types/pg@8.21.0)(pg@8.23.0):
+  drizzle-orm@0.45.2(@types/pg@8.21.0)(pg@8.23.0)(postgres@3.4.9):
     optionalDependencies:
       '@types/pg': 8.21.0
       pg: 8.23.0
+      postgres: 3.4.9
 
   emoji-regex@8.0.0: {}
 
@@ -4177,6 +4196,8 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
+  postgres@3.4.9: {}
+
   prettier@3.9.6: {}
 
   process-warning@4.0.1: {}
@@ -4436,6 +4457,7 @@ snapshots:
   turbo@2.10.9:
     optionalDependencies:
       '@turbo/darwin-64': 2.10.9
+      '@turbo/darwin-arm64': 2.10.9
       '@turbo/linux-64': 2.10.9
       '@turbo/linux-arm64': 2.10.9
       '@turbo/windows-64': 2.10.9
