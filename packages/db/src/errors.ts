@@ -1,5 +1,12 @@
 export type PersistenceErrorCode =
-  "invalid_context" | "invalid_input" | "access_denied" | "not_found" | "conflict";
+  | "invalid_context"
+  | "invalid_input"
+  | "access_denied"
+  | "not_found"
+  | "conflict"
+  | "last_owner_required"
+  | "invitation_invalid"
+  | "delegation_denied";
 
 /**
  * Repository 只暴露稳定错误码，不把 SQL、表名或连接信息传播到 API。

@@ -27,6 +27,7 @@ export default defineConfig({
   },
   webServer: {
     command: "pnpm --filter @haloai/web dev",
+    env: { ...process.env, NEXT_PUBLIC_AUTH_MODE: "demo" },
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -17,6 +17,7 @@ import {
 import type { ReactNode } from "react";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
+import { LiveMembers } from "./live-members";
 
 interface AdminSectionContentProps {
   dictionary: AdminDictionary;
@@ -203,6 +204,9 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
 }
 
 function Members({ props }: { props: AdminSectionContentProps }) {
+  if (process.env.NEXT_PUBLIC_AUTH_MODE !== "demo") {
+    return <LiveMembers dictionary={props.dictionary} />;
+  }
   const { dictionary } = props;
   const rows: ReadonlyArray<readonly [string, string, string, string, string]> = [
     [

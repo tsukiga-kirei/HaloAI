@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+import type { AuthenticatedUser, WorkspaceSummary } from "@haloai/contracts";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { ConversationPanel } from "./workspace/conversation-panel";
 import { demoMessages, demoParticipants, demoRooms } from "./workspace/demo-data";
@@ -28,7 +29,19 @@ const streamEventSchema = z.object({
   code: z.string().optional(),
 });
 
-export function HaloWorkspace() {
+export function HaloWorkspace({
+  identity,
+  workspaces = [],
+  activeWorkspace,
+  onWorkspaceChange,
+  onSignOut,
+}: {
+  identity?: AuthenticatedUser | undefined;
+  workspaces?: readonly WorkspaceSummary[];
+  activeWorkspace?: WorkspaceSummary | undefined;
+  onWorkspaceChange?: ((workspace: WorkspaceSummary) => void) | undefined;
+  onSignOut?: (() => void) | undefined;
+} = {}) {
   const [locale, setLocale] = useState<Locale>("zh-CN");
   const [theme, setTheme] = useState<Theme>("light");
   const [preferencesReady, setPreferencesReady] = useState(false);
@@ -300,6 +313,11 @@ export function HaloWorkspace() {
         onCreateRoom={() => setRoomDialogOpen(true)}
         onOpenMemberDialog={() => setMemberDialogOpen(true)}
         onNotify={setNotice}
+        identity={identity}
+        workspaces={workspaces}
+        activeWorkspace={activeWorkspace}
+        onWorkspaceChange={onWorkspaceChange}
+        onSignOut={onSignOut}
       />
       <ConversationPanel
         dictionary={dictionary}

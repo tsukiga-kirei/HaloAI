@@ -1,5 +1,5 @@
-import { HaloWorkspace } from "@/components/halo-workspace";
+import { SessionGate } from "@/components/auth/session-gate";
 
 export default function CollaborationPage() {
-  return <HaloWorkspace />;
+  return <SessionGate />;
 }

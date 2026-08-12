@@ -37,7 +37,8 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
     await admin.db.transaction(async (transaction) => {
       await transaction.insert(users).values({
         id: userId,
-        primaryEmail: `${label}-${userId}@example.invalid`,
+        name: `${label} User`,
+        email: `${label}-${userId}@example.invalid`,
       });
       await transaction.insert(workspaces).values({
         id: workspaceId,

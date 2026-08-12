@@ -1,5 +1,6 @@
 export * from "./agents";
 export * from "./authorization";
+export * from "./authentication";
 export * from "./collaboration";
 export * from "./common";
 export * from "./document-proposals";
@@ -10,3 +11,4 @@ export * from "./identity";
 export * from "./outbox";
 export * from "./runtime";
 export * from "./runtime-context";
+export * from "./workspace-onboarding";

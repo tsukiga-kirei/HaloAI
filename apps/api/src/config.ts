@@ -8,13 +8,39 @@ const WebOriginSchema = z
     return (url.protocol === "http:" || url.protocol === "https:") && url.origin === value;
   }, "API_WEB_ORIGIN 必须是不含路径、查询参数或凭据的规范 HTTP(S) Origin");
 
-const configSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  HOST: z.string().default("127.0.0.1"),
-  PORT: z.coerce.number().int().min(1).max(65_535).default(3100),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
-  WEB_ORIGIN: WebOriginSchema.default("http://localhost:3000"),
-});
+const configSchema = z
+  .object({
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    HOST: z.string().default("127.0.0.1"),
+    PORT: z.coerce.number().int().min(1).max(65_535).default(3100),
+    LOG_LEVEL: z
+      .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+      .default("info"),
+    WEB_ORIGIN: WebOriginSchema.default("http://localhost:3000"),
+    AUTH_BASE_URL: WebOriginSchema.default("http://localhost:3100"),
+    AUTH_SECRET: z.string().min(32).default("haloai-local-auth-secret-change-before-production"),
+    DATABASE_URL: z
+      .string()
+      .url()
+      .default("postgresql://haloai_app:haloai_app_local@localhost:5432/haloai"),
+    AUTH_DATABASE_URL: z
+      .string()
+      .url()
+      .default("postgresql://haloai_auth:haloai_auth_local@localhost:5432/haloai"),
+    EXPOSE_DEVELOPMENT_INVITE_TOKENS: z.boolean().default(false),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.NODE_ENV === "production" &&
+      value.AUTH_SECRET === "haloai-local-auth-secret-change-before-production"
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["AUTH_SECRET"],
+        message: "生产环境必须配置独立认证密钥",
+      });
+    }
+  });
 
 export type ApiConfig = z.infer<typeof configSchema>;
 
@@ -33,5 +59,10 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): ApiCon
     PORT: environment.API_PORT,
     LOG_LEVEL: environment.LOG_LEVEL,
     WEB_ORIGIN: environment.API_WEB_ORIGIN,
+    AUTH_BASE_URL: environment.AUTH_BASE_URL,
+    AUTH_SECRET: environment.BETTER_AUTH_SECRET,
+    DATABASE_URL: environment.DATABASE_URL,
+    AUTH_DATABASE_URL: environment.AUTH_DATABASE_URL,
+    EXPOSE_DEVELOPMENT_INVITE_TOKENS: environment.EXPOSE_DEVELOPMENT_INVITE_TOKENS === "true",
   });
 }

@@ -63,6 +63,91 @@
   box-shadow: var(--shadow-popover);
 }
 
+.admin-live-loading {
+  display: flex;
+  min-height: 240px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+.admin-live-loading svg {
+  animation: admin-spin 900ms linear infinite;
+  color: var(--accent);
+}
+.admin-inline-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 10px 13px;
+  border: 1px solid var(--halo-border);
+  border-radius: 10px;
+  background: var(--halo-soft);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.admin-role-select {
+  min-width: 118px;
+  min-height: 38px;
+  padding: 0 30px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+}
+.admin-table-person > span:last-child {
+  display: grid;
+  min-width: 0;
+}
+.admin-table-person small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-invite-dialog {
+  width: min(92vw, 520px);
+}
+.admin-invite-link {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--halo-border);
+  border-radius: 10px;
+  background: var(--halo-soft);
+}
+.admin-invite-link > span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+.admin-invite-link code {
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-invite-link button {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--accent);
+}
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .admin-secondary-button:hover {
   border-color: var(--halo-border);
 }

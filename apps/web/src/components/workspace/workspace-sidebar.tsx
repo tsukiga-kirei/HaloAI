@@ -1,4 +1,16 @@
-import { Bell, ChevronDown, Hash, Inbox, MoreHorizontal, Search, Settings2 } from "lucide-react";
+import type { AuthenticatedUser, WorkspaceSummary } from "@haloai/contracts";
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  Hash,
+  Inbox,
+  LogOut,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Settings2,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,6 +25,11 @@ export function WorkspaceSidebar({
   onCreateRoom,
   onOpenMemberDialog,
   onNotify,
+  identity,
+  workspaces,
+  activeWorkspace,
+  onWorkspaceChange,
+  onSignOut,
 }: WorkspaceViewProps & {
   rooms: readonly DemoRoom[];
   activeRoomId: string;
@@ -20,8 +37,15 @@ export function WorkspaceSidebar({
   onCreateRoom: () => void;
   onOpenMemberDialog: () => void;
   onNotify: (message: string) => void;
+  identity?: AuthenticatedUser | undefined;
+  workspaces: readonly WorkspaceSummary[];
+  activeWorkspace?: WorkspaceSummary | undefined;
+  onWorkspaceChange?: ((workspace: WorkspaceSummary) => void) | undefined;
+  onSignOut?: (() => void) | undefined;
 }) {
   const [query, setQuery] = useState("");
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const visibleRooms = useMemo(
@@ -39,6 +63,16 @@ export function WorkspaceSidebar({
     (item) =>
       normalizedQuery.length === 0 || item.label.toLocaleLowerCase().includes(normalizedQuery),
   );
+  const workspaceName = activeWorkspace?.name ?? "HaloAI Pilot";
+  const workspaceInitial = workspaceName.trim().slice(0, 1).toLocaleUpperCase() || "H";
+  const profileName = identity?.name ?? "Andy";
+  const profileInitials =
+    profileName
+      .split(/\s+/u)
+      .map((part) => part.slice(0, 1))
+      .join("")
+      .slice(0, 2)
+      .toLocaleUpperCase() || "AY";
 
   useEffect(() => {
     const focusSearch = (event: globalThis.KeyboardEvent) => {
@@ -70,18 +104,52 @@ export function WorkspaceSidebar({
         </Link>
       </div>
 
-      <button
-        type="button"
-        className="workspace-switcher"
-        onClick={() => onNotify(dictionary.workspacePreview)}
-      >
-        <span className="workspace-avatar">N</span>
-        <span>
-          <small>{dictionary.workspace}</small>
-          <strong>HaloAI Pilot</strong>
-        </span>
-        <ChevronDown size={15} aria-hidden="true" />
-      </button>
+      <div className="workspace-switcher-wrap">
+        <button
+          type="button"
+          className="workspace-switcher"
+          aria-expanded={workspaceMenuOpen}
+          onClick={() => {
+            if (workspaces.length === 0) onNotify(dictionary.workspacePreview);
+            else setWorkspaceMenuOpen((current) => !current);
+          }}
+        >
+          <span className="workspace-avatar">{workspaceInitial}</span>
+          <span>
+            <small>{dictionary.workspace}</small>
+            <strong>{workspaceName}</strong>
+          </span>
+          <ChevronDown size={15} aria-hidden="true" />
+        </button>
+        {workspaceMenuOpen ? (
+          <div className="workspace-menu" role="menu">
+            <span className="workspace-menu-label">切换工作区</span>
+            {workspaces.map((workspace) => (
+              <button
+                key={workspace.id}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  onWorkspaceChange?.(workspace);
+                  setWorkspaceMenuOpen(false);
+                }}
+              >
+                <span className="workspace-mini-avatar">
+                  {workspace.name.slice(0, 1).toLocaleUpperCase()}
+                </span>
+                <span>
+                  <strong>{workspace.name}</strong>
+                  <small>{workspace.role}</small>
+                </span>
+                {workspace.id === activeWorkspace?.id ? <Check size={15} /> : null}
+              </button>
+            ))}
+            <Link href={"/onboarding" as Route} className="workspace-menu-create" role="menuitem">
+              <Plus size={15} /> 新建工作区
+            </Link>
+          </div>
+        ) : null}
+      </div>
 
       <label className="sidebar-search">
         <Search size={16} aria-hidden="true" />
@@ -167,15 +235,26 @@ export function WorkspaceSidebar({
         <button
           type="button"
           className="profile-button"
-          onClick={() => onNotify(dictionary.profilePreview)}
+          aria-expanded={profileMenuOpen}
+          onClick={() => {
+            if (onSignOut) setProfileMenuOpen((current) => !current);
+            else onNotify(dictionary.profilePreview);
+          }}
         >
-          <Avatar initials="AY" color="ink" size="small" />
+          <Avatar initials={profileInitials} color="ink" size="small" />
           <span>
-            <strong>Andy</strong>
-            <small>{dictionary.roleProductLead}</small>
+            <strong>{profileName}</strong>
+            <small>{identity?.email ?? dictionary.roleProductLead}</small>
           </span>
           <MoreHorizontal size={17} />
         </button>
+        {profileMenuOpen && onSignOut ? (
+          <div className="profile-menu">
+            <button type="button" onClick={onSignOut}>
+              <LogOut size={16} /> 退出登录
+            </button>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

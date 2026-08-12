@@ -3,11 +3,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   actors,
+  accessRoles,
+  actorRoleAssignments,
   agentProfiles,
   agentRuns,
   agentVersions,
   approvals,
   auditEvents,
+  authAccounts,
+  authSessions,
+  authVerifications,
   capabilities,
   contextManifests,
   documentProposals,
@@ -21,6 +26,7 @@ import {
   projects,
   proposalOperations,
   roleCapabilityGrants,
+  resourceGrants,
   rooms,
   runEvents,
   runSteps,
@@ -28,6 +34,7 @@ import {
   usageLedgerEntries,
   users,
   workspaceMemberships,
+  workspaceInvitations,
   workspaces,
   yjsSnapshots,
   yjsUpdates,
@@ -39,10 +46,13 @@ describe("database schema exports", () => {
       users,
       workspaces,
       actors,
+      accessRoles,
+      actorRoleAssignments,
       humanActors,
       workspaceMemberships,
       capabilities,
       roleCapabilityGrants,
+      resourceGrants,
       projects,
       rooms,
       messages,
@@ -65,10 +75,14 @@ describe("database schema exports", () => {
       auditEvents,
       usageLedgerEntries,
       outboxEvents,
+      authAccounts,
+      authSessions,
+      authVerifications,
+      workspaceInvitations,
     ];
     const names = requiredTables.map((table) => getTableName(table));
 
-    expect(names).toHaveLength(29);
+    expect(names).toHaveLength(36);
     expect(new Set(names).size).toBe(names.length);
   });
 });

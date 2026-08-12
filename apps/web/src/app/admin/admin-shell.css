@@ -324,6 +324,14 @@
   color: var(--text-soft);
   font-size: 12px;
 }
+.admin-preview-notice.is-live {
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+  background: var(--success-soft);
+  color: var(--success);
+}
+.admin-preview-notice.is-live .admin-notice-dot {
+  background: var(--success);
+}
 
 .admin-notice-dot {
   width: 7px;

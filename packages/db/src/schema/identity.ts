@@ -24,15 +24,19 @@ export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    primaryEmail: text("primary_email").notNull(),
+    name: text("name").notNull(),
+    email: text("primary_email").notNull(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    /** 兼容早期迁移的数据；完成验证状态回填后再通过独立迁移移除。 */
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true, mode: "date" }),
+    image: text("image"),
     preferredLocale: varchar("preferred_locale", { length: 32 }).notNull().default("zh-CN"),
     timeZone: varchar("time_zone", { length: 64 }).notNull().default("UTC"),
     status: userStatus("status").notNull().default("active"),
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
     ...lifecycleColumns(),
   },
-  (table) => [uniqueIndex("users_primary_email_unique").on(table.primaryEmail)],
+  (table) => [uniqueIndex("users_primary_email_unique").on(table.email)],
 ).enableRLS();
 
 /**

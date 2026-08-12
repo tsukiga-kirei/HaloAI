@@ -72,12 +72,12 @@ HaloAI is currently in the **Foundation / specification and framework phase**. E
 | Collaboration and workspace administration | Alpha shell implemented | Separate `/app` and `/admin/*` shells, server guards, bilingual copy, and mobile layouts               |
 | CRDT collaboration service                 | Foundation implemented  | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                          |
 | Provider-neutral model boundary            | Foundation implemented  | Streaming protocol and demo adapter; no live provider yet                                              |
-| Real authentication and persistence        | Alpha in progress       | Migration, RLS transactions, and collaboration repositories are complete; auth and APIs remain         |
+| Real authentication and persistence        | Alpha connected         | Secure cookie sessions, sign-in, workspace onboarding, invitations, and role protection are connected  |
 | Rich-text editor and durable CRDT storage  | Not started             | Web/PostgreSQL integration in Team Beta                                                                |
 
 > The current demo runtime calls no real model or external tool. It needs no API key and is not a claim of production readiness.
 
-The current UI is not a static mock. `/app` is the team collaboration surface, `/admin/*` is a separate workspace administration surface, and `/system` stays locked by default. Rooms, messages, members, and document versions use real in-browser state, while demo replies stream through a server route over SSE. Reloading resets that demo state. PostgreSQL migrations and the initial collaboration repositories now exist, but the UI is not connected to those APIs yet; sign-in, cross-user sharing, and durable persistence still require the authentication and HTTP data path. Actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
+The current UI is not a static mock. Real mode now connects sign-up and sign-in, revocable database sessions, first-workspace creation, workspace switching, email-bound invitations, invitation acceptance, member listing, and role changes. The application transaction and a deferred database constraint both protect the final Owner. Rooms, messages, and document content in `/app` still use browser demo state, with demo replies streamed through a server route over SSE; reloading resets that slice. Actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
 
 ## Technology direction
 
@@ -87,21 +87,21 @@ PostgreSQL, SQL migrations, CSS, Markdown, container configuration, and compiled
 
 ### Target stack
 
-| Layer                | Technology                                  | Purpose                                            | Phase                                            |
-| -------------------- | ------------------------------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| Runtime              | Node.js 22+, strict TypeScript, ESM         | One type system across client and server           | Established                                      |
-| Workspace            | pnpm workspace, Turborepo                   | Package boundaries, caching, parallel checks       | Established                                      |
-| Web / PWA            | Next.js App Router, React                   | Chat, documents, routing, SSR, PWA shell           | Foundation                                       |
-| API                  | Fastify, Zod                                | REST/SSE service, runtime contracts, auth hooks    | Framework                                        |
-| Authentication       | Better Auth                                 | Human sessions, organizations, invitations         | Planned                                          |
-| Database             | PostgreSQL, Drizzle ORM, Row-Level Security | Relational collaboration data and tenant isolation | Initial migration and collaboration repositories |
-| Jobs                 | Graphile Worker, transactional outbox       | Durable retries, recovery, schedules, idempotency  | Framework                                        |
-| AI gateway           | Vercel AI SDK Core behind `ModelGateway`    | Multi-provider streaming and structured responses  | Internal boundary built; live adapters planned   |
-| Documents            | Tiptap, Yjs, Hocuspocus                     | Rich text, CRDT merge, presence, self-hosted sync  | Collaboration service built; editor planned      |
-| Realtime             | REST mutations, SSE, WebSocket              | Auditable writes, recoverable events, CRDT channel | SSE and CRDT service foundations built           |
-| Internationalization | next-intl, ICU Message, Intl                | Typed copy, plurals, dates, route locale           | Typed demo dictionaries; routing planned         |
-| Testing              | Vitest, Playwright, axe-core                | Domain rules, multi-context E2E, visual and a11y   | Unit and E2E foundations                         |
-| Observability        | OpenTelemetry, structured audit events      | Trace people, agents, models, tools, approvals     | Planned                                          |
+| Layer                | Technology                                  | Purpose                                                               | Phase                                            |
+| -------------------- | ------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------ |
+| Runtime              | Node.js 22+, strict TypeScript, ESM         | One type system across client and server                              | Established                                      |
+| Workspace            | pnpm workspace, Turborepo                   | Package boundaries, caching, parallel checks                          | Established                                      |
+| Web / PWA            | Next.js App Router, React                   | Chat, documents, routing, SSR, PWA shell                              | Foundation                                       |
+| API                  | Fastify, Zod                                | REST/SSE service, runtime contracts, auth hooks                       | Framework                                        |
+| Authentication       | Better Auth                                 | Human login and database sessions; domain-owned workspace invitations | Alpha connected                                  |
+| Database             | PostgreSQL, Drizzle ORM, Row-Level Security | Relational collaboration data and tenant isolation                    | Initial migration and collaboration repositories |
+| Jobs                 | Graphile Worker, transactional outbox       | Durable retries, recovery, schedules, idempotency                     | Framework                                        |
+| AI gateway           | Vercel AI SDK Core behind `ModelGateway`    | Multi-provider streaming and structured responses                     | Internal boundary built; live adapters planned   |
+| Documents            | Tiptap, Yjs, Hocuspocus                     | Rich text, CRDT merge, presence, self-hosted sync                     | Collaboration service built; editor planned      |
+| Realtime             | REST mutations, SSE, WebSocket              | Auditable writes, recoverable events, CRDT channel                    | SSE and CRDT service foundations built           |
+| Internationalization | next-intl, ICU Message, Intl                | Typed copy, plurals, dates, route locale                              | Typed demo dictionaries; routing planned         |
+| Testing              | Vitest, Playwright, axe-core                | Domain rules, multi-context E2E, visual and a11y                      | Unit and E2E foundations                         |
+| Observability        | OpenTelemetry, structured audit events      | Trace people, agents, models, tools, approvals                        | Planned                                          |
 
 The first usable release stays a modular monolith around one PostgreSQL instance. Redis, Temporal, a dedicated vector database, Kubernetes, and native mobile clients are intentionally deferred until identity, document, and agent authority are stable.
 
@@ -217,16 +217,19 @@ pnpm dev:all
 cp .env.example .env.local
 ```
 
-| Variable                                            | Required           | Purpose                                                                             |
-| --------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional           | API binding and exact browser origin                                                |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional           | CRDT endpoint and exact WebSocket origin                                            |
-| `DEMO_*`                                            | Collaboration demo | Fixed local ticket, actor, workspace, document, and access; forbidden in production |
-| `DATABASE_URL`                                      | Worker             | Server-only PostgreSQL application connection                                       |
-| `DATABASE_ADMIN_URL`                                | Migration          | Migration process only; forbidden in API, Web, and Worker request paths             |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | Integration tests  | PostgreSQL security tests in local development and CI                               |
-| `OPENAI_API_KEY`                                    | Optional           | Read by the server-side provider adapter when enabled                               |
-| `ANTHROPIC_API_KEY`                                 | Optional           | Read by the server-side provider adapter when enabled                               |
+| Variable                                             | Required           | Purpose                                                                             |
+| ---------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------- |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`           | Optional           | API binding and exact browser origin                                                |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`  | Optional           | CRDT endpoint and exact WebSocket origin                                            |
+| `DEMO_*`                                             | Collaboration demo | Fixed local ticket, actor, workspace, document, and access; forbidden in production |
+| `DATABASE_URL`                                       | Worker             | Server-only PostgreSQL application connection                                       |
+| `AUTH_DATABASE_URL`                                  | API                | Authentication-only role for users, accounts, sessions, and verifications           |
+| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`               | API                | Public auth origin and a server-only secret of at least 32 characters               |
+| `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_AUTH_MODE` | Web                | Browser API endpoint and `real` / `demo` runtime mode                               |
+| `DATABASE_ADMIN_URL`                                 | Migration          | Migration process only; forbidden in API, Web, and Worker request paths             |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`      | Integration tests  | PostgreSQL security tests in local development and CI                               |
+| `OPENAI_API_KEY`                                     | Optional           | Read by the server-side provider adapter when enabled                               |
+| `ANTHROPIC_API_KEY`                                  | Optional           | Read by the server-side provider adapter when enabled                               |
 
 Run `pnpm dev:all` only after PostgreSQL is available and `.env.local` exists; it starts the API, collaboration service, and durable worker together.
 

@@ -8,6 +8,7 @@
 export * from "./agent-run";
 export * from "./api-error";
 export * from "./approval";
+export * from "./authentication";
 export * from "./collaboration";
 export * from "./document-proposal";
 export * from "./primitives";

@@ -72,12 +72,12 @@ HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于�
 | 前台与工作空间后台           | Alpha 骨架已实现  | `/app` 与 `/admin/*` 独立外壳、服务端权限守卫、双语与移动端布局    |
 | CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口                |
 | 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                           |
-| 真实认证与数据库             | Alpha 进行中      | 数据库迁移、RLS 事务与协作 repository 已完成；认证和 API 待接入    |
+| 真实认证与数据库             | Alpha 已接入      | 安全 Cookie 会话、注册登录、工作区创建/切换、邀请、角色保护已接入  |
 | 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL                             |
 
 > 当前演示运行时不会调用真实模型或外部工具，因此不需要 API Key，也不代表已经达到生产安全等级。
 
-当前页面不是纯静态稿。`/app` 是团队协作前台，`/admin/*` 是独立的工作空间后台，`/system` 默认保持锁定。房间、消息、成员和文档版本在浏览器内具有真实状态，演示回复由服务端路由通过 SSE 流式返回；但刷新页面会重置这些演示数据。PostgreSQL 迁移与首批协作 repository 已完成，当前页面尚未接入这些 API；登录、跨用户共享与长期保存仍需继续完成认证和 HTTP 数据链路。尚未接后端的操作会显示阶段说明，不会静默执行或伪装成功。
+当前页面不是纯静态稿。真实模式已经接入注册登录、可撤销数据库会话、首次工作区创建、工作区切换、邮箱绑定邀请、邀请接受、成员列表与角色变更；最后一位所有者同时受应用事务和数据库延迟约束保护。`/app` 的房间、消息和文档正文仍使用浏览器演示状态，演示回复由服务端路由通过 SSE 流式返回，刷新页面会重置这部分内容。尚未接后端的操作会显示阶段说明，不会静默执行或伪装成功。
 
 ## 技术路线
 
@@ -87,21 +87,21 @@ PostgreSQL、SQL migration、CSS、Markdown、容器配置和浏览器编译产�
 
 ### 目标技术栈
 
-| 层级      | 技术                                        | 用途与选择理由                                         | 阶段                           |
-| --------- | ------------------------------------------- | ------------------------------------------------------ | ------------------------------ |
-| 运行环境  | Node.js 22+、TypeScript strict、ESM         | 统一服务端与前端类型，开启严格不变量检查               | 已建立                         |
-| 工作区    | pnpm workspace、Turborepo                   | 管理应用、领域包、缓存和并行验证                       | 已建立                         |
-| Web / PWA | Next.js App Router、React                   | 聊天与文档界面、服务端渲染、路由、PWA 外壳             | Foundation                     |
-| API       | Fastify、Zod                                | 独立 REST/SSE 服务、输入输出契约和统一授权 hook        | 框架已建                       |
-| 身份认证  | Better Auth                                 | 人类登录、会话、组织邀请；资源权限仍由 HaloAI 策略负责 | 计划中                         |
-| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                   | 首个迁移与协作 repository 已建 |
-| 后台任务  | Graphile Worker、Transactional Outbox       | 复用 PostgreSQL，提供重试、恢复、调度和幂等            | 框架已建                       |
-| AI 网关   | Vercel AI SDK Core + 内部 `ModelGateway`    | 多供应商、流式输出、结构化响应；领域模型不绑定 SDK     | 内部边界已建，真实适配器计划中 |
-| 文档编辑  | Tiptap、Yjs、Hocuspocus                     | 富文本体验、CRDT 并发合并、在线状态和自托管同步        | 协作服务已建，编辑器计划中     |
-| 实时通信  | REST mutation、SSE、WebSocket               | 写操作可审计；AI/运行事件可恢复；文档使用 CRDT 通道    | SSE 与 CRDT 服务基础已建       |
-| 国际化    | next-intl、ICU Message、Intl                | 类型化消息、复数/时间/数字格式和服务端路由             | 演示字典已类型化，路由待接入   |
-| 测试      | Vitest、Playwright、axe-core                | 领域规则、多人浏览器上下文、视觉回归和无障碍           | 单元与端到端框架已建           |
-| 可观测性  | OpenTelemetry、结构化审计事件               | 串联人员、Agent、模型、工具、审批和结果                | 计划中                         |
+| 层级      | 技术                                        | 用途与选择理由                                      | 阶段                           |
+| --------- | ------------------------------------------- | --------------------------------------------------- | ------------------------------ |
+| 运行环境  | Node.js 22+、TypeScript strict、ESM         | 统一服务端与前端类型，开启严格不变量检查            | 已建立                         |
+| 工作区    | pnpm workspace、Turborepo                   | 管理应用、领域包、缓存和并行验证                    | 已建立                         |
+| Web / PWA | Next.js App Router、React                   | 聊天与文档界面、服务端渲染、路由、PWA 外壳          | Foundation                     |
+| API       | Fastify、Zod                                | 独立 REST/SSE 服务、输入输出契约和统一授权 hook     | 框架已建                       |
+| 身份认证  | Better Auth                                 | 人类登录和数据库会话；工作区邀请由领域服务负责      | Alpha 已接入                   |
+| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                | 首个迁移与协作 repository 已建 |
+| 后台任务  | Graphile Worker、Transactional Outbox       | 复用 PostgreSQL，提供重试、恢复、调度和幂等         | 框架已建                       |
+| AI 网关   | Vercel AI SDK Core + 内部 `ModelGateway`    | 多供应商、流式输出、结构化响应；领域模型不绑定 SDK  | 内部边界已建，真实适配器计划中 |
+| 文档编辑  | Tiptap、Yjs、Hocuspocus                     | 富文本体验、CRDT 并发合并、在线状态和自托管同步     | 协作服务已建，编辑器计划中     |
+| 实时通信  | REST mutation、SSE、WebSocket               | 写操作可审计；AI/运行事件可恢复；文档使用 CRDT 通道 | SSE 与 CRDT 服务基础已建       |
+| 国际化    | next-intl、ICU Message、Intl                | 类型化消息、复数/时间/数字格式和服务端路由          | 演示字典已类型化，路由待接入   |
+| 测试      | Vitest、Playwright、axe-core                | 领域规则、多人浏览器上下文、视觉回归和无障碍        | 单元与端到端框架已建           |
+| 可观测性  | OpenTelemetry、结构化审计事件               | 串联人员、Agent、模型、工具、审批和结果             | 计划中                         |
 
 ### 为什么 MVP 不立即引入更多基础设施
 
@@ -220,16 +220,19 @@ pnpm dev:all
 cp .env.example .env.local
 ```
 
-| 变量                                                | 是否必填     | 说明                                                           |
-| --------------------------------------------------- | ------------ | -------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选         | API 监听地址与精确允许的浏览器来源                             |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选         | CRDT 服务入口与精确 WebSocket Origin                           |
-| `DEMO_*`                                            | 协作演示必填 | 固定本地 ticket、Actor、工作空间、文档和访问级别；生产环境禁止 |
-| `DATABASE_URL`                                      | Worker 必填  | PostgreSQL 应用连接，仅服务端使用                              |
-| `DATABASE_ADMIN_URL`                                | 迁移必填     | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径           |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | 集成测试     | 仅本地与 CI 的 PostgreSQL 安全测试                             |
-| `OPENAI_API_KEY`                                    | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
-| `ANTHROPIC_API_KEY`                                 | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
+| 变量                                                 | 是否必填     | 说明                                                           |
+| ---------------------------------------------------- | ------------ | -------------------------------------------------------------- |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`           | 可选         | API 监听地址与精确允许的浏览器来源                             |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`  | 可选         | CRDT 服务入口与精确 WebSocket Origin                           |
+| `DEMO_*`                                             | 协作演示必填 | 固定本地 ticket、Actor、工作空间、文档和访问级别；生产环境禁止 |
+| `DATABASE_URL`                                       | Worker 必填  | PostgreSQL 应用连接，仅服务端使用                              |
+| `AUTH_DATABASE_URL`                                  | API 必填     | 认证专用数据库角色，只访问用户、账户、会话与验证表             |
+| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`               | API 必填     | 认证服务公开 Origin 与至少 32 字符的服务端密钥                 |
+| `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_AUTH_MODE` | Web 可选     | 浏览器 API 入口与 `real` / `demo` 运行模式                     |
+| `DATABASE_ADMIN_URL`                                 | 迁移必填     | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径           |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`      | 集成测试     | 仅本地与 CI 的 PostgreSQL 安全测试                             |
+| `OPENAI_API_KEY`                                     | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
+| `ANTHROPIC_API_KEY`                                  | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
 
 只有 PostgreSQL 已可用且已复制 `.env.local` 时才运行 `pnpm dev:all`；该命令会同时启动 API、协作服务和耐久 Worker。
 

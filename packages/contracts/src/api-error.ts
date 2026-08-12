@@ -13,6 +13,11 @@ export const ApiErrorCodeSchema = z.enum([
   "rate_limited",
   "internal_error",
   "service_unavailable",
+  "workspace_slug_conflict",
+  "membership_required",
+  "last_owner_required",
+  "invitation_invalid",
+  "delegation_denied",
 ]);
 
 const statusByCode: Readonly<Record<z.infer<typeof ApiErrorCodeSchema>, number>> = {
@@ -27,6 +32,11 @@ const statusByCode: Readonly<Record<z.infer<typeof ApiErrorCodeSchema>, number>>
   rate_limited: 429,
   internal_error: 500,
   service_unavailable: 503,
+  workspace_slug_conflict: 409,
+  membership_required: 403,
+  last_owner_required: 409,
+  invitation_invalid: 404,
+  delegation_denied: 403,
 };
 
 const ApiErrorParamsSchema = z

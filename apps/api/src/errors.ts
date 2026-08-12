@@ -1,5 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { ZodError } from "zod";
+import { PersistenceError } from "@haloai/db";
+import { HttpError } from "./http-error";
 
 interface SafeErrorBody {
   error: {
@@ -15,6 +17,20 @@ interface SafeErrorBody {
  * 受控服务端日志，避免 SQL、路径、供应商响应或敏感参数通过错误页泄露给浏览器。
  */
 export function handleError(error: Error, request: FastifyRequest, reply: FastifyReply): void {
+  if (error instanceof HttpError) {
+    reply.status(error.status).send({
+      error: { code: error.code, messageKey: error.messageKey, requestId: request.id },
+    });
+    return;
+  }
+
+  if (error instanceof PersistenceError) {
+    const mapped = mapPersistenceError(error);
+    reply.status(mapped.status).send({
+      error: { code: mapped.code, messageKey: mapped.messageKey, requestId: request.id },
+    });
+    return;
+  }
   if (error instanceof ZodError) {
     const body: SafeErrorBody = {
       error: {
@@ -40,4 +56,24 @@ export function handleError(error: Error, request: FastifyRequest, reply: Fastif
     },
   };
   reply.status(500).send(body);
+}
+
+function mapPersistenceError(error: PersistenceError): HttpError {
+  switch (error.code) {
+    case "access_denied":
+      return new HttpError("permission_denied", "errors.permissionDenied");
+    case "not_found":
+      return new HttpError("resource_not_found", "errors.resourceNotFound");
+    case "conflict":
+      return new HttpError("workspace_slug_conflict", "errors.workspaceSlugConflict");
+    case "last_owner_required":
+      return new HttpError("last_owner_required", "errors.lastOwnerRequired");
+    case "invitation_invalid":
+      return new HttpError("invitation_invalid", "errors.invitationInvalid");
+    case "delegation_denied":
+      return new HttpError("delegation_denied", "errors.delegationDenied");
+    case "invalid_context":
+    case "invalid_input":
+      return new HttpError("validation_failed", "errors.validationFailed");
+  }
 }

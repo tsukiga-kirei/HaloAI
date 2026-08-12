@@ -13,6 +13,7 @@ import {
   Sun,
   UsersRound,
 } from "lucide-react";
+import type { SessionContext } from "@haloai/contracts";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +22,7 @@ import { type AdminSection } from "@/lib/admin-sections";
 import type { Locale } from "@/lib/i18n";
 import type { Theme } from "@/components/workspace/types";
 import { HaloMark } from "@/components/workspace/primitives";
+import { apiFetch } from "@/lib/api-client";
 import { AdminSectionContent } from "./admin-section-content";
 
 const navigation = [
@@ -37,7 +39,20 @@ export function AdminConsole({ section }: { section: AdminSection }) {
   const [theme, setTheme] = useState<Theme>("light");
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [session, setSession] = useState<SessionContext | null>(null);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
+  const realMode = process.env.NEXT_PUBLIC_AUTH_MODE !== "demo";
+  const activeWorkspace =
+    session?.workspaces.find(
+      (workspace) => workspace.id === window.localStorage.getItem("haloai.workspaceId"),
+    ) ?? session?.workspaces[0];
+  const displayName = session?.user.name ?? "Andy Yang";
+  const initials = displayName
+    .split(/\s+/u)
+    .map((part) => part.slice(0, 1))
+    .join("")
+    .slice(0, 2)
+    .toLocaleUpperCase();
 
   useEffect(() => {
     const savedLocale = window.localStorage.getItem("haloai.locale");
@@ -50,6 +65,13 @@ export function AdminConsole({ section }: { section: AdminSection }) {
     }
     setPreferencesReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!realMode) return;
+    apiFetch<SessionContext>("/v1/session")
+      .then(setSession)
+      .catch(() => setSession(null));
+  }, [realMode]);
 
   useEffect(() => {
     if (!preferencesReady) return;
@@ -83,10 +105,12 @@ export function AdminConsole({ section }: { section: AdminSection }) {
           type="button"
           onClick={() => setNotice(dictionary.localOnlyNotice)}
         >
-          <span className="admin-workspace-avatar">N</span>
+          <span className="admin-workspace-avatar">
+            {(activeWorkspace?.name ?? "HaloAI").slice(0, 1).toLocaleUpperCase()}
+          </span>
           <span>
             <small>{dictionary.workspaceScope}</small>
-            <strong>HaloAI Pilot</strong>
+            <strong>{activeWorkspace?.name ?? "HaloAI Pilot"}</strong>
           </span>
           <ChevronDown size={16} aria-hidden="true" />
         </button>
@@ -109,10 +133,14 @@ export function AdminConsole({ section }: { section: AdminSection }) {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <span className="admin-user-avatar">AY</span>
+          <span className="admin-user-avatar">{initials || "AY"}</span>
           <span>
-            <strong>Andy Yang</strong>
-            <small>{dictionary.roleOwner}</small>
+            <strong>{displayName}</strong>
+            <small>
+              {activeWorkspace?.role === "owner"
+                ? dictionary.roleOwner
+                : (activeWorkspace?.role ?? dictionary.roleOwner)}
+            </small>
           </span>
         </div>
       </aside>
@@ -124,7 +152,13 @@ export function AdminConsole({ section }: { section: AdminSection }) {
             <strong>{dictionary.administrationSubtitle}</strong>
           </div>
           <div className="admin-topbar-actions">
-            <span className="admin-preview-chip">{dictionary.previewBadge}</span>
+            <span className="admin-preview-chip">
+              {realMode
+                ? locale === "zh-CN"
+                  ? "数据已连接"
+                  : "Live data"
+                : dictionary.previewBadge}
+            </span>
             <button
               type="button"
               className="admin-icon-button"
@@ -152,9 +186,16 @@ export function AdminConsole({ section }: { section: AdminSection }) {
         </header>
 
         <main className="admin-content">
-          <div className="admin-preview-notice" role="note">
+          <div
+            className={realMode ? "admin-preview-notice is-live" : "admin-preview-notice"}
+            role="note"
+          >
             <span className="admin-notice-dot" aria-hidden="true" />
-            {dictionary.previewNotice}
+            {realMode
+              ? locale === "zh-CN"
+                ? "成员与角色变更已连接服务端，所有权限仍会在 API 与数据库中重新校验。"
+                : "Member and role changes are connected to the server and re-authorized by the API and database."
+              : dictionary.previewNotice}
           </div>
           <AdminSectionContent
             dictionary={dictionary}

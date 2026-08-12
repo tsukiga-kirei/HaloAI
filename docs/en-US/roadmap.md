@@ -1,6 +1,6 @@
 # HaloAI delivery roadmap
 
-> Current progress: phase 0 has a runnable framework. Phase 1 now includes the PostgreSQL schema, initial migration, tenant transaction wrapper, and project/room/message repositories; real authentication and HTTP data paths remain next.
+> Current progress: phase 0 has a runnable framework. Phase 1 now includes PostgreSQL foundations, real login sessions, workspace creation and switching, invitation acceptance, member listing, and built-in role protection. Durable HTTP data paths for rooms, messages, and documents remain next.
 
 ## Phase 0 — foundation
 
@@ -13,7 +13,8 @@
 ## Phase 1 — usable internal alpha
 
 - PostgreSQL repositories and migrations (foundation complete; identity, document, and runtime repositories continue next).
-- Authentication, workspace invitations, and project memberships.
+- [x] Authentication, workspace creation and switching, invitation acceptance, and built-in role protection.
+- [ ] Project memberships and room-level authorization.
 - Real room/message/document APIs.
 - One configurable model provider with streaming.
 - Agent creation, mention routing, run budgets, and audit timeline.

@@ -11,5 +11,15 @@ BEGIN
       NOINHERIT
       NOBYPASSRLS;
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'haloai_auth') THEN
+    CREATE ROLE haloai_auth
+      LOGIN
+      PASSWORD 'haloai_auth_local'
+      NOSUPERUSER
+      NOCREATEDB
+      NOCREATEROLE
+      NOINHERIT
+      NOBYPASSRLS;
+  END IF;
 END
 $$;
