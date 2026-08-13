@@ -9,6 +9,7 @@ import { handleError } from "./errors";
 import { registerDemoEventRoutes } from "./routes/demo-events";
 import { registerHealthRoutes } from "./routes/health";
 import { registerAuthRoutes } from "./routes/auth";
+import { registerCollaborationRoutes } from "./routes/collaboration";
 import { registerWorkspaceRoutes } from "./routes/workspaces";
 
 export async function createServer(config: ApiConfig): Promise<FastifyInstance> {
@@ -50,5 +51,6 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   await registerDemoEventRoutes(app);
   await registerAuthRoutes(app, auth, config);
   await registerWorkspaceRoutes(app, auth, onboardingRepository, config);
+  await registerCollaborationRoutes(app, auth, applicationDatabase, onboardingRepository);
   return app;
 }

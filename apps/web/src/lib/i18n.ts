@@ -13,6 +13,8 @@ export interface Dictionary {
   projectRooms: string;
   directMessages: string;
   newRoom: string;
+  newProject: string;
+  newDocument: string;
   invite: string;
   settings: string;
   roomDescription: string;
@@ -60,6 +62,7 @@ export interface Dictionary {
   rooms: string;
   chat: string;
   mobileNavigation: string;
+  workspaceHome: string;
   addTeammate: string;
   teammateSubtitle: string;
   human: string;
@@ -92,6 +95,33 @@ export interface Dictionary {
   roomGoal: string;
   roomGoalPlaceholder: string;
   roomCreated: string;
+  createProjectTitle: string;
+  createProjectSubtitle: string;
+  projectName: string;
+  projectNamePlaceholder: string;
+  projectGoal: string;
+  projectGoalPlaceholder: string;
+  projectCreated: string;
+  projectRequired: string;
+  noProjectWriteAccess: string;
+  selectProject: string;
+  expectedArtifact: string;
+  expectedArtifactPlaceholder: string;
+  roomVisibility: string;
+  privateRoom: string;
+  workspaceRoom: string;
+  createDocumentTitle: string;
+  createDocumentSubtitle: string;
+  documentTitle: string;
+  documentTitlePlaceholder: string;
+  optionalRoom: string;
+  noRoom: string;
+  documentCreated: string;
+  noDocuments: string;
+  durableDataBoundary: string;
+  metadataOnlyNotice: string;
+  chatPending: string;
+  chatNotEnabled: string;
   noSearchResults: string;
   versionSaved: string;
   versionLabel: string;
@@ -181,6 +211,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     projectRooms: "项目房间",
     directMessages: "私信",
     newRoom: "新建房间",
+    newProject: "新建项目",
+    newDocument: "新建文档",
     invite: "邀请协作者",
     settings: "设置",
     roomDescription: "把讨论收束成一份可交付的项目提案",
@@ -230,6 +262,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     rooms: "房间",
     chat: "对话",
     mobileNavigation: "移动端主导航",
+    workspaceHome: "工作台",
     addTeammate: "添加协作者",
     teammateSubtitle: "人和 AI 都是成员，但权限必须独立配置。",
     human: "人员",
@@ -262,6 +295,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
     roomGoal: "本房间目标",
     roomGoalPlaceholder: "说明这个房间最终要交付什么",
     roomCreated: "新房间已创建，可以开始协作",
+    createProjectTitle: "新建团队项目",
+    createProjectSubtitle: "先明确目标和交付物，再创建承载协作的房间。",
+    projectName: "项目名称",
+    projectNamePlaceholder: "例如：秋季内测发布",
+    projectGoal: "项目目标",
+    projectGoalPlaceholder: "说明项目要解决的问题和完成标准",
+    projectCreated: "项目已创建，你现在是项目负责人",
+    projectRequired: "请先创建一个项目，再在项目中建立房间",
+    noProjectWriteAccess: "你在当前项目中是只读角色，无法新建房间或文档",
+    selectProject: "所属项目",
+    expectedArtifact: "预期交付物",
+    expectedArtifactPlaceholder: "例如：一份经负责人确认的发布提案",
+    roomVisibility: "房间可见范围",
+    privateRoom: "仅房间成员",
+    workspaceRoom: "工作区成员可见",
+    createDocumentTitle: "新建文档记录",
+    createDocumentSubtitle: "当前先保存文档名称和归属；正文协作将在后续阶段接入。",
+    documentTitle: "文档标题",
+    documentTitlePlaceholder: "例如：内测发布提案",
+    optionalRoom: "关联房间（可选）",
+    noRoom: "暂不关联房间",
+    documentCreated: "文档记录已保存",
+    noDocuments: "还没有文档记录，可以先建立一份项目交付物。",
+    durableDataBoundary: "项目、房间和文档元数据已安全持久化；聊天与 AI 对接仍保持关闭。",
+    metadataOnlyNotice: "当前文档仅保存名称、归属和状态，正文编辑将在后续需求明确后接入。",
+    chatPending: "聊天与 AI 对接将在需求明确后启用；当前房间仅用于组织项目和交付物。",
+    chatNotEnabled: "聊天暂未启用",
     noSearchResults: "没有匹配的房间或成员",
     versionSaved: "文档新版本已保存",
     versionLabel: "版本 v{version}",
@@ -352,6 +412,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     projectRooms: "Project rooms",
     directMessages: "Direct messages",
     newRoom: "New room",
+    newProject: "New project",
+    newDocument: "New document",
     invite: "Invite collaborator",
     settings: "Settings",
     roomDescription: "Turn the discussion into a shippable project proposal",
@@ -403,6 +465,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     rooms: "Rooms",
     chat: "Chat",
     mobileNavigation: "Mobile primary navigation",
+    workspaceHome: "Workspace",
     addTeammate: "Add collaborator",
     teammateSubtitle:
       "People and AI are both members, but their permissions are configured independently.",
@@ -438,6 +501,38 @@ export const dictionaries: Record<Locale, Dictionary> = {
     roomGoal: "Room goal",
     roomGoalPlaceholder: "Describe the artifact this room must deliver",
     roomCreated: "The new room is ready for collaboration",
+    createProjectTitle: "Create team project",
+    createProjectSubtitle: "Define the goal and artifact before creating collaboration rooms.",
+    projectName: "Project name",
+    projectNamePlaceholder: "For example: Autumn pilot launch",
+    projectGoal: "Project goal",
+    projectGoalPlaceholder: "Describe the problem and what completion means",
+    projectCreated: "Project created; you are its lead",
+    projectRequired: "Create a project before adding a room",
+    noProjectWriteAccess:
+      "Your current project role is read-only and cannot create rooms or documents",
+    selectProject: "Project",
+    expectedArtifact: "Expected artifact",
+    expectedArtifactPlaceholder: "For example: A launch proposal approved by the lead",
+    roomVisibility: "Room visibility",
+    privateRoom: "Room members only",
+    workspaceRoom: "Visible to workspace members",
+    createDocumentTitle: "Create document record",
+    createDocumentSubtitle:
+      "For now, save the document name and ownership. Collaborative content comes later.",
+    documentTitle: "Document title",
+    documentTitlePlaceholder: "For example: Pilot launch proposal",
+    optionalRoom: "Related room (optional)",
+    noRoom: "No room yet",
+    documentCreated: "Document record saved",
+    noDocuments: "No document records yet. Create the first project artifact.",
+    durableDataBoundary:
+      "Projects, rooms, and document metadata are durably stored; chat and AI remain disabled.",
+    metadataOnlyNotice:
+      "Only the title, ownership, and status are stored now. Content editing comes after requirements are defined.",
+    chatPending:
+      "Chat and AI will open after requirements are defined; this room currently organizes projects and artifacts only.",
+    chatNotEnabled: "Chat not enabled",
     noSearchResults: "No matching rooms or people",
     versionSaved: "A new document version was saved",
     versionLabel: "Version v{version}",

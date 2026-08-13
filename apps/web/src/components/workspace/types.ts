@@ -12,11 +12,14 @@ export type RoomKey = "roomLaunch" | "roomResearch" | "roomWebsite";
 
 export interface DemoRoom {
   id: string;
+  projectId?: string;
   nameKey?: RoomKey;
   name?: string;
   descriptionKey?: "roomDescription" | "roomResearchDescription" | "roomWebsiteDescription";
   goalKey?: "goalText" | "roomResearchGoal" | "roomWebsiteGoal";
   goal?: string;
+  expectedArtifact?: string;
+  visibility?: "workspace" | "private";
   unread: number;
 }
 

@@ -7,34 +7,48 @@ import {
   Clock3,
   FileCheck2,
   FileText,
+  FolderKanban,
   Hash,
   Inbox,
   LayoutDashboard,
   Plus,
-  Search,
   UserRound,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import type { DocumentSummary, ProjectSummary } from "@haloai/contracts";
 import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
+import { WorkspaceDocumentsView } from "./workspace-documents-view";
 
 type InboxFilter = "all" | "mentions" | "approvals" | "invitations";
-type DocumentFilter = "all" | "draft" | "review" | "approved";
-
 export function WorkspaceHub({
   dictionary,
   section,
   rooms,
+  projects,
+  documents,
+  durable,
+  canCreateProject,
+  canCreateArtifact,
   onSectionChange,
   onCreateRoom,
+  onCreateProject,
+  onCreateDocument,
   onOpenRoom,
   onOpenDocument,
   onNotify,
 }: WorkspaceViewProps & {
   section: Exclude<WorkspaceSection, "room">;
   rooms: readonly DemoRoom[];
+  projects: readonly ProjectSummary[];
+  documents: readonly DocumentSummary[];
+  durable: boolean;
+  canCreateProject: boolean;
+  canCreateArtifact: boolean;
   onSectionChange: (section: WorkspaceSection) => void;
   onCreateRoom: () => void;
+  onCreateProject: () => void;
+  onCreateDocument: () => void;
   onOpenRoom: (roomId: string) => void;
   onOpenDocument: (roomId: string) => void;
   onNotify: (message: string) => void;
@@ -64,13 +78,24 @@ export function WorkspaceHub({
           <h1 id="workspace-hub-title">{title}</h1>
           <p>{subtitle}</p>
         </div>
-        <button
-          type="button"
-          className="primary-button workspace-hub-create"
-          onClick={onCreateRoom}
-        >
-          <Plus size={17} /> {dictionary.newRoom}
-        </button>
+        <div className="workspace-hub-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onCreateProject}
+            disabled={!canCreateProject}
+          >
+            <FolderKanban size={17} /> {dictionary.newProject}
+          </button>
+          <button
+            type="button"
+            className="primary-button workspace-hub-create"
+            onClick={onCreateRoom}
+            disabled={!canCreateArtifact && !canCreateProject}
+          >
+            <Plus size={17} /> {dictionary.newRoom}
+          </button>
+        </div>
       </header>
 
       <nav className="workspace-hub-tabs" aria-label={dictionary.workspaceOverviewTitle}>
@@ -96,13 +121,16 @@ export function WorkspaceHub({
 
       <div className="workspace-hub-boundary" role="note">
         <CheckCircle2 size={16} />
-        <span>{dictionary.localPreviewBoundary}</span>
+        <span>{durable ? dictionary.durableDataBoundary : dictionary.localPreviewBoundary}</span>
       </div>
 
       {section === "overview" ? (
         <Overview
           dictionary={dictionary}
           rooms={rooms}
+          projects={projects}
+          documents={documents}
+          durable={durable}
           onOpenRoom={onOpenRoom}
           onOpenDocument={onOpenDocument}
           onSectionChange={onSectionChange}
@@ -110,7 +138,16 @@ export function WorkspaceHub({
       ) : null}
       {section === "inbox" ? <InboxView dictionary={dictionary} onNotify={onNotify} /> : null}
       {section === "documents" ? (
-        <DocumentsView dictionary={dictionary} onOpenDocument={onOpenDocument} />
+        <WorkspaceDocumentsView
+          dictionary={dictionary}
+          documents={documents}
+          rooms={rooms}
+          durable={durable}
+          onCreateDocument={onCreateDocument}
+          canCreateDocument={canCreateArtifact}
+          onOpenDocument={onOpenDocument}
+          onNotify={onNotify}
+        />
       ) : null}
       {section === "activity" ? <ActivityView dictionary={dictionary} /> : null}
     </main>
@@ -120,20 +157,31 @@ export function WorkspaceHub({
 function Overview({
   dictionary,
   rooms,
+  projects,
+  documents,
+  durable,
   onOpenRoom,
   onOpenDocument,
   onSectionChange,
 }: WorkspaceViewProps & {
   rooms: readonly DemoRoom[];
+  projects: readonly ProjectSummary[];
+  documents: readonly DocumentSummary[];
+  durable: boolean;
   onOpenRoom: (roomId: string) => void;
   onOpenDocument: (roomId: string) => void;
   onSectionChange: (section: WorkspaceSection) => void;
 }) {
   const roomCards = rooms.slice(0, 3);
   const metrics: Array<{ label: string; value: string; Icon: LucideIcon }> = [
+    { label: dictionary.projectRooms, value: String(projects.length), Icon: FolderKanban },
     { label: dictionary.activeRooms, value: String(rooms.length), Icon: Hash },
     { label: dictionary.pendingItems, value: "2", Icon: Clock3 },
-    { label: dictionary.sharedDocuments, value: "3", Icon: FileText },
+    {
+      label: dictionary.sharedDocuments,
+      value: String(durable ? documents.length : 3),
+      Icon: FileText,
+    },
   ];
   return (
     <div className="workspace-hub-body overview-layout">
@@ -226,30 +274,56 @@ function Overview({
             </button>
           </div>
           <div className="compact-list document-compact-list">
-            <button type="button" onClick={() => onOpenDocument("launch")}>
-              <span className="compact-icon">
-                <FileText size={17} />
-              </span>
-              <span>
-                <strong>{dictionary.documentProposal}</strong>
-                <small>
-                  {dictionary.inReview} · {dictionary.updatedToday}
-                </small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
-            <button type="button" onClick={() => onOpenDocument("research")}>
-              <span className="compact-icon">
-                <FileText size={17} />
-              </span>
-              <span>
-                <strong>{dictionary.documentResearch}</strong>
-                <small>
-                  {dictionary.draft} · {dictionary.updatedYesterday}
-                </small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
+            {durable ? (
+              documents.slice(0, 2).map((document) => (
+                <button
+                  type="button"
+                  key={document.id}
+                  onClick={() => (document.roomId ? onOpenDocument(document.roomId) : undefined)}
+                >
+                  <span className="compact-icon">
+                    <FileText size={17} />
+                  </span>
+                  <span>
+                    <strong>{document.title}</strong>
+                    <small>
+                      {dictionary.documentOwner} · {document.ownerDisplayName}
+                    </small>
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+              ))
+            ) : (
+              <>
+                <button type="button" onClick={() => onOpenDocument("launch")}>
+                  <span className="compact-icon">
+                    <FileText size={17} />
+                  </span>
+                  <span>
+                    <strong>{dictionary.documentProposal}</strong>
+                    <small>
+                      {dictionary.inReview} · {dictionary.updatedToday}
+                    </small>
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+                <button type="button" onClick={() => onOpenDocument("research")}>
+                  <span className="compact-icon">
+                    <FileText size={17} />
+                  </span>
+                  <span>
+                    <strong>{dictionary.documentResearch}</strong>
+                    <small>
+                      {dictionary.draft} · {dictionary.updatedYesterday}
+                    </small>
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+              </>
+            )}
+            {durable && documents.length === 0 ? (
+              <p className="compact-empty">{dictionary.noDocuments}</p>
+            ) : null}
           </div>
         </section>
       </div>
@@ -331,105 +405,6 @@ function InboxView({
             </article>
           );
         })}
-      </section>
-    </div>
-  );
-}
-
-function DocumentsView({
-  dictionary,
-  onOpenDocument,
-}: WorkspaceViewProps & { onOpenDocument: (roomId: string) => void }) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<DocumentFilter>("all");
-  const docs = useMemo(
-    () => [
-      {
-        id: "proposal",
-        title: dictionary.documentProposal,
-        room: dictionary.roomLaunch,
-        owner: dictionary.messageLead,
-        status: "review" as const,
-        statusLabel: dictionary.inReview,
-        updated: dictionary.updatedToday,
-        roomId: "launch",
-      },
-      {
-        id: "research",
-        title: dictionary.documentResearch,
-        room: dictionary.roomResearch,
-        owner: dictionary.documentResearchOwner,
-        status: "draft" as const,
-        statusLabel: dictionary.draft,
-        updated: dictionary.updatedYesterday,
-        roomId: "research",
-      },
-      {
-        id: "brand",
-        title: dictionary.documentBrand,
-        room: dictionary.roomWebsite,
-        owner: "Andy",
-        status: "approved" as const,
-        statusLabel: dictionary.approved,
-        updated: dictionary.updatedYesterday,
-        roomId: "website",
-      },
-    ],
-    [dictionary],
-  );
-  const visibleDocs = docs.filter((doc) => {
-    const matchesQuery = doc.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
-    return matchesQuery && (filter === "all" || doc.status === filter);
-  });
-  return (
-    <div className="workspace-hub-body">
-      <div className="document-toolbar">
-        <label>
-          <Search size={16} />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={dictionary.searchDocuments}
-          />
-        </label>
-        <select
-          value={filter}
-          onChange={(event) => setFilter(event.target.value as DocumentFilter)}
-          aria-label={dictionary.allStatuses}
-        >
-          <option value="all">{dictionary.allStatuses}</option>
-          <option value="draft">{dictionary.draft}</option>
-          <option value="review">{dictionary.inReview}</option>
-          <option value="approved">{dictionary.approved}</option>
-        </select>
-      </div>
-      <section className="workspace-block document-directory">
-        {visibleDocs.map((doc) => (
-          <article key={doc.id}>
-            <span className="document-row-icon">
-              <FileText size={19} />
-            </span>
-            <div className="document-row-main">
-              <strong>{doc.title}</strong>
-              <small>
-                <Hash size={12} /> {doc.room}
-              </small>
-            </div>
-            <div className="document-row-owner">
-              <small>{dictionary.documentOwner}</small>
-              <strong>{doc.owner}</strong>
-            </div>
-            <div className="document-row-state">
-              <span className={`status-pill is-${doc.status}`}>{doc.statusLabel}</span>
-              <small>{doc.updated}</small>
-            </div>
-            <button type="button" onClick={() => onOpenDocument(doc.roomId)}>
-              {dictionary.openDocument}
-              <ArrowRight size={15} />
-            </button>
-          </article>
-        ))}
       </section>
     </div>
   );

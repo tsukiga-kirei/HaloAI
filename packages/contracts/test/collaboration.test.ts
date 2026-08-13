@@ -5,6 +5,7 @@ const createdAt = "2026-08-09T10:00:00.000Z";
 const humanActorId = "actor_human_001";
 const agentActorId = "actor_agent_001";
 const workspaceId = "workspace_00001";
+const projectId = "project_0000001";
 const roomId = "room_000000001";
 
 describe("协作主体与空间", () => {
@@ -36,8 +37,12 @@ describe("协作主体与空间", () => {
       RoomSchema.safeParse({
         id: roomId,
         workspaceId,
+        projectId,
         name: "Launch brief",
         goal: "Produce an approved launch brief.",
+        expectedArtifact: "Approved brief",
+        completionCriteria: ["Owner approved"],
+        visibility: "private",
         mode: "facilitated",
         status: "active",
         participantActorIds: [humanActorId, agentActorId],
@@ -65,8 +70,12 @@ describe("协作主体与空间", () => {
     const baseRoom = {
       id: roomId,
       workspaceId,
+      projectId,
       name: "Launch brief",
       goal: "Produce an approved launch brief.",
+      expectedArtifact: "Approved brief",
+      completionCriteria: ["Owner approved"],
+      visibility: "private",
       mode: "facilitated",
       status: "active",
       createdByActorId: humanActorId,

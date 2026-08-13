@@ -21,6 +21,7 @@ interface DocumentPanelProps extends WorkspaceViewProps {
   onApplySuggestion: () => void;
   onCloseMobile: () => void;
   onNotify: (message: string) => void;
+  demoContent: boolean;
 }
 
 export function DocumentPanel({
@@ -35,6 +36,7 @@ export function DocumentPanel({
   onApplySuggestion,
   onCloseMobile,
   onNotify,
+  demoContent,
 }: DocumentPanelProps) {
   return (
     <aside className="document-panel" aria-label={dictionary.sharedDocument}>
@@ -57,20 +59,24 @@ export function DocumentPanel({
           </div>
         </div>
         <div className="document-actions">
-          <span className={`save-state ${dirty ? "is-dirty" : ""}`}>
-            <i /> {dirty ? dictionary.editing : dictionary.saved}
-          </span>
-          <button type="button" className="secondary-button" onClick={onSave} disabled={!dirty}>
-            {dictionary.save}
-          </button>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label={dictionary.moreActions}
-            onClick={() => onNotify(dictionary.moreActionsPreview)}
-          >
-            <MoreHorizontal size={18} />
-          </button>
+          {demoContent ? (
+            <>
+              <span className={`save-state ${dirty ? "is-dirty" : ""}`}>
+                <i /> {dirty ? dictionary.editing : dictionary.saved}
+              </span>
+              <button type="button" className="secondary-button" onClick={onSave} disabled={!dirty}>
+                {dictionary.save}
+              </button>
+              <button
+                type="button"
+                className="icon-button"
+                aria-label={dictionary.moreActions}
+                onClick={() => onNotify(dictionary.moreActionsPreview)}
+              >
+                <MoreHorizontal size={18} />
+              </button>
+            </>
+          ) : null}
         </div>
       </header>
 
@@ -90,7 +96,13 @@ export function DocumentPanel({
         ))}
       </div>
 
-      {tab === "document" ? (
+      {!demoContent ? (
+        <div className="document-empty-state" role="tabpanel">
+          <FileText size={32} />
+          <strong>{dictionary.sharedDocument}</strong>
+          <p>{dictionary.metadataOnlyNotice}</p>
+        </div>
+      ) : tab === "document" ? (
         <div className="document-scroll">
           <article className="document-canvas">
             <div className="document-kicker">

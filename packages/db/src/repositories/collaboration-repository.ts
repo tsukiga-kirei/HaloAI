@@ -1,8 +1,10 @@
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt } from "drizzle-orm";
 import { canonicalJson, sha256Digest } from "../canonical-json";
 import { PersistenceError } from "../errors";
 import type { MessagePart } from "../schema/common";
 import {
+  actors,
+  documents,
   messages,
   projectMemberships,
   projects,
@@ -15,6 +17,11 @@ import { assertUuid, type WorkspaceTransaction } from "../workspace-transaction"
 export type StoredProject = typeof projects.$inferSelect;
 export type StoredRoom = typeof rooms.$inferSelect;
 export type StoredMessage = typeof messages.$inferSelect;
+export type StoredProjectMembership = typeof projectMemberships.$inferSelect;
+export type StoredRoomMembership = typeof roomMemberships.$inferSelect;
+export type StoredDocument = typeof documents.$inferSelect;
+export type WorkspaceAccessRole = "owner" | "admin" | "member" | "guest";
+export type ProjectRole = "lead" | "contributor" | "reviewer" | "observer";
 
 export interface CreateProjectInput {
   readonly name: string;
@@ -31,6 +38,33 @@ export interface CreateRoomInput {
   readonly expectedArtifact?: string;
   readonly completionCriteria?: string;
   readonly visibility?: "workspace" | "private";
+}
+
+export interface CreateDocumentInput {
+  readonly projectId: string;
+  readonly roomId?: string;
+  readonly title: string;
+}
+
+export interface UpdateDocumentInput {
+  readonly title?: string;
+  readonly status?: "active" | "archived";
+}
+
+export interface ProjectWithRole extends StoredProject {
+  readonly currentActorRole: ProjectRole | null;
+}
+
+export interface RoomWithParticipantCount extends StoredRoom {
+  readonly participantCount: number;
+}
+
+export interface ProjectMemberView extends StoredProjectMembership {
+  readonly displayName: string;
+}
+
+export interface DocumentView extends StoredDocument {
+  readonly ownerDisplayName: string;
 }
 
 export interface AppendMessageInput {
@@ -84,9 +118,14 @@ export class CollaborationRepository {
     private readonly transaction: WorkspaceTransaction,
     private readonly workspaceId: string,
     private readonly actorId: string,
+    private readonly workspaceRole: WorkspaceAccessRole,
   ) {
     assertUuid(workspaceId, "workspaceId");
     assertUuid(actorId, "actorId");
+  }
+
+  private isWorkspaceManager(): boolean {
+    return this.workspaceRole === "owner" || this.workspaceRole === "admin";
   }
 
   private async requireActiveWorkspaceMember(): Promise<void> {
@@ -104,9 +143,9 @@ export class CollaborationRepository {
     if (!membership) throw new PersistenceError("access_denied", "当前成员无权操作该工作空间");
   }
 
-  private async requireActiveProjectMember(projectId: string): Promise<void> {
+  private async requireActiveProjectMember(projectId: string): Promise<StoredProjectMembership> {
     const [membership] = await this.transaction
-      .select({ id: projectMemberships.id })
+      .select()
       .from(projectMemberships)
       .where(
         and(
@@ -118,6 +157,29 @@ export class CollaborationRepository {
       )
       .limit(1);
     if (!membership) throw new PersistenceError("access_denied", "当前成员无权操作该项目");
+    return membership;
+  }
+
+  private async requireProjectWrite(projectId: string): Promise<StoredProjectMembership | null> {
+    const membership = await this.requireActiveProjectMember(projectId);
+    if (membership.role !== "lead" && membership.role !== "contributor") {
+      throw new PersistenceError("access_denied", "当前项目角色没有写入权限");
+    }
+    return membership;
+  }
+
+  private async requireProjectManage(projectId: string): Promise<void> {
+    const [project] = await this.transaction
+      .select({ id: projects.id })
+      .from(projects)
+      .where(and(eq(projects.workspaceId, this.workspaceId), eq(projects.id, projectId)))
+      .limit(1);
+    if (!project) throw new PersistenceError("not_found", "项目不存在");
+    if (this.isWorkspaceManager()) return;
+    const membership = await this.requireActiveProjectMember(projectId);
+    if (membership.role !== "lead") {
+      throw new PersistenceError("access_denied", "只有项目负责人可以管理项目成员");
+    }
   }
 
   private async requireActiveRoomMember(roomId: string): Promise<void> {
@@ -138,6 +200,9 @@ export class CollaborationRepository {
 
   async createProject(input: CreateProjectInput): Promise<StoredProject> {
     await this.requireActiveWorkspaceMember();
+    if (!this.isWorkspaceManager()) {
+      throw new PersistenceError("access_denied", "只有工作区所有者或管理员可以创建项目");
+    }
     const [project] = await this.transaction
       .insert(projects)
       .values({
@@ -156,6 +221,7 @@ export class CollaborationRepository {
       workspaceId: this.workspaceId,
       projectId: project.id,
       actorId: this.actorId,
+      role: "lead",
       addedByActorId: this.actorId,
       status: "active",
     });
@@ -164,7 +230,7 @@ export class CollaborationRepository {
 
   async createRoom(input: CreateRoomInput): Promise<StoredRoom> {
     assertUuid(input.projectId, "projectId");
-    await this.requireActiveProjectMember(input.projectId);
+    await this.requireProjectWrite(input.projectId);
     const [room] = await this.transaction
       .insert(rooms)
       .values({
@@ -188,6 +254,301 @@ export class CollaborationRepository {
       status: "active",
     });
     return room;
+  }
+
+  async listProjects(): Promise<ProjectWithRole[]> {
+    await this.requireActiveWorkspaceMember();
+    const memberships = await this.transaction
+      .select()
+      .from(projectMemberships)
+      .where(
+        and(
+          eq(projectMemberships.workspaceId, this.workspaceId),
+          eq(projectMemberships.actorId, this.actorId),
+          eq(projectMemberships.status, "active"),
+        ),
+      );
+    const roleByProject = new Map(memberships.map((item) => [item.projectId, item.role]));
+    const filters = [eq(projects.workspaceId, this.workspaceId)];
+    if (!this.isWorkspaceManager()) {
+      const projectIds = memberships.map((item) => item.projectId);
+      if (projectIds.length === 0) return [];
+      filters.push(inArray(projects.id, projectIds));
+    }
+    const rows = await this.transaction
+      .select()
+      .from(projects)
+      .where(and(...filters))
+      .orderBy(asc(projects.createdAt));
+    return rows.map((project) => ({
+      ...project,
+      currentActorRole: roleByProject.get(project.id) ?? null,
+    }));
+  }
+
+  async addProjectMember(
+    projectId: string,
+    actorId: string,
+    role: ProjectRole,
+  ): Promise<StoredProjectMembership> {
+    assertUuid(projectId, "projectId");
+    assertUuid(actorId, "actorId");
+    await this.requireProjectManage(projectId);
+    const [workspaceMember] = await this.transaction
+      .select({ actorId: workspaceMemberships.humanActorId })
+      .from(workspaceMemberships)
+      .where(
+        and(
+          eq(workspaceMemberships.workspaceId, this.workspaceId),
+          eq(workspaceMemberships.humanActorId, actorId),
+          eq(workspaceMemberships.status, "active"),
+        ),
+      )
+      .limit(1);
+    if (!workspaceMember) {
+      throw new PersistenceError("access_denied", "目标人员不是当前工作区的活跃成员");
+    }
+    const [membership] = await this.transaction
+      .insert(projectMemberships)
+      .values({
+        workspaceId: this.workspaceId,
+        projectId,
+        actorId,
+        role,
+        status: "active",
+        addedByActorId: this.actorId,
+        leftAt: null,
+      })
+      .onConflictDoUpdate({
+        target: [
+          projectMemberships.workspaceId,
+          projectMemberships.projectId,
+          projectMemberships.actorId,
+        ],
+        set: { role, status: "active", leftAt: null, updatedAt: new Date() },
+      })
+      .returning();
+    if (!membership) throw new PersistenceError("conflict", "项目成员写入后未返回记录");
+    return membership;
+  }
+
+  async listProjectMembers(projectId: string): Promise<ProjectMemberView[]> {
+    assertUuid(projectId, "projectId");
+    if (this.isWorkspaceManager()) await this.requireProjectManage(projectId);
+    else await this.requireActiveProjectMember(projectId);
+    return this.transaction
+      .select({
+        id: projectMemberships.id,
+        workspaceId: projectMemberships.workspaceId,
+        projectId: projectMemberships.projectId,
+        actorId: projectMemberships.actorId,
+        role: projectMemberships.role,
+        status: projectMemberships.status,
+        addedByActorId: projectMemberships.addedByActorId,
+        joinedAt: projectMemberships.joinedAt,
+        leftAt: projectMemberships.leftAt,
+        createdAt: projectMemberships.createdAt,
+        updatedAt: projectMemberships.updatedAt,
+        displayName: actors.displayName,
+      })
+      .from(projectMemberships)
+      .innerJoin(
+        actors,
+        and(
+          eq(actors.workspaceId, projectMemberships.workspaceId),
+          eq(actors.id, projectMemberships.actorId),
+        ),
+      )
+      .where(
+        and(
+          eq(projectMemberships.workspaceId, this.workspaceId),
+          eq(projectMemberships.projectId, projectId),
+        ),
+      )
+      .orderBy(asc(projectMemberships.createdAt));
+  }
+
+  async addRoomMember(roomId: string, actorId: string): Promise<StoredRoomMembership> {
+    assertUuid(roomId, "roomId");
+    assertUuid(actorId, "actorId");
+    const [room] = await this.transaction
+      .select({ projectId: rooms.projectId })
+      .from(rooms)
+      .where(and(eq(rooms.workspaceId, this.workspaceId), eq(rooms.id, roomId)))
+      .limit(1);
+    if (!room) throw new PersistenceError("not_found", "房间不存在");
+    await this.requireProjectManage(room.projectId);
+    const [projectMember] = await this.transaction
+      .select({ id: projectMemberships.id })
+      .from(projectMemberships)
+      .where(
+        and(
+          eq(projectMemberships.workspaceId, this.workspaceId),
+          eq(projectMemberships.projectId, room.projectId),
+          eq(projectMemberships.actorId, actorId),
+          eq(projectMemberships.status, "active"),
+        ),
+      )
+      .limit(1);
+    if (!projectMember) {
+      throw new PersistenceError("access_denied", "加入房间前必须先成为项目成员");
+    }
+    const [membership] = await this.transaction
+      .insert(roomMemberships)
+      .values({
+        workspaceId: this.workspaceId,
+        roomId,
+        actorId,
+        addedByActorId: this.actorId,
+        status: "active",
+        leftAt: null,
+      })
+      .onConflictDoUpdate({
+        target: [roomMemberships.workspaceId, roomMemberships.roomId, roomMemberships.actorId],
+        set: { status: "active", leftAt: null, updatedAt: new Date() },
+      })
+      .returning();
+    if (!membership) throw new PersistenceError("conflict", "房间成员写入后未返回记录");
+    return membership;
+  }
+
+  async listRooms(): Promise<RoomWithParticipantCount[]> {
+    const authorizedProjects = await this.listProjects();
+    const projectIds = authorizedProjects.map((project) => project.id);
+    if (projectIds.length === 0) return [];
+    const actorMemberships = await this.transaction
+      .select({ roomId: roomMemberships.roomId })
+      .from(roomMemberships)
+      .where(
+        and(
+          eq(roomMemberships.workspaceId, this.workspaceId),
+          eq(roomMemberships.actorId, this.actorId),
+          eq(roomMemberships.status, "active"),
+        ),
+      );
+    const actorRoomIds = new Set(actorMemberships.map((item) => item.roomId));
+    const roomRows = await this.transaction
+      .select()
+      .from(rooms)
+      .where(and(eq(rooms.workspaceId, this.workspaceId), inArray(rooms.projectId, projectIds)))
+      .orderBy(asc(rooms.createdAt));
+    const visibleRooms = roomRows.filter(
+      (room) => room.visibility === "workspace" || actorRoomIds.has(room.id),
+    );
+    if (visibleRooms.length === 0) return [];
+    const memberships = await this.transaction
+      .select({ roomId: roomMemberships.roomId })
+      .from(roomMemberships)
+      .where(
+        and(
+          eq(roomMemberships.workspaceId, this.workspaceId),
+          inArray(
+            roomMemberships.roomId,
+            visibleRooms.map((room) => room.id),
+          ),
+          eq(roomMemberships.status, "active"),
+        ),
+      );
+    const countByRoom = new Map<string, number>();
+    for (const membership of memberships) {
+      countByRoom.set(membership.roomId, (countByRoom.get(membership.roomId) ?? 0) + 1);
+    }
+    return visibleRooms.map((room) => ({
+      ...room,
+      participantCount: countByRoom.get(room.id) ?? 0,
+    }));
+  }
+
+  async createDocument(input: CreateDocumentInput): Promise<DocumentView> {
+    assertUuid(input.projectId, "projectId");
+    await this.requireProjectWrite(input.projectId);
+    if (input.roomId !== undefined) {
+      assertUuid(input.roomId, "roomId");
+      const [room] = await this.transaction
+        .select({ projectId: rooms.projectId, visibility: rooms.visibility })
+        .from(rooms)
+        .where(and(eq(rooms.workspaceId, this.workspaceId), eq(rooms.id, input.roomId)))
+        .limit(1);
+      if (!room || room.projectId !== input.projectId) {
+        throw new PersistenceError("not_found", "房间不存在或不属于指定项目");
+      }
+      if (room.visibility === "private") await this.requireActiveRoomMember(input.roomId);
+    }
+    const [document] = await this.transaction
+      .insert(documents)
+      .values({
+        workspaceId: this.workspaceId,
+        projectId: input.projectId,
+        ...(input.roomId === undefined ? {} : { roomId: input.roomId }),
+        ownerActorId: this.actorId,
+        title: requireText(input.title, "文档标题", 300),
+      })
+      .returning();
+    if (!document) throw new PersistenceError("conflict", "文档创建后未返回记录");
+    const [owner] = await this.transaction
+      .select({ displayName: actors.displayName })
+      .from(actors)
+      .where(and(eq(actors.workspaceId, this.workspaceId), eq(actors.id, this.actorId)));
+    return { ...document, ownerDisplayName: owner?.displayName ?? "" };
+  }
+
+  async updateDocument(documentId: string, input: UpdateDocumentInput): Promise<DocumentView> {
+    assertUuid(documentId, "documentId");
+    const [existing] = await this.transaction
+      .select()
+      .from(documents)
+      .where(and(eq(documents.workspaceId, this.workspaceId), eq(documents.id, documentId)))
+      .limit(1);
+    if (!existing || existing.deletedAt !== null) {
+      throw new PersistenceError("not_found", "文档不存在");
+    }
+    await this.requireProjectWrite(existing.projectId);
+    const [updated] = await this.transaction
+      .update(documents)
+      .set({
+        ...(input.title === undefined ? {} : { title: requireText(input.title, "文档标题", 300) }),
+        ...(input.status === undefined
+          ? {}
+          : {
+              status: input.status,
+              archivedAt: input.status === "archived" ? new Date() : null,
+            }),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(documents.workspaceId, this.workspaceId), eq(documents.id, documentId)))
+      .returning();
+    if (!updated) throw new PersistenceError("conflict", "文档更新后未返回记录");
+    const [owner] = await this.transaction
+      .select({ displayName: actors.displayName })
+      .from(actors)
+      .where(and(eq(actors.workspaceId, this.workspaceId), eq(actors.id, updated.ownerActorId)));
+    return { ...updated, ownerDisplayName: owner?.displayName ?? "" };
+  }
+
+  async listDocuments(): Promise<DocumentView[]> {
+    const authorizedProjects = await this.listProjects();
+    const projectIds = authorizedProjects.map((project) => project.id);
+    if (projectIds.length === 0) return [];
+    const visibleRooms = await this.listRooms();
+    const visibleRoomIds = new Set(visibleRooms.map((room) => room.id));
+    const rows = await this.transaction
+      .select({ document: documents, ownerDisplayName: actors.displayName })
+      .from(documents)
+      .innerJoin(
+        actors,
+        and(eq(actors.workspaceId, documents.workspaceId), eq(actors.id, documents.ownerActorId)),
+      )
+      .where(
+        and(eq(documents.workspaceId, this.workspaceId), inArray(documents.projectId, projectIds)),
+      )
+      .orderBy(desc(documents.updatedAt));
+    return rows
+      .filter(
+        ({ document }) =>
+          document.deletedAt === null &&
+          (document.roomId === null || visibleRoomIds.has(document.roomId)),
+      )
+      .map(({ document, ownerDisplayName }) => ({ ...document, ownerDisplayName }));
   }
 
   async appendMessage(input: AppendMessageInput): Promise<AppendMessageResult> {

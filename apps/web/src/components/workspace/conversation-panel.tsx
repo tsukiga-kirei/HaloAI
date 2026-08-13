@@ -34,6 +34,7 @@ interface ConversationPanelProps extends WorkspaceViewProps {
   onOpenDocument: () => void;
   onOpenMemberDialog: () => void;
   onNotify: (message: string) => void;
+  chatEnabled: boolean;
 }
 
 export function ConversationPanel({
@@ -54,6 +55,7 @@ export function ConversationPanel({
   onOpenDocument,
   onOpenMemberDialog,
   onNotify,
+  chatEnabled,
 }: ConversationPanelProps) {
   return (
     <main className="conversation-panel">
@@ -74,7 +76,8 @@ export function ConversationPanel({
             <div className="room-title-line">
               <h1>{roomTitle}</h1>
               <span className="room-mode">
-                <AtSign size={12} /> {dictionary.mentionMode}
+                <AtSign size={12} />{" "}
+                {chatEnabled ? dictionary.mentionMode : dictionary.chatNotEnabled}
               </span>
             </div>
             <p>{roomDescription}</p>
@@ -144,7 +147,7 @@ export function ConversationPanel({
         {messages.length === 0 ? (
           <div className="conversation-empty">
             <Sparkles size={24} />
-            <p>{dictionary.conversationEmpty}</p>
+            <p>{chatEnabled ? dictionary.conversationEmpty : dictionary.chatPending}</p>
           </div>
         ) : null}
         {messages.map((message) => {
@@ -191,7 +194,8 @@ export function ConversationPanel({
           );
         })}
         <div className="demo-runtime-note">
-          <ShieldCheck size={14} /> {dictionary.demoNotice}
+          <ShieldCheck size={14} />{" "}
+          {chatEnabled ? dictionary.demoNotice : dictionary.durableDataBoundary}
         </div>
         <div ref={endOfMessagesRef} />
       </section>
@@ -200,9 +204,10 @@ export function ConversationPanel({
         <div className="composer">
           <textarea
             value={input}
+            disabled={!chatEnabled}
             onChange={(event) => onInputChange(event.target.value)}
             onKeyDown={onComposerKeyDown}
-            placeholder={dictionary.messagePlaceholder}
+            placeholder={chatEnabled ? dictionary.messagePlaceholder : dictionary.chatPending}
             rows={1}
             aria-label={dictionary.messagePlaceholder}
           />
@@ -214,6 +219,7 @@ export function ConversationPanel({
                 aria-label={dictionary.addAttachment}
                 title={dictionary.addAttachment}
                 onClick={() => onNotify(dictionary.attachmentPreview)}
+                disabled={!chatEnabled}
               >
                 <Paperclip size={18} />
               </button>
@@ -223,6 +229,7 @@ export function ConversationPanel({
                 aria-label={dictionary.mentionSomeone}
                 title={dictionary.mentionSomeone}
                 onClick={() => onInputChange(`${input}@halo `)}
+                disabled={!chatEnabled}
               >
                 <AtSign size={18} />
               </button>
@@ -232,6 +239,7 @@ export function ConversationPanel({
                 aria-label={dictionary.moreActions}
                 title={dictionary.moreActions}
                 onClick={() => onNotify(dictionary.moreActionsPreview)}
+                disabled={!chatEnabled}
               >
                 <CirclePlus size={18} />
               </button>
@@ -241,7 +249,7 @@ export function ConversationPanel({
               type="button"
               className="send-button"
               onClick={onSubmit}
-              disabled={input.trim().length === 0 || isStreaming}
+              disabled={!chatEnabled || input.trim().length === 0 || isStreaming}
             >
               <span>{dictionary.send}</span>
               <Send size={16} />

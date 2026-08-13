@@ -1,8 +1,28 @@
 import type { DemoRoom, DisplayMessage, Participant } from "./types";
+import type { ProjectSummary } from "@haloai/contracts";
+
+const demoProjectId = "00000000-0000-4000-8000-000000000001";
+
+export const demoProjects: ProjectSummary[] = [
+  {
+    id: demoProjectId,
+    workspaceId: "00000000-0000-4000-8000-000000000002",
+    name: "HaloAI Alpha",
+    description: "",
+    goal: "",
+    expectedArtifact: "",
+    completionCriteria: "",
+    status: "active",
+    currentActorRole: "lead",
+    createdAt: "2026-08-13T00:00:00.000Z",
+    updatedAt: "2026-08-13T00:00:00.000Z",
+  },
+];
 
 export const demoRooms: DemoRoom[] = [
   {
     id: "launch",
+    projectId: demoProjectId,
     nameKey: "roomLaunch",
     descriptionKey: "roomDescription",
     goalKey: "goalText",
@@ -10,6 +30,7 @@ export const demoRooms: DemoRoom[] = [
   },
   {
     id: "research",
+    projectId: demoProjectId,
     nameKey: "roomResearch",
     descriptionKey: "roomResearchDescription",
     goalKey: "roomResearchGoal",
@@ -17,6 +38,7 @@ export const demoRooms: DemoRoom[] = [
   },
   {
     id: "website",
+    projectId: demoProjectId,
     nameKey: "roomWebsite",
     descriptionKey: "roomWebsiteDescription",
     goalKey: "roomWebsiteGoal",

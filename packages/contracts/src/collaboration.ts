@@ -13,6 +13,7 @@ import {
   LocaleSchema,
   MentionIdSchema,
   MessageIdSchema,
+  ProjectIdSchema,
   RoomIdSchema,
   SequenceSchema,
   SourceIdSchema,
@@ -76,14 +77,18 @@ export const WorkspaceSchema = z
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 
 export const CollaborationModeSchema = z.enum(["mention", "facilitated", "workflow", "roundtable"]);
-export const RoomStatusSchema = z.enum(["active", "waiting_approval", "complete", "archived"]);
+export const RoomStatusSchema = z.enum(["active", "waiting", "completed", "archived"]);
 
 export const RoomSchema = z
   .object({
     id: RoomIdSchema,
     workspaceId: WorkspaceIdSchema,
+    projectId: ProjectIdSchema,
     name: DisplayNameSchema,
     goal: z.string().trim().min(1).max(2_000),
+    expectedArtifact: z.string().trim().max(2_000),
+    completionCriteria: z.array(z.string().trim().min(1).max(500)).max(50),
+    visibility: z.enum(["workspace", "private"]),
     mode: CollaborationModeSchema,
     status: RoomStatusSchema,
     participantActorIds: z.array(ActorIdSchema).min(1).max(256),
@@ -236,7 +241,7 @@ export const MessageSchema = z
     replyToMessageId: MessageIdSchema.optional(),
     threadRootId: MessageIdSchema.optional(),
     agentRunId: AgentRunIdSchema.optional(),
-    parts: z.array(MessagePartSchema).min(1).max(128),
+    parts: z.array(MessagePartSchema).min(1).max(50),
     status: MessageStatusSchema,
     createdAt: ISODateTimeSchema,
     editedAt: ISODateTimeSchema.optional(),

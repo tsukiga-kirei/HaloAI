@@ -18,6 +18,7 @@ export const grantScope = pgEnum("grant_scope", ["workspace", "project", "room",
 export const grantStatus = pgEnum("grant_status", ["active", "revoked", "expired"]);
 
 export const projectStatus = pgEnum("project_status", ["active", "completed", "archived"]);
+export const projectRole = pgEnum("project_role", ["lead", "contributor", "reviewer", "observer"]);
 export const roomStatus = pgEnum("room_status", ["active", "waiting", "completed", "archived"]);
 export const roomVisibility = pgEnum("room_visibility", ["workspace", "private"]);
 export const collaborationMode = pgEnum("collaboration_mode", [

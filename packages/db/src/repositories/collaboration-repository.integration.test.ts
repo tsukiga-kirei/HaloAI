@@ -29,6 +29,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
   let admin: DatabaseClient;
   let application: DatabaseClient;
   const seeded: SeededWorkspace[] = [];
+  const seededUserIds: string[] = [];
 
   async function seedWorkspace(label: string): Promise<SeededWorkspace> {
     const userId = randomUUID();
@@ -64,7 +65,44 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
     });
     const result = { userId, workspaceId, actorId };
     seeded.push(result);
+    seededUserIds.push(userId);
     return result;
+  }
+
+  async function seedWorkspaceMember(
+    workspace: SeededWorkspace,
+    label: string,
+  ): Promise<{ userId: string; actorId: string }> {
+    const userId = randomUUID();
+    const actorId = randomUUID();
+    await admin.db.transaction(async (transaction) => {
+      await transaction.insert(users).values({
+        id: userId,
+        name: `${label} User`,
+        email: `${label}-${userId}@example.invalid`,
+      });
+      await transaction.insert(actors).values({
+        id: actorId,
+        workspaceId: workspace.workspaceId,
+        kind: "human",
+        displayName: `${label} 成员`,
+        handle: `${label}-${actorId}`,
+      });
+      await transaction.insert(humanActors).values({
+        actorId,
+        workspaceId: workspace.workspaceId,
+        userId,
+      });
+      await transaction.insert(workspaceMemberships).values({
+        workspaceId: workspace.workspaceId,
+        humanActorId: actorId,
+        status: "active",
+        isOwner: false,
+        joinedAt: new Date(),
+      });
+    });
+    seededUserIds.push(userId);
+    return { userId, actorId };
   }
 
   beforeAll(async () => {
@@ -84,8 +122,8 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
     if (admin) {
       for (const item of seeded) {
         await admin.db.delete(workspaces).where(eq(workspaces.id, item.workspaceId));
-        await admin.db.delete(users).where(eq(users.id, item.userId));
       }
+      for (const userId of seededUserIds) await admin.db.delete(users).where(eq(users.id, userId));
     }
     await Promise.all([admin?.close(), application?.close()]);
   });
@@ -121,6 +159,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
         transaction,
         context.workspaceId,
         context.actorId,
+        "owner",
       );
       const project = await repository.createProject({ name: "Alpha 验证" });
       return repository.createRoom({ projectId: project.id, name: "发布讨论" });
@@ -133,6 +172,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
           transaction,
           context.workspaceId,
           context.actorId,
+          "owner",
         );
         return repository.appendMessage({
           roomId: room.id,
@@ -145,9 +185,12 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
     expect(new Set(results.map((result) => result.message.id)).size).toBe(1);
 
     const page = await withWorkspaceTransaction(application.db, context, async (transaction) =>
-      new CollaborationRepository(transaction, context.workspaceId, context.actorId).listMessages(
-        room.id,
-      ),
+      new CollaborationRepository(
+        transaction,
+        context.workspaceId,
+        context.actorId,
+        "owner",
+      ).listMessages(room.id),
     );
     expect(page.items).toHaveLength(1);
     expect(page.items[0]?.sequence).toBe(1);
@@ -157,7 +200,12 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
     const owner = await seedWorkspace("owner");
     const outsider = await seedWorkspace("outsider");
     const room = await withWorkspaceTransaction(application.db, owner, async (transaction) => {
-      const repository = new CollaborationRepository(transaction, owner.workspaceId, owner.actorId);
+      const repository = new CollaborationRepository(
+        transaction,
+        owner.workspaceId,
+        owner.actorId,
+        "owner",
+      );
       const project = await repository.createProject({ name: "隔离验证" });
       return repository.createRoom({ projectId: project.id, name: "私有房间" });
     });
@@ -168,6 +216,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
           transaction,
           outsider.workspaceId,
           outsider.actorId,
+          "owner",
         ).listMessages(room.id),
       ),
     ).rejects.toMatchObject({ code: "access_denied" });
@@ -182,6 +231,102 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
           .where(and(eq(rooms.workspaceId, owner.workspaceId), eq(rooms.id, room.id))),
     );
     expect(visible).toBeUndefined();
+  });
+
+  it("项目角色限制写入，私密房间只对显式成员可见", async () => {
+    const owner = await seedWorkspace("roles-owner");
+    const reviewer = await seedWorkspaceMember(owner, "roles-reviewer");
+    const setup = await withWorkspaceTransaction(application.db, owner, async (transaction) => {
+      const repository = new CollaborationRepository(
+        transaction,
+        owner.workspaceId,
+        owner.actorId,
+        "owner",
+      );
+      const project = await repository.createProject({ name: "角色验证" });
+      await repository.addProjectMember(project.id, reviewer.actorId, "reviewer");
+      const privateRoom = await repository.createRoom({
+        projectId: project.id,
+        name: "负责人私密房间",
+        visibility: "private",
+      });
+      const workspaceRoom = await repository.createRoom({
+        projectId: project.id,
+        name: "项目公开房间",
+        visibility: "workspace",
+      });
+      await repository.createDocument({
+        projectId: project.id,
+        roomId: privateRoom.id,
+        title: "私密交付物",
+      });
+      return { project, privateRoom, workspaceRoom };
+    });
+
+    const reviewerContext = {
+      workspaceId: owner.workspaceId,
+      actorId: reviewer.actorId,
+    };
+    const initialView = await withWorkspaceTransaction(
+      application.db,
+      reviewerContext,
+      async (transaction) => {
+        const repository = new CollaborationRepository(
+          transaction,
+          owner.workspaceId,
+          reviewer.actorId,
+          "member",
+        );
+        return {
+          projects: await repository.listProjects(),
+          rooms: await repository.listRooms(),
+          documents: await repository.listDocuments(),
+        };
+      },
+    );
+    expect(initialView.projects[0]?.currentActorRole).toBe("reviewer");
+    expect(initialView.rooms.map((room) => room.id)).toEqual([setup.workspaceRoom.id]);
+    expect(initialView.documents).toEqual([]);
+
+    await expect(
+      withWorkspaceTransaction(application.db, reviewerContext, async (transaction) =>
+        new CollaborationRepository(
+          transaction,
+          owner.workspaceId,
+          reviewer.actorId,
+          "member",
+        ).createRoom({ projectId: setup.project.id, name: "不应创建" }),
+      ),
+    ).rejects.toMatchObject({ code: "access_denied" });
+
+    await withWorkspaceTransaction(application.db, owner, async (transaction) =>
+      new CollaborationRepository(
+        transaction,
+        owner.workspaceId,
+        owner.actorId,
+        "owner",
+      ).addRoomMember(setup.privateRoom.id, reviewer.actorId),
+    );
+    const visibleAfterJoin = await withWorkspaceTransaction(
+      application.db,
+      reviewerContext,
+      async (transaction) => {
+        const repository = new CollaborationRepository(
+          transaction,
+          owner.workspaceId,
+          reviewer.actorId,
+          "member",
+        );
+        return {
+          rooms: await repository.listRooms(),
+          documents: await repository.listDocuments(),
+        };
+      },
+    );
+    expect(new Set(visibleAfterJoin.rooms.map((room) => room.id))).toEqual(
+      new Set([setup.privateRoom.id, setup.workspaceRoom.id]),
+    );
+    expect(visibleAfterJoin.documents.map((document) => document.title)).toEqual(["私密交付物"]);
   });
 
   it("SET LOCAL 不会泄漏到连接池后续事务", async () => {
@@ -208,6 +353,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
         transaction,
         context.workspaceId,
         context.actorId,
+        "owner",
       );
       const project = await repository.createProject({ name: "撤权验证" });
       return repository.createRoom({ projectId: project.id, name: "撤权房间" });
@@ -231,6 +377,7 @@ describeWithDatabase("协作 Repository PostgreSQL 集成", () => {
           transaction,
           context.workspaceId,
           context.actorId,
+          "owner",
         ).appendMessage({
           roomId: room.id,
           clientMutationId: randomUUID(),

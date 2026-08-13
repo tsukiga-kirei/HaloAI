@@ -16,6 +16,7 @@ function createOpaqueIdSchema<const Brand extends string>() {
 
 export const ActorIdSchema = createOpaqueIdSchema<"ActorId">();
 export const WorkspaceIdSchema = createOpaqueIdSchema<"WorkspaceId">();
+export const ProjectIdSchema = createOpaqueIdSchema<"ProjectId">();
 export const RoomIdSchema = createOpaqueIdSchema<"RoomId">();
 export const MessageIdSchema = createOpaqueIdSchema<"MessageId">();
 export const MentionIdSchema = createOpaqueIdSchema<"MentionId">();
@@ -38,6 +39,7 @@ export const ClientMutationIdSchema = createOpaqueIdSchema<"ClientMutationId">()
 
 export type ActorId = z.infer<typeof ActorIdSchema>;
 export type WorkspaceId = z.infer<typeof WorkspaceIdSchema>;
+export type ProjectId = z.infer<typeof ProjectIdSchema>;
 export type RoomId = z.infer<typeof RoomIdSchema>;
 export type MessageId = z.infer<typeof MessageIdSchema>;
 export type MentionId = z.infer<typeof MentionIdSchema>;

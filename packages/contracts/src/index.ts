@@ -12,3 +12,4 @@ export * from "./authentication";
 export * from "./collaboration";
 export * from "./document-proposal";
 export * from "./primitives";
+export * from "./workspace-collaboration";

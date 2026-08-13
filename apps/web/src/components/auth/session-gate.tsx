@@ -1,6 +1,20 @@
 "use client";
 
-import type { SessionContext, WorkspaceSummary } from "@haloai/contracts";
+import {
+  DocumentCreatedResponseSchema,
+  ProjectCreatedResponseSchema,
+  RoomCreatedResponseSchema,
+  WorkspaceCollaborationSnapshotSchema,
+  type CreateDocumentInput,
+  type CreateProjectInput,
+  type CreateRoomInput,
+  type DocumentSummary,
+  type ProjectSummary,
+  type RoomSummary,
+  type SessionContext,
+  type WorkspaceCollaborationSnapshot,
+  type WorkspaceSummary,
+} from "@haloai/contracts";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -15,6 +29,7 @@ export function SessionGate() {
   const router = useRouter();
   const [session, setSession] = useState<SessionContext | null>(null);
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceSummary | null>(null);
+  const [collaboration, setCollaboration] = useState<WorkspaceCollaborationSnapshot | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -48,6 +63,23 @@ export function SessionGate() {
     };
   }, [router]);
 
+  useEffect(() => {
+    if (demoMode || activeWorkspace === null) return;
+    let active = true;
+    setCollaboration(null);
+    setFailed(false);
+    apiFetch<unknown>(`/v1/workspaces/${activeWorkspace.id}/collaboration`)
+      .then((payload) => {
+        if (active) setCollaboration(WorkspaceCollaborationSnapshotSchema.parse(payload));
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeWorkspace]);
+
   if (demoMode) return <HaloWorkspace />;
 
   if (failed) {
@@ -67,7 +99,7 @@ export function SessionGate() {
     );
   }
 
-  if (!session || !activeWorkspace) {
+  if (!session || !activeWorkspace || !collaboration) {
     return (
       <main className={styles.statusPage} aria-label="正在进入工作区">
         <div className={styles.loadingMark}>
@@ -77,6 +109,8 @@ export function SessionGate() {
       </main>
     );
   }
+
+  const activeWorkspaceId = activeWorkspace.id;
 
   function switchWorkspace(workspace: WorkspaceSummary): void {
     window.localStorage.setItem("haloai.workspaceId", workspace.id);
@@ -95,11 +129,42 @@ export function SessionGate() {
     router.refresh();
   }
 
+  async function createProject(input: CreateProjectInput): Promise<ProjectSummary> {
+    const payload = await apiFetch<unknown>(`/v1/workspaces/${activeWorkspaceId}/projects`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return ProjectCreatedResponseSchema.parse(payload).project;
+  }
+
+  async function createRoom(projectId: string, input: CreateRoomInput): Promise<RoomSummary> {
+    const payload = await apiFetch<unknown>(
+      `/v1/workspaces/${activeWorkspaceId}/projects/${projectId}/rooms`,
+      { method: "POST", body: JSON.stringify(input) },
+    );
+    return RoomCreatedResponseSchema.parse(payload).room;
+  }
+
+  async function createDocument(
+    projectId: string,
+    input: CreateDocumentInput,
+  ): Promise<DocumentSummary> {
+    const payload = await apiFetch<unknown>(
+      `/v1/workspaces/${activeWorkspaceId}/projects/${projectId}/documents`,
+      { method: "POST", body: JSON.stringify(input) },
+    );
+    return DocumentCreatedResponseSchema.parse(payload).document;
+  }
+
   return (
     <HaloWorkspace
       identity={session.user}
       workspaces={session.workspaces}
       activeWorkspace={activeWorkspace}
+      collaboration={collaboration}
+      onCreateProject={createProject}
+      onCreateRoom={createRoom}
+      onCreateDocument={createDocument}
       onWorkspaceChange={switchWorkspace}
       onSignOut={() => void signOut()}
     />

@@ -20,6 +20,20 @@
 - Agent creation, mention routing, run budgets, and audit timeline.
 - Local document versions and human approval flow.
 
+### Current non-AI durable data slice
+
+This slice completes REST paths for projects, project membership, rooms, room membership, and document metadata without implementing message sending, model calls, or Agent Runs early:
+
+- Workspace Owners and Admins can create projects; the creator automatically becomes the project `lead`.
+- Owners, Admins, and project `lead`s can add active people from the current workspace to a project. A person must be a project member before joining a private room.
+- Project members can list only authorized projects. Private rooms require explicit room membership, while workspace-visible rooms still require project membership.
+- Project `lead`s and `contributor`s can create rooms and document metadata. `reviewer`s and `observer`s remain read-only.
+- Browsers cannot submit or override trusted `workspaceId`, `actorId`, membership role, or resource ownership fields. The API derives them from the session and server-side membership.
+- Cross-workspace IDs, missing project membership, revoked room membership, and disallowed project roles fail closed.
+- Under real authentication, collaboration loads projects, rooms, and the document directory from the API. Local Demo mode keeps isolated sample data.
+
+Acceptance requires a lead to create a project, add a member, create a private room, and create document metadata. Data survives refresh, and the entire path makes no AI call.
+
 ## Phase 2 — team beta
 
 - WebSocket presence and reliable message delivery.

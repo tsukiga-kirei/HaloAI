@@ -125,7 +125,7 @@ export interface AgentVersion {
   publishedAt: ISODateTime;
 }
 
-export type CollaborationMode = "mention" | "facilitated" | "roundtable";
+export type CollaborationMode = "mention" | "facilitated" | "workflow" | "roundtable";
 export type RoomStatus = "active" | "waiting" | "completed" | "archived";
 
 export interface ProjectRoom {
