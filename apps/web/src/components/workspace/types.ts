@@ -1,6 +1,7 @@
 import type { Dictionary } from "@/lib/i18n";
 
-export type MobileView = "rooms" | "chat" | "document";
+export type MobileView = "rooms" | "chat" | "document" | "inbox";
+export type WorkspaceSection = "room" | "overview" | "inbox" | "documents" | "activity";
 export type Theme = "light" | "dark";
 export type DocumentTab = "document" | "activity" | "versions";
 export type RoleKey =

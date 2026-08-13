@@ -19,7 +19,9 @@ import type {
   Participant,
   RoleKey,
   Theme,
+  WorkspaceSection,
 } from "./workspace/types";
+import { WorkspaceHub } from "./workspace/workspace-hub";
 import { WorkspaceSidebar } from "./workspace/workspace-sidebar";
 
 const streamEventSchema = z.object({
@@ -46,6 +48,7 @@ export function HaloWorkspace({
   const [theme, setTheme] = useState<Theme>("light");
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
+  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("room");
   const [documentTab, setDocumentTab] = useState<DocumentTab>("document");
   const [rooms, setRooms] = useState<DemoRoom[]>(demoRooms);
   const [activeRoomId, setActiveRoomId] = useState("launch");
@@ -290,6 +293,7 @@ export function HaloWorkspace({
     setRooms((current) => [...current, room]);
     setMessagesByRoom((current) => ({ ...current, [room.id]: [] }));
     setActiveRoomId(room.id);
+    setWorkspaceSection("room");
     setRoomDialogOpen(false);
     setMobileView("chat");
     setNotice(dictionary.roomCreated);
@@ -297,10 +301,32 @@ export function HaloWorkspace({
 
   function selectRoom(roomId: string): void {
     setActiveRoomId(roomId);
+    setWorkspaceSection("room");
     setRooms((current) =>
       current.map((room) => (room.id === roomId ? { ...room, unread: 0 } : room)),
     );
     setMobileView("chat");
+  }
+
+  function selectWorkspaceSection(section: WorkspaceSection): void {
+    setWorkspaceSection(section);
+    if (section !== "room") setMobileView("inbox");
+  }
+
+  function openRoomDocument(roomId: string): void {
+    setActiveRoomId(roomId);
+    setWorkspaceSection("room");
+    setDocumentTab("document");
+    setMobileView("document");
+  }
+
+  function changeMobileView(view: MobileView): void {
+    if (view === "inbox") {
+      setWorkspaceSection("inbox");
+    } else if (view === "chat" || view === "document") {
+      setWorkspaceSection("room");
+    }
+    setMobileView(view);
   }
 
   return (
@@ -318,46 +344,63 @@ export function HaloWorkspace({
         activeWorkspace={activeWorkspace}
         onWorkspaceChange={onWorkspaceChange}
         onSignOut={onSignOut}
+        activeSection={workspaceSection}
+        onSectionSelect={selectWorkspaceSection}
       />
-      <ConversationPanel
-        dictionary={dictionary}
-        roomTitle={roomTitle}
-        roomDescription={roomDescription}
-        roomGoal={roomGoal}
-        memberSummary={memberSummary}
-        participants={participants}
-        messages={activeMessages}
-        input={input}
-        isStreaming={isStreaming}
-        endOfMessagesRef={endOfMessagesRef}
-        onInputChange={setInput}
-        onComposerKeyDown={handleComposerKeyDown}
-        onSubmit={() => void submitMessage()}
-        onOpenRooms={() => setMobileView("rooms")}
-        onOpenDocument={() => setMobileView("document")}
-        onOpenMemberDialog={() => setMemberDialogOpen(true)}
-        onNotify={setNotice}
-      />
-      <DocumentPanel
-        dictionary={dictionary}
-        tab={documentTab}
-        version={documentVersion}
-        dirty={documentDirty}
-        suggestionApplied={suggestionApplied}
-        onTabChange={setDocumentTab}
-        onDirtyChange={setDocumentDirty}
-        onSave={() => {
-          setDocumentDirty(false);
-          setDocumentVersion((current) => current + 1);
-          setNotice(dictionary.versionSaved);
-        }}
-        onApplySuggestion={() => {
-          setSuggestionApplied(true);
-          setDocumentDirty(true);
-        }}
-        onCloseMobile={() => setMobileView("chat")}
-        onNotify={setNotice}
-      />
+      {workspaceSection === "room" ? (
+        <>
+          <ConversationPanel
+            dictionary={dictionary}
+            roomTitle={roomTitle}
+            roomDescription={roomDescription}
+            roomGoal={roomGoal}
+            memberSummary={memberSummary}
+            participants={participants}
+            messages={activeMessages}
+            input={input}
+            isStreaming={isStreaming}
+            endOfMessagesRef={endOfMessagesRef}
+            onInputChange={setInput}
+            onComposerKeyDown={handleComposerKeyDown}
+            onSubmit={() => void submitMessage()}
+            onOpenRooms={() => setMobileView("rooms")}
+            onOpenDocument={() => setMobileView("document")}
+            onOpenMemberDialog={() => setMemberDialogOpen(true)}
+            onNotify={setNotice}
+          />
+          <DocumentPanel
+            dictionary={dictionary}
+            tab={documentTab}
+            version={documentVersion}
+            dirty={documentDirty}
+            suggestionApplied={suggestionApplied}
+            onTabChange={setDocumentTab}
+            onDirtyChange={setDocumentDirty}
+            onSave={() => {
+              setDocumentDirty(false);
+              setDocumentVersion((current) => current + 1);
+              setNotice(dictionary.versionSaved);
+            }}
+            onApplySuggestion={() => {
+              setSuggestionApplied(true);
+              setDocumentDirty(true);
+            }}
+            onCloseMobile={() => setMobileView("chat")}
+            onNotify={setNotice}
+          />
+        </>
+      ) : (
+        <WorkspaceHub
+          dictionary={dictionary}
+          section={workspaceSection}
+          rooms={rooms}
+          onSectionChange={selectWorkspaceSection}
+          onCreateRoom={() => setRoomDialogOpen(true)}
+          onOpenRoom={selectRoom}
+          onOpenDocument={openRoomDocument}
+          onNotify={setNotice}
+        />
+      )}
       <UtilityRail
         dictionary={dictionary}
         locale={locale}
@@ -365,7 +408,7 @@ export function HaloWorkspace({
         onToggleLocale={toggleLocale}
         onToggleTheme={toggleTheme}
       />
-      <MobileNavigation dictionary={dictionary} view={mobileView} onViewChange={setMobileView} />
+      <MobileNavigation dictionary={dictionary} view={mobileView} onViewChange={changeMobileView} />
 
       {memberDialogOpen ? (
         <MemberDialog

@@ -1,4 +1,4 @@
-import { FileText, Hash, Languages, MessageCircleMore, Moon, Sun } from "lucide-react";
+import { FileText, Hash, Inbox, Languages, MessageCircleMore, Moon, Sun } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { MobileView, Theme, WorkspaceViewProps } from "./types";
 
@@ -72,6 +72,14 @@ export function MobileNavigation({
       >
         <FileText size={19} />
         <span>{dictionary.document}</span>
+      </button>
+      <button
+        type="button"
+        className={view === "inbox" ? "is-active" : ""}
+        onClick={() => onViewChange("inbox")}
+      >
+        <Inbox size={19} />
+        <span>{dictionary.inbox}</span>
       </button>
     </nav>
   );

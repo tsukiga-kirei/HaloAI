@@ -29,6 +29,30 @@ test.describe("桌面工作台", () => {
     await expectNoHorizontalOverflow(page);
   });
 
+  test("总览、收件箱和文档目录可用且不会触发 AI 请求", async ({ page }) => {
+    const aiRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().endsWith("/api/demo-agent")) aiRequests.push(request.url());
+    });
+
+    await page.getByRole("button", { name: "总览" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "团队工作总览" })).toBeVisible();
+    await expect(page.getByText("本地预览：不会调用 AI、执行工具或写入外部系统。")).toBeVisible();
+
+    await page.getByRole("button", { name: "收件箱" }).first().click();
+    await page.getByRole("button", { name: "待审批" }).click();
+    await expect(page.getByText("「品牌与官网」的首页文案等待人工审批。")).toBeVisible();
+    await page.getByRole("button", { name: "标记已读" }).click();
+    await expect(page.getByRole("status")).toContainText("已在本地标记为已读");
+
+    await page.getByRole("button", { name: "文档" }).first().click();
+    await page.locator('input[placeholder="搜索文档"]').fill("访谈");
+    await expect(page.getByText("用户访谈洞察汇总")).toBeVisible();
+    await expect(page.getByText("HaloAI 内测发布提案")).toHaveCount(0);
+    expect(aiRequests).toEqual([]);
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("可在中文与英文之间切换", async ({ page }) => {
     const chineseTagline = page.getByText("团队与 AI 并肩，让想法成为成果", { exact: true });
     await expect(chineseTagline).toBeVisible();

@@ -37,6 +37,18 @@ Administration currently renders verifiable sample state. Action buttons only pr
 
 System administration currently provides only a restricted entry and security-boundary explanation. It exposes no tenant data or simulated operational controls.
 
+### 4.1 Non-AI collaboration shell
+
+Before chat orchestration, model providers, and Agent Runs are connected, collaboration first completes independently testable team workflows:
+
+- Workspace overview collects recent rooms, action items, and shared documents with explicit owners and states.
+- Inbox switches between mentions, approvals, and invitations. Without an API, it may only mark items read locally and must not claim durable success.
+- The document directory supports search, status filters, and a path back to the document panel in its room.
+- Activity shows attributable people, timestamps, and objects without exposing or implying hidden AI reasoning.
+- These surfaces must not trigger model calls, tool calls, or external writes, and must keep the local-preview boundary visible.
+
+The visual hierarchy continues to use HaloAI semantic tokens. Reference products inform information architecture, spacing, and interaction density only; their branding, color systems, and AI permission models are not copied.
+
 ## 5. Completion criteria
 
 - `/app`, `/admin/overview`, and all administration sections navigate through real links.
@@ -45,3 +57,5 @@ System administration currently provides only a restricted entry and security-bo
 - Unauthorized principals cannot bypass the server guard by entering a route directly.
 - Every administration page displays its scope and distinguishes active, pending approval, disconnected, and read-only states.
 - System administration denies workspace roles by default and exposes no tenant-content summary.
+- Overview, inbox, document directory, and activity are reachable through real collaboration navigation without triggering AI or external writes.
+- 1440×900 preserves the rooms, conversation, and document columns. Tablet and mobile use a single-view path instead of a compressed desktop layout.

@@ -6,10 +6,11 @@ test.describe("手机工作台", () => {
     await openChineseWorkspace(page);
   });
 
-  test("390×844 以单栈底栏切换房间、对话和文档", async ({ page }) => {
+  test("390×844 以单栈底栏切换房间、对话、文档和收件箱", async ({ page }) => {
     const navigation = page.getByRole("navigation", { name: "移动端主导航" });
     const rooms = page.getByRole("complementary", { name: "房间", includeHidden: true });
-    const conversation = page.getByRole("main", { includeHidden: true });
+    const conversation = page.locator(".conversation-panel");
+    const hub = page.locator(".workspace-hub");
     const document = page.getByRole("complementary", {
       name: "共享文档",
       includeHidden: true,
@@ -40,6 +41,17 @@ test.describe("手机工作台", () => {
       page.getByRole("heading", { level: 2, name: "HaloAI 内测发布提案" }),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
+
+    await navigation.getByRole("button", { name: "收件箱", exact: true }).click();
+    await expect(hub).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "收件箱" })).toBeVisible();
+    await expect(conversation).toBeHidden();
+    await expect(document).toBeHidden();
+    await expectNoHorizontalOverflow(page);
+
+    await navigation.getByRole("button", { name: "对话", exact: true }).click();
+    await expect(conversation).toBeVisible();
+    await expect(hub).toBeHidden();
   });
 
   test("390×844 的后台使用移动导航且配置卡片无横向溢出", async ({ page }) => {

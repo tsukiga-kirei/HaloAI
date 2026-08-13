@@ -5,6 +5,8 @@ import {
   ChevronDown,
   Hash,
   Inbox,
+  FileText,
+  LayoutDashboard,
   LogOut,
   MoreHorizontal,
   Plus,
@@ -15,7 +17,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, HaloMark, SidebarSection } from "./primitives";
-import type { DemoRoom, WorkspaceViewProps } from "./types";
+import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
 
 export function WorkspaceSidebar({
   dictionary,
@@ -30,6 +32,8 @@ export function WorkspaceSidebar({
   activeWorkspace,
   onWorkspaceChange,
   onSignOut,
+  activeSection,
+  onSectionSelect,
 }: WorkspaceViewProps & {
   rooms: readonly DemoRoom[];
   activeRoomId: string;
@@ -42,6 +46,8 @@ export function WorkspaceSidebar({
   activeWorkspace?: WorkspaceSummary | undefined;
   onWorkspaceChange?: ((workspace: WorkspaceSummary) => void) | undefined;
   onSignOut?: (() => void) | undefined;
+  activeSection: WorkspaceSection;
+  onSectionSelect: (section: WorkspaceSection) => void;
 }) {
   const [query, setQuery] = useState("");
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
@@ -123,7 +129,7 @@ export function WorkspaceSidebar({
         </button>
         {workspaceMenuOpen ? (
           <div className="workspace-menu" role="menu">
-            <span className="workspace-menu-label">切换工作区</span>
+            <span className="workspace-menu-label">{dictionary.switchWorkspace}</span>
             {workspaces.map((workspace) => (
               <button
                 key={workspace.id}
@@ -145,7 +151,7 @@ export function WorkspaceSidebar({
               </button>
             ))}
             <Link href={"/onboarding" as Route} className="workspace-menu-create" role="menuitem">
-              <Plus size={15} /> 新建工作区
+              <Plus size={15} /> {dictionary.createWorkspace}
             </Link>
           </div>
         ) : null}
@@ -166,8 +172,18 @@ export function WorkspaceSidebar({
       <nav className="primary-nav">
         <button
           type="button"
-          className="nav-item"
-          onClick={() => onNotify(dictionary.inboxPreview)}
+          className={`nav-item ${activeSection === "overview" ? "is-active" : ""}`}
+          aria-pressed={activeSection === "overview"}
+          onClick={() => onSectionSelect("overview")}
+        >
+          <LayoutDashboard size={18} />
+          <span>{dictionary.overview}</span>
+        </button>
+        <button
+          type="button"
+          className={`nav-item ${activeSection === "inbox" ? "is-active" : ""}`}
+          aria-pressed={activeSection === "inbox"}
+          onClick={() => onSectionSelect("inbox")}
         >
           <Inbox size={18} />
           <span>{dictionary.inbox}</span>
@@ -175,8 +191,18 @@ export function WorkspaceSidebar({
         </button>
         <button
           type="button"
-          className="nav-item"
-          onClick={() => onNotify(dictionary.activityPreview)}
+          className={`nav-item ${activeSection === "documents" ? "is-active" : ""}`}
+          aria-pressed={activeSection === "documents"}
+          onClick={() => onSectionSelect("documents")}
+        >
+          <FileText size={18} />
+          <span>{dictionary.documents}</span>
+        </button>
+        <button
+          type="button"
+          className={`nav-item ${activeSection === "activity" ? "is-active" : ""}`}
+          aria-pressed={activeSection === "activity"}
+          onClick={() => onSectionSelect("activity")}
         >
           <Bell size={18} />
           <span>{dictionary.activity}</span>
@@ -193,7 +219,7 @@ export function WorkspaceSidebar({
             {visibleRooms.map((room) => (
               <button
                 type="button"
-                className={`room-item ${room.id === activeRoomId ? "is-active" : ""}`}
+                className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
                 key={room.id}
                 aria-pressed={room.id === activeRoomId}
                 onClick={() => onRoomSelect(room.id)}
@@ -251,7 +277,7 @@ export function WorkspaceSidebar({
         {profileMenuOpen && onSignOut ? (
           <div className="profile-menu">
             <button type="button" onClick={onSignOut}>
-              <LogOut size={16} /> 退出登录
+              <LogOut size={16} /> {dictionary.signOut}
             </button>
           </div>
         ) : null}

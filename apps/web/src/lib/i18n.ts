@@ -103,6 +103,53 @@ export interface Dictionary {
   activityPreview: string;
   directMessagePreview: string;
   profilePreview: string;
+  overview: string;
+  documents: string;
+  switchWorkspace: string;
+  createWorkspace: string;
+  signOut: string;
+  workspaceOverviewTitle: string;
+  workspaceOverviewSubtitle: string;
+  localPreviewBoundary: string;
+  recentRooms: string;
+  actionQueue: string;
+  sharedDocuments: string;
+  activeRooms: string;
+  pendingItems: string;
+  openRoom: string;
+  viewAll: string;
+  inboxSubtitle: string;
+  allItems: string;
+  mentions: string;
+  approvals: string;
+  invitations: string;
+  markAsRead: string;
+  markedRead: string;
+  mentionItem: string;
+  approvalItem: string;
+  invitationItem: string;
+  needsReview: string;
+  unreadStatus: string;
+  documentDirectoryTitle: string;
+  documentDirectorySubtitle: string;
+  searchDocuments: string;
+  allStatuses: string;
+  inReview: string;
+  approved: string;
+  documentOwner: string;
+  documentResearchOwner: string;
+  openDocument: string;
+  documentProposal: string;
+  documentResearch: string;
+  documentBrand: string;
+  updatedToday: string;
+  updatedYesterday: string;
+  activityTitle: string;
+  activitySubtitle: string;
+  activityItemOne: string;
+  activityItemTwo: string;
+  activityItemThree: string;
+  activityHumanNote: string;
   attachmentPreview: string;
   moreActionsPreview: string;
   sourcePreview: string;
@@ -226,6 +273,53 @@ export const dictionaries: Record<Locale, Dictionary> = {
     activityPreview: "全局动态将在审计事件接入后展示人员与 AI 的关键操作。",
     directMessagePreview: "私信身份边界已规划，真实会话将在数据库接入后开放。",
     profilePreview: "个人资料与会话设置将在认证接入后开放。",
+    overview: "总览",
+    documents: "文档",
+    switchWorkspace: "切换工作区",
+    createWorkspace: "新建工作区",
+    signOut: "退出登录",
+    workspaceOverviewTitle: "团队工作总览",
+    workspaceOverviewSubtitle: "从房间、待处理事项和共享文档继续今天的工作。",
+    localPreviewBoundary: "本地预览：不会调用 AI、执行工具或写入外部系统。",
+    recentRooms: "最近房间",
+    actionQueue: "待处理事项",
+    sharedDocuments: "共享文档",
+    activeRooms: "活跃房间",
+    pendingItems: "待处理",
+    openRoom: "进入房间",
+    viewAll: "查看全部",
+    inboxSubtitle: "集中处理提及、审批和团队邀请。",
+    allItems: "全部",
+    mentions: "提及",
+    approvals: "待审批",
+    invitations: "邀请",
+    markAsRead: "标记已读",
+    markedRead: "已在本地标记为已读",
+    mentionItem: "林岚在「内测发布」中提及了你，需要确认最终验收人。",
+    approvalItem: "「品牌与官网」的首页文案等待人工审批。",
+    invitationItem: "陈然邀请你加入「客户成功手册」项目。",
+    needsReview: "需要处理",
+    unreadStatus: "未读",
+    documentDirectoryTitle: "团队文档",
+    documentDirectorySubtitle: "按状态查找交付物，并回到所属房间继续协作。",
+    searchDocuments: "搜索文档",
+    allStatuses: "全部状态",
+    inReview: "审阅中",
+    approved: "已批准",
+    documentOwner: "负责人",
+    documentResearchOwner: "陈然",
+    openDocument: "打开文档",
+    documentProposal: "HaloAI 内测发布提案",
+    documentResearch: "用户访谈洞察汇总",
+    documentBrand: "品牌首页叙事与发布清单",
+    updatedToday: "今天更新",
+    updatedYesterday: "昨天更新",
+    activityTitle: "工作空间动态",
+    activitySubtitle: "按人员、时间和对象记录可追溯的团队活动。",
+    activityItemOne: "林岚保存了「HaloAI 内测发布提案」的新版本。",
+    activityItemTwo: "陈然将「用户访谈洞察汇总」移至审阅中。",
+    activityItemThree: "Andy 创建了「品牌与官网」房间。",
+    activityHumanNote: "这里只展示可归因事件，不展示或推断 AI 的隐藏思考过程。",
     attachmentPreview: "附件入口已保留；对象存储、病毒扫描和权限过滤接入后开放。",
     moreActionsPreview: "该菜单属于后续业务能力，当前演示不会执行外部或不可逆操作。",
     sourcePreview: "来源详情将在知识与引用服务接入后打开。",
@@ -362,6 +456,54 @@ export const dictionaries: Record<Locale, Dictionary> = {
     directMessagePreview:
       "Direct-message identity boundaries are designed; durable conversations open with persistence.",
     profilePreview: "Profile and session settings open after authentication is connected.",
+    overview: "Overview",
+    documents: "Documents",
+    switchWorkspace: "Switch workspace",
+    createWorkspace: "Create workspace",
+    signOut: "Sign out",
+    workspaceOverviewTitle: "Team workspace overview",
+    workspaceOverviewSubtitle: "Continue today's work across rooms, action items, and shared docs.",
+    localPreviewBoundary: "Local preview: no AI calls, tool execution, or external writes.",
+    recentRooms: "Recent rooms",
+    actionQueue: "Action queue",
+    sharedDocuments: "Shared documents",
+    activeRooms: "Active rooms",
+    pendingItems: "Pending",
+    openRoom: "Open room",
+    viewAll: "View all",
+    inboxSubtitle: "Handle mentions, approvals, and team invitations in one place.",
+    allItems: "All",
+    mentions: "Mentions",
+    approvals: "Approvals",
+    invitations: "Invitations",
+    markAsRead: "Mark as read",
+    markedRead: "Marked as read in this local preview",
+    mentionItem: "Mina mentioned you in “Pilot launch” to confirm the final approver.",
+    approvalItem: "Homepage copy in “Brand and website” is waiting for human approval.",
+    invitationItem: "Chen Ran invited you to the “Customer success handbook” project.",
+    needsReview: "Needs action",
+    unreadStatus: "Unread",
+    documentDirectoryTitle: "Team documents",
+    documentDirectorySubtitle: "Find deliverables by status and return to their room to continue.",
+    searchDocuments: "Search documents",
+    allStatuses: "All statuses",
+    inReview: "In review",
+    approved: "Approved",
+    documentOwner: "Owner",
+    documentResearchOwner: "Chen Ran",
+    openDocument: "Open document",
+    documentProposal: "HaloAI pilot launch proposal",
+    documentResearch: "User interview insight synthesis",
+    documentBrand: "Homepage narrative and launch checklist",
+    updatedToday: "Updated today",
+    updatedYesterday: "Updated yesterday",
+    activityTitle: "Workspace activity",
+    activitySubtitle: "Traceable team events with an explicit person, time, and object.",
+    activityItemOne: "Mina saved a new version of “HaloAI pilot launch proposal”.",
+    activityItemTwo: "Chen Ran moved “User interview insight synthesis” to in review.",
+    activityItemThree: "Andy created the “Brand and website” room.",
+    activityHumanNote:
+      "Only attributable events appear here; hidden AI reasoning is never shown or inferred.",
     attachmentPreview:
       "Attachment UI is reserved. It opens after object storage, malware scanning, and ACL filtering are connected.",
     moreActionsPreview:
