@@ -138,6 +138,13 @@ export interface Dictionary {
   switchWorkspace: string;
   createWorkspace: string;
   signOut: string;
+  personalSettings: string;
+  lightTheme: string;
+  darkTheme: string;
+  switchRole: string;
+  switchRolePreview: string;
+  collapseSidebar: string;
+  expandSidebar: string;
   workspaceOverviewTitle: string;
   workspaceOverviewSubtitle: string;
   localPreviewBoundary: string;
@@ -180,6 +187,10 @@ export interface Dictionary {
   activityItemTwo: string;
   activityItemThree: string;
   activityHumanNote: string;
+  columnContent: string;
+  columnType: string;
+  columnTime: string;
+  columnAction: string;
   attachmentPreview: string;
   moreActionsPreview: string;
   sourcePreview: string;
@@ -327,7 +338,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     versionLabel: "版本 v{version}",
     activityDescription: "AI 建议已生成、负责人已审阅，最近的编辑会在这里形成责任记录。",
     versionsDescription: "每次人工保存都会形成可追踪版本；AI 修改只有被采纳后才进入正文。",
-    settingsPreview: "设置中心将在内部 Alpha 接入；语言与主题现在可以在右侧切换。",
+    settingsPreview: "设置中心将在内部 Alpha 接入；语言与主题现在可以在个人设置中切换。",
     workspacePreview: "当前演示只有一个工作空间，切换与创建将在认证接入后开放。",
     inboxPreview: "收件箱将在真实消息持久化接入后显示提及、审批和待办。",
     activityPreview: "全局动态将在审计事件接入后展示人员与 AI 的关键操作。",
@@ -338,6 +349,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     switchWorkspace: "切换工作区",
     createWorkspace: "新建工作区",
     signOut: "退出登录",
+    personalSettings: "个人设置",
+    lightTheme: "浅色",
+    darkTheme: "深色",
+    switchRole: "切换角色",
+    switchRolePreview: "角色切换将在认证接入后开放。",
+    collapseSidebar: "收起侧栏",
+    expandSidebar: "展开侧栏",
     workspaceOverviewTitle: "团队工作总览",
     workspaceOverviewSubtitle: "从房间、待处理事项和共享文档继续今天的工作。",
     localPreviewBoundary: "本地预览：不会调用 AI、执行工具或写入外部系统。",
@@ -380,6 +398,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     activityItemTwo: "陈然将「用户访谈洞察汇总」移至审阅中。",
     activityItemThree: "Andy 创建了「品牌与官网」房间。",
     activityHumanNote: "这里只展示可归因事件，不展示或推断 AI 的隐藏思考过程。",
+    columnContent: "内容",
+    columnType: "类型",
+    columnTime: "时间",
+    columnAction: "操作",
     attachmentPreview: "附件入口已保留；对象存储、病毒扫描和权限过滤接入后开放。",
     moreActionsPreview: "该菜单属于后续业务能力，当前演示不会执行外部或不可逆操作。",
     sourcePreview: "来源详情将在知识与引用服务接入后打开。",
@@ -541,7 +563,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     versionsDescription:
       "Every human save creates a traceable version. AI changes enter the document only after approval.",
     settingsPreview:
-      "Settings arrive in Internal Alpha. Language and theme controls already work in the right rail.",
+      "Settings arrive in Internal Alpha. Language and theme controls already work in personal settings.",
     workspacePreview:
       "This demo has one workspace. Switching and creation open after authentication is connected.",
     inboxPreview:
@@ -556,6 +578,13 @@ export const dictionaries: Record<Locale, Dictionary> = {
     switchWorkspace: "Switch workspace",
     createWorkspace: "Create workspace",
     signOut: "Sign out",
+    personalSettings: "Personal settings",
+    lightTheme: "Light",
+    darkTheme: "Dark",
+    switchRole: "Switch role",
+    switchRolePreview: "Role switching opens after authentication is connected.",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
     workspaceOverviewTitle: "Team workspace overview",
     workspaceOverviewSubtitle: "Continue today's work across rooms, action items, and shared docs.",
     localPreviewBoundary: "Local preview: no AI calls, tool execution, or external writes.",
@@ -599,6 +628,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     activityItemThree: "Andy created the “Brand and website” room.",
     activityHumanNote:
       "Only attributable events appear here; hidden AI reasoning is never shown or inferred.",
+    columnContent: "Item",
+    columnType: "Type",
+    columnTime: "Time",
+    columnAction: "Action",
     attachmentPreview:
       "Attachment UI is reserved. It opens after object storage, malware scanning, and ACL filtering are connected.",
     moreActionsPreview:

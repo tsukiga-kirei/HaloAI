@@ -20,7 +20,7 @@ import { demoParticipants } from "./workspace/demo-data";
 import { DocumentPanel } from "./workspace/document-panel";
 import { DocumentDialog } from "./workspace/document-dialog";
 import { MemberDialog } from "./workspace/member-dialog";
-import { MobileNavigation, UtilityRail } from "./workspace/navigation";
+import { MobileNavigation } from "./workspace/navigation";
 import { RoomDialog } from "./workspace/room-dialog";
 import { ProjectDialog } from "./workspace/project-dialog";
 import type {
@@ -70,6 +70,7 @@ export function HaloWorkspace({
     !durableMode || activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin";
   const [locale, setLocale] = useState<Locale>("zh-CN");
   const [theme, setTheme] = useState<Theme>("light");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>(
@@ -141,14 +142,7 @@ export function HaloWorkspace({
   const roomTitle =
     activeRoom?.name ??
     (activeRoom?.nameKey === undefined ? dictionary.roomLaunch : dictionary[activeRoom.nameKey]);
-  const roomDescription = durableMode
-    ? activeRoom?.expectedArtifact || activeRoom?.goal || dictionary.roomGoalPlaceholder
-    : activeRoom?.descriptionKey === undefined
-      ? dictionary.roomDescription
-      : dictionary[activeRoom.descriptionKey];
-  const roomGoal =
-    activeRoom?.goal ||
-    (activeRoom?.goalKey === undefined ? dictionary.goalText : dictionary[activeRoom.goalKey]);
+  const roomGoal = activeRoom?.goal ?? "";
   const peopleCount = participants.filter((participant) => participant.kind === "human").length;
   const agentCount = participants.length - peopleCount;
   const memberSummary = dictionary.peopleAndAgents
@@ -159,12 +153,14 @@ export function HaloWorkspace({
   useEffect(() => {
     const savedLocale = window.localStorage.getItem("haloai.locale");
     const savedTheme = window.localStorage.getItem("haloai.theme");
+    const savedCollapsed = window.localStorage.getItem("haloai.sidebarCollapsed");
     if (savedLocale === "zh-CN" || savedLocale === "en-US") setLocale(savedLocale);
     if (savedTheme === "light" || savedTheme === "dark") {
       setTheme(savedTheme);
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       setTheme("dark");
     }
+    if (savedCollapsed === "true") setSidebarCollapsed(true);
     setPreferencesReady(true);
   }, []);
 
@@ -174,7 +170,8 @@ export function HaloWorkspace({
     document.documentElement.lang = locale;
     window.localStorage.setItem("haloai.theme", theme);
     window.localStorage.setItem("haloai.locale", locale);
-  }, [locale, preferencesReady, theme]);
+    window.localStorage.setItem("haloai.sidebarCollapsed", sidebarCollapsed ? "true" : "false");
+  }, [locale, preferencesReady, sidebarCollapsed, theme]);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -401,7 +398,7 @@ export function HaloWorkspace({
   }
 
   return (
-    <div className={`halo-shell view-${mobileView}`} id="workspace">
+    <div className={`halo-shell view-${mobileView}${sidebarCollapsed ? " is-collapsed" : ""}`} id="workspace">
       <WorkspaceSidebar
         dictionary={dictionary}
         rooms={rooms}
@@ -419,13 +416,18 @@ export function HaloWorkspace({
         onSignOut={onSignOut}
         activeSection={workspaceSection}
         onSectionSelect={selectWorkspaceSection}
+        locale={locale}
+        theme={theme}
+        onToggleLocale={toggleLocale}
+        onToggleTheme={toggleTheme}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
       />
       {workspaceSection === "room" ? (
         <>
           <ConversationPanel
             dictionary={dictionary}
             roomTitle={roomTitle}
-            roomDescription={roomDescription}
             roomGoal={roomGoal}
             memberSummary={memberSummary}
             participants={participants}
@@ -487,13 +489,6 @@ export function HaloWorkspace({
           onNotify={setNotice}
         />
       )}
-      <UtilityRail
-        dictionary={dictionary}
-        locale={locale}
-        theme={theme}
-        onToggleLocale={toggleLocale}
-        onToggleTheme={toggleTheme}
-      />
       <MobileNavigation dictionary={dictionary} view={mobileView} onViewChange={changeMobileView} />
 
       {memberDialogOpen ? (

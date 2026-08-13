@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { HaloMark } from "@/components/workspace/primitives";
 import styles from "./auth-shell.module.css";
 
 function toSlug(name: string): string {
@@ -74,10 +75,10 @@ export function OnboardingForm() {
     <main className={styles.onboardingShell}>
       <aside className={styles.onboardingAside}>
         <div className={styles.brand}>
-          <span className={styles.mark}>H</span>
+          <HaloMark />
           <strong>HaloAI</strong>
         </div>
-        <h1>{userName ? `${userName}，一起建立团队的协作空间。` : "建立团队的协作空间。"}</h1>
+        <h1>{userName ? `${userName}，建立团队工作区` : "建立团队工作区"}</h1>
         <p>工作区把成员、AI 角色、项目房间、文档与权限放在同一个清晰边界里。</p>
         <div className={styles.stepList} aria-label="设置进度">
           <div className={`${styles.step} ${styles.stepActive}`}>
@@ -96,9 +97,8 @@ export function OnboardingForm() {
       </aside>
       <section className={styles.onboardingMain}>
         <div className={styles.onboardingCard}>
-          <span className={styles.eyebrow}>第一步 · 团队边界</span>
           <h2>你的团队怎么称呼？</h2>
-          <p>名称会显示在协作区；短地址只用于识别工作区，之后仍可继续完善资料。</p>
+          <p>名称会显示在协作区；短地址只用于识别工作区。</p>
           <form className={styles.form} onSubmit={(event) => void submit(event)}>
             <label className={styles.field}>
               <span>工作区名称</span>

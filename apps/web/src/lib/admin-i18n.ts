@@ -9,6 +9,14 @@ export interface AdminDictionary {
   backToWork: string;
   changeLanguage: string;
   changeTheme: string;
+  personalSettings: string;
+  lightTheme: string;
+  darkTheme: string;
+  switchRole: string;
+  switchRolePreview: string;
+  collapseSidebar: string;
+  expandSidebar: string;
+  signOut: string;
   navLabel: string;
   navOverview: string;
   navMembers: string;

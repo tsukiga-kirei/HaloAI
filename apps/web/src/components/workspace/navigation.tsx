@@ -1,51 +1,5 @@
-import {
-  FileText,
-  Hash,
-  Languages,
-  LayoutDashboard,
-  MessageCircleMore,
-  Moon,
-  Sun,
-} from "lucide-react";
-import type { Locale } from "@/lib/i18n";
-import type { MobileView, Theme, WorkspaceViewProps } from "./types";
-
-export function UtilityRail({
-  dictionary,
-  locale,
-  theme,
-  onToggleLocale,
-  onToggleTheme,
-}: WorkspaceViewProps & {
-  locale: Locale;
-  theme: Theme;
-  onToggleLocale: () => void;
-  onToggleTheme: () => void;
-}) {
-  return (
-    <div className="utility-rail" aria-label={dictionary.settings}>
-      <button
-        type="button"
-        className="utility-button"
-        onClick={onToggleLocale}
-        aria-label={dictionary.language}
-        title={dictionary.language}
-      >
-        <Languages size={18} />
-        <span>{locale === "zh-CN" ? "EN" : "中"}</span>
-      </button>
-      <button
-        type="button"
-        className="utility-button"
-        onClick={onToggleTheme}
-        aria-label={dictionary.theme}
-        title={dictionary.theme}
-      >
-        {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-      </button>
-    </div>
-  );
-}
+import { FileText, Hash, LayoutDashboard, MessageCircleMore } from "lucide-react";
+import type { MobileView, WorkspaceViewProps } from "./types";
 
 export function MobileNavigation({
   dictionary,

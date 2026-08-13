@@ -4,6 +4,7 @@ import { Check, Eye, EyeOff, Languages, LoaderCircle, ShieldCheck } from "lucide
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { HaloMark } from "@/components/workspace/primitives";
 import { getApiBaseUrl } from "@/lib/api-client";
 import { authCopy, type AuthLocale } from "./auth-copy";
 import styles from "./auth-shell.module.css";
@@ -68,7 +69,7 @@ export function LoginForm() {
       <section className={styles.storyPanel} aria-label={copy.eyebrow}>
         <div className={styles.storyInner}>
           <div className={styles.brand}>
-            <span className={styles.mark}>H</span>
+            <HaloMark />
             <strong>HaloAI</strong>
           </div>
           <div className={styles.storyCopy}>

@@ -61,24 +61,13 @@
 .brand strong {
   letter-spacing: -0.035em;
 }
-.mark {
-  position: relative;
-  display: grid;
-  place-items: center;
+.brand :global(.halo-mark) {
   width: 42px;
   height: 42px;
-  border: 1px solid rgb(255 255 255 / 28%);
   border-radius: 14px;
-  background: rgb(255 255 255 / 10%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%);
-  font-weight: 750;
 }
-.mark::after {
-  position: absolute;
-  inset: -5px;
-  border: 1px solid rgb(137 123 255 / 48%);
-  border-radius: 18px;
-  content: "";
+.brand :global(.halo-letter) {
+  font-size: 18px;
 }
 
 .storyCopy {

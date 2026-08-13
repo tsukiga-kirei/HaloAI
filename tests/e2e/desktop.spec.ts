@@ -37,7 +37,11 @@ test.describe("桌面工作台", () => {
 
     await page.getByRole("button", { name: "总览" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "团队工作总览" })).toBeVisible();
-    await expect(page.getByText("本地预览：不会调用 AI、执行工具或写入外部系统。")).toBeVisible();
+    await expect(page.getByRole("button", { name: "总览" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.locator(".workspace-hub-tabs")).toHaveCount(0);
 
     await page.getByRole("button", { name: "收件箱" }).first().click();
     await page.getByRole("button", { name: "待审批" }).click();
@@ -54,21 +58,10 @@ test.describe("桌面工作台", () => {
   });
 
   test("可在中文与英文之间切换", async ({ page }) => {
-    const chineseTagline = page.getByText("团队与 AI 并肩，让想法成为成果", { exact: true });
-    await expect(chineseTagline).toBeVisible();
-    await expect
-      .poll(() => chineseTagline.evaluate((element) => element.scrollWidth <= element.clientWidth))
-      .toBe(true);
+    await page.getByRole("button", { name: "个人设置" }).click();
     await page.getByRole("button", { name: "切换语言" }).click();
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
-    const englishTagline = page.getByText("Teams and AI, turning ideas into outcomes", {
-      exact: true,
-    });
-    await expect(englishTagline).toBeVisible();
-    await expect
-      .poll(() => englishTagline.evaluate((element) => element.scrollWidth <= element.clientWidth))
-      .toBe(true);
     await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send" })).toBeVisible();
 
@@ -81,6 +74,7 @@ test.describe("桌面工作台", () => {
     const root = page.locator("html");
     await expect(root).toHaveAttribute("data-theme", "light");
 
+    await page.getByRole("button", { name: "个人设置" }).click();
     await page.getByRole("button", { name: "切换主题" }).click();
     await expect(root).toHaveAttribute("data-theme", "dark");
     await expect

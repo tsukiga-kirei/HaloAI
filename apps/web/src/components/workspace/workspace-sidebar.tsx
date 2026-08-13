@@ -7,17 +7,18 @@ import {
   Inbox,
   FileText,
   LayoutDashboard,
-  LogOut,
-  MoreHorizontal,
+  PanelLeft,
   Plus,
   Search,
   Settings2,
 } from "lucide-react";
+import type { Locale } from "@/lib/i18n";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AccountMenu } from "@/components/account-menu";
 import { Avatar, HaloMark, SidebarSection } from "./primitives";
-import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
+import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
 
 export function WorkspaceSidebar({
   dictionary,
@@ -34,6 +35,12 @@ export function WorkspaceSidebar({
   onSignOut,
   activeSection,
   onSectionSelect,
+  locale,
+  theme,
+  onToggleLocale,
+  onToggleTheme,
+  collapsed,
+  onToggleCollapsed,
 }: WorkspaceViewProps & {
   rooms: readonly DemoRoom[];
   activeRoomId: string;
@@ -48,6 +55,12 @@ export function WorkspaceSidebar({
   onSignOut?: (() => void) | undefined;
   activeSection: WorkspaceSection;
   onSectionSelect: (section: WorkspaceSection) => void;
+  locale: Locale;
+  theme: Theme;
+  onToggleLocale: () => void;
+  onToggleTheme: () => void;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
@@ -92,40 +105,52 @@ export function WorkspaceSidebar({
   }, []);
 
   return (
-    <aside className="workspace-sidebar" aria-label={dictionary.rooms}>
+    <aside
+      className={`workspace-sidebar ${collapsed ? "is-collapsed" : ""}`}
+      aria-label={dictionary.rooms}
+    >
       <div className="brand-row">
         <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
-          <HaloMark />
-          <span className="brand-copy">
-            <strong>HaloAI</strong>
-            <small>{dictionary.brandTagline}</small>
-          </span>
+          <HaloMark compact={collapsed} />
+          {collapsed ? null : (
+            <span className="brand-copy">
+              <strong>HaloAI</strong>
+            </span>
+          )}
         </Link>
-        <Link
+        <button
+          type="button"
           className="icon-button"
-          aria-label={dictionary.settings}
-          href={"/admin/overview" as Route}
+          aria-label={collapsed ? dictionary.expandSidebar : dictionary.collapseSidebar}
+          onClick={onToggleCollapsed}
         >
-          <Settings2 size={17} />
-        </Link>
+          <PanelLeft size={16} />
+        </button>
       </div>
 
       <div className="workspace-switcher-wrap">
         <button
           type="button"
           className="workspace-switcher"
+          aria-label={dictionary.switchWorkspace}
           aria-expanded={workspaceMenuOpen}
+          title={workspaceName}
           onClick={() => {
+            setProfileMenuOpen(false);
             if (workspaces.length === 0) onNotify(dictionary.workspacePreview);
             else setWorkspaceMenuOpen((current) => !current);
           }}
         >
           <span className="workspace-avatar">{workspaceInitial}</span>
-          <span>
-            <small>{dictionary.workspace}</small>
-            <strong>{workspaceName}</strong>
-          </span>
-          <ChevronDown size={15} aria-hidden="true" />
+          {collapsed ? null : (
+            <>
+              <span>
+                <small>{dictionary.workspace}</small>
+                <strong>{workspaceName}</strong>
+              </span>
+              <ChevronDown size={15} aria-hidden="true" />
+            </>
+          )}
         </button>
         {workspaceMenuOpen ? (
           <div className="workspace-menu" role="menu">
@@ -157,130 +182,147 @@ export function WorkspaceSidebar({
         ) : null}
       </div>
 
-      <label className="sidebar-search">
-        <Search size={16} aria-hidden="true" />
-        <input
-          ref={searchRef}
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={dictionary.searchPlaceholder}
-        />
-        <kbd>⌘K</kbd>
-      </label>
+      {collapsed ? null : (
+        <label className="sidebar-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={dictionary.searchPlaceholder}
+          />
+          <kbd>⌘K</kbd>
+        </label>
+      )}
 
       <nav className="primary-nav">
-        <button
-          type="button"
-          className={`nav-item ${activeSection === "overview" ? "is-active" : ""}`}
-          aria-pressed={activeSection === "overview"}
-          onClick={() => onSectionSelect("overview")}
-        >
-          <LayoutDashboard size={18} />
-          <span>{dictionary.overview}</span>
-        </button>
-        <button
-          type="button"
-          className={`nav-item ${activeSection === "inbox" ? "is-active" : ""}`}
-          aria-pressed={activeSection === "inbox"}
-          onClick={() => onSectionSelect("inbox")}
-        >
-          <Inbox size={18} />
-          <span>{dictionary.inbox}</span>
-          <span className="nav-count">4</span>
-        </button>
-        <button
-          type="button"
-          className={`nav-item ${activeSection === "documents" ? "is-active" : ""}`}
-          aria-pressed={activeSection === "documents"}
-          onClick={() => onSectionSelect("documents")}
-        >
-          <FileText size={18} />
-          <span>{dictionary.documents}</span>
-        </button>
-        <button
-          type="button"
-          className={`nav-item ${activeSection === "activity" ? "is-active" : ""}`}
-          aria-pressed={activeSection === "activity"}
-          onClick={() => onSectionSelect("activity")}
-        >
-          <Bell size={18} />
-          <span>{dictionary.activity}</span>
-        </button>
+        {(
+          [
+            ["overview", dictionary.overview, LayoutDashboard],
+            ["inbox", dictionary.inbox, Inbox],
+            ["documents", dictionary.documents, FileText],
+            ["activity", dictionary.activity, Bell],
+          ] as const
+        ).map(([section, label, Icon]) => (
+          <button
+            type="button"
+            key={section}
+            className={`nav-item ${activeSection === section ? "is-active" : ""}`}
+            aria-label={label}
+            aria-pressed={activeSection === section}
+            title={label}
+            onClick={() => onSectionSelect(section)}
+          >
+            <Icon size={18} />
+            {collapsed ? null : <span>{label}</span>}
+            {collapsed || section !== "inbox" ? null : <span className="nav-count">4</span>}
+          </button>
+        ))}
       </nav>
 
       <div className="sidebar-scroll">
-        <SidebarSection
-          title={dictionary.projectRooms}
-          actionLabel={dictionary.newRoom}
-          onAction={onCreateRoom}
-        >
+        {collapsed ? (
           <div className="room-list">
             {visibleRooms.map((room) => (
               <button
                 type="button"
                 className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
                 key={room.id}
+                aria-label={room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
+                title={room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
                 aria-pressed={room.id === activeRoomId}
                 onClick={() => onRoomSelect(room.id)}
               >
                 <Hash size={16} />
-                <span>
-                  {room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
-                </span>
-                {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
               </button>
             ))}
           </div>
-        </SidebarSection>
-
-        <SidebarSection
-          title={dictionary.directMessages}
-          actionLabel={dictionary.invite}
-          onAction={onOpenMemberDialog}
-        >
-          {directMessages.map((item) => (
-            <button
-              type="button"
-              className="dm-item"
-              key={item.id}
-              onClick={() => onNotify(dictionary.directMessagePreview)}
+        ) : (
+          <>
+            <SidebarSection
+              title={dictionary.projectRooms}
+              actionLabel={dictionary.newRoom}
+              onAction={onCreateRoom}
             >
-              <Avatar initials={item.initials} color={item.color} ai={item.ai} size="small" />
-              <span>{item.label}</span>
-              <i className="presence-dot" aria-label={dictionary.online} />
-            </button>
-          ))}
-        </SidebarSection>
-        {visibleRooms.length === 0 && directMessages.length === 0 ? (
-          <p className="sidebar-empty">{dictionary.noSearchResults}</p>
-        ) : null}
+              <div className="room-list">
+                {visibleRooms.map((room) => (
+                  <button
+                    type="button"
+                    className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
+                    key={room.id}
+                    aria-pressed={room.id === activeRoomId}
+                    onClick={() => onRoomSelect(room.id)}
+                  >
+                    <Hash size={16} />
+                    <span>
+                      {room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
+                    </span>
+                    {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
+                  </button>
+                ))}
+              </div>
+            </SidebarSection>
+            <SidebarSection
+              title={dictionary.directMessages}
+              actionLabel={dictionary.invite}
+              onAction={onOpenMemberDialog}
+            >
+              {directMessages.map((item) => (
+                <button
+                  type="button"
+                  className="dm-item"
+                  key={item.id}
+                  onClick={() => onNotify(dictionary.directMessagePreview)}
+                >
+                  <Avatar initials={item.initials} color={item.color} ai={item.ai} size="small" />
+                  <span>{item.label}</span>
+                  <i className="presence-dot" aria-label={dictionary.online} />
+                </button>
+              ))}
+            </SidebarSection>
+            {visibleRooms.length === 0 && directMessages.length === 0 ? (
+              <p className="sidebar-empty">{dictionary.noSearchResults}</p>
+            ) : null}
+          </>
+        )}
       </div>
 
       <div className="sidebar-footer">
-        <button
-          type="button"
-          className="profile-button"
-          aria-expanded={profileMenuOpen}
-          onClick={() => {
-            if (onSignOut) setProfileMenuOpen((current) => !current);
-            else onNotify(dictionary.profilePreview);
-          }}
+        <Link
+          className="icon-button sidebar-admin-link"
+          aria-label={dictionary.settings}
+          href={"/admin/overview" as Route}
         >
-          <Avatar initials={profileInitials} color="ink" size="small" />
-          <span>
-            <strong>{profileName}</strong>
-            <small>{identity?.email ?? dictionary.roleProductLead}</small>
-          </span>
-          <MoreHorizontal size={17} />
-        </button>
-        {profileMenuOpen && onSignOut ? (
-          <div className="profile-menu">
-            <button type="button" onClick={onSignOut}>
-              <LogOut size={16} /> {dictionary.signOut}
-            </button>
-          </div>
-        ) : null}
+          <Settings2 size={16} />
+        </Link>
+        <AccountMenu
+          open={profileMenuOpen}
+          name={profileName}
+          detail={identity?.email ?? dictionary.roleProductLead}
+          initials={profileInitials}
+          locale={locale}
+          theme={theme}
+          collapsed={collapsed}
+          labels={{
+            personalSettings: dictionary.personalSettings,
+            language: dictionary.language,
+            theme: dictionary.theme,
+            lightTheme: dictionary.lightTheme,
+            darkTheme: dictionary.darkTheme,
+            switchRole: dictionary.switchRole,
+            signOut: dictionary.signOut,
+          }}
+          onToggle={() => {
+            setWorkspaceMenuOpen(false);
+            setProfileMenuOpen((current) => !current);
+          }}
+          onClose={() => setProfileMenuOpen(false)}
+          onToggleLocale={onToggleLocale}
+          onToggleTheme={onToggleTheme}
+          onSwitchRole={() => onNotify(dictionary.switchRolePreview)}
+          onSignOut={onSignOut}
+        />
       </div>
     </aside>
   );

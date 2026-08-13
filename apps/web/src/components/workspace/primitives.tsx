@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 export function HaloMark({ compact = false }: { compact?: boolean }) {
   return (
     <span className={compact ? "halo-mark is-compact" : "halo-mark"} aria-hidden="true">
-      <span className="halo-orbit" />
       <span className="halo-letter">H</span>
     </span>
   );

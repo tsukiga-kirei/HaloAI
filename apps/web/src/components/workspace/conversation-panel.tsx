@@ -8,10 +8,7 @@ import {
   PanelRight,
   Paperclip,
   Send,
-  ShieldCheck,
-  Sparkles,
   UserRoundPlus,
-  Users,
 } from "lucide-react";
 import type { KeyboardEventHandler, RefObject } from "react";
 import { Avatar } from "./primitives";
@@ -19,7 +16,6 @@ import type { DisplayMessage, Participant, WorkspaceViewProps } from "./types";
 
 interface ConversationPanelProps extends WorkspaceViewProps {
   roomTitle: string;
-  roomDescription: string;
   roomGoal: string;
   memberSummary: string;
   participants: readonly Participant[];
@@ -40,7 +36,6 @@ interface ConversationPanelProps extends WorkspaceViewProps {
 export function ConversationPanel({
   dictionary,
   roomTitle,
-  roomDescription,
   roomGoal,
   memberSummary,
   participants,
@@ -75,12 +70,13 @@ export function ConversationPanel({
           <div>
             <div className="room-title-line">
               <h1>{roomTitle}</h1>
-              <span className="room-mode">
-                <AtSign size={12} />{" "}
-                {chatEnabled ? dictionary.mentionMode : dictionary.chatNotEnabled}
-              </span>
+              {chatEnabled ? (
+                <span className="room-mode">
+                  <AtSign size={12} /> {dictionary.mentionMode}
+                </span>
+              ) : null}
             </div>
-            <p>{roomDescription}</p>
+            {roomGoal.length > 0 ? <p>{roomGoal}</p> : null}
           </div>
         </div>
 
@@ -123,30 +119,12 @@ export function ConversationPanel({
         </div>
       </header>
 
-      <div className="conversation-context">
-        <div>
-          <span className="context-label">
-            <Sparkles size={13} /> {dictionary.goal}
-          </span>
-          <strong>{roomGoal}</strong>
-        </div>
-        <div className="context-meta">
-          <span className="status-pill">
-            <i /> {dictionary.activeNow}
-          </span>
-          <span className="member-summary">
-            <Users size={14} /> {memberSummary}
-          </span>
-        </div>
-      </div>
-
       <section className="message-timeline" aria-label={dictionary.chat}>
         <div className="date-separator">
           <span>{dictionary.today}</span>
         </div>
         {messages.length === 0 ? (
           <div className="conversation-empty">
-            <Sparkles size={24} />
             <p>{chatEnabled ? dictionary.conversationEmpty : dictionary.chatPending}</p>
           </div>
         ) : null}
@@ -164,11 +142,7 @@ export function ConversationPanel({
                 <div className="message-meta">
                   <strong>{author}</strong>
                   <span className="role-label">{dictionary[message.roleKey]}</span>
-                  {message.ai ? (
-                    <span className="ai-label">
-                      <Sparkles size={11} /> {dictionary.generatedBy}
-                    </span>
-                  ) : null}
+                  {message.ai ? <span className="ai-label">AI</span> : null}
                   <time>{message.time}</time>
                 </div>
                 <div className={`message-bubble ${message.pending === true ? "is-pending" : ""}`}>
@@ -193,10 +167,6 @@ export function ConversationPanel({
             </article>
           );
         })}
-        <div className="demo-runtime-note">
-          <ShieldCheck size={14} />{" "}
-          {chatEnabled ? dictionary.demoNotice : dictionary.durableDataBoundary}
-        </div>
         <div ref={endOfMessagesRef} />
       </section>
 

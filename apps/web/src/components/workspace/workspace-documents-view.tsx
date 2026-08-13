@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, FileText, Hash, Plus, Search } from "lucide-react";
+import { FileText, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DocumentSummary } from "@haloai/contracts";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
@@ -74,7 +74,7 @@ export function WorkspaceDocumentsView({
   return (
     <div className="workspace-hub-body">
       <div className="document-toolbar">
-        <label>
+        <label className="field">
           <Search size={16} />
           <input
             type="search"
@@ -84,6 +84,7 @@ export function WorkspaceDocumentsView({
           />
         </label>
         <select
+          className="field-select"
           value={filter}
           onChange={(event) => setFilter(event.target.value as DocumentFilter)}
           aria-label={dictionary.allStatuses}
@@ -102,46 +103,52 @@ export function WorkspaceDocumentsView({
           {dictionary.newDocument}
         </button>
       </div>
-      <section className="workspace-block document-directory">
-        {visibleRows.map((document) => (
-          <article key={document.id}>
-            <span className="document-row-icon">
-              <FileText size={19} />
-            </span>
-            <div className="document-row-main">
-              <strong>{document.title}</strong>
-              <small>
-                <Hash size={12} /> {document.room}
-              </small>
-            </div>
-            <div className="document-row-owner">
-              <small>{dictionary.documentOwner}</small>
-              <strong>{document.owner}</strong>
-            </div>
-            <div className="document-row-state">
-              <span
-                className={`status-pill is-${document.status === "active" ? "draft" : "approved"}`}
-              >
-                {document.status === "active" ? dictionary.draft : dictionary.approved}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                document.roomId
-                  ? onOpenDocument(document.roomId)
-                  : onNotify(dictionary.metadataOnlyNotice)
-              }
-            >
-              {dictionary.openDocument}
-              <ArrowRight size={15} />
-            </button>
-          </article>
-        ))}
+      <div className="data-table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>{dictionary.documents}</th>
+              <th>{dictionary.rooms}</th>
+              <th>{dictionary.documentOwner}</th>
+              <th>{dictionary.columnType}</th>
+              <th>{dictionary.columnAction}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRows.map((document) => (
+              <tr key={document.id}>
+                <td>
+                  <span className="table-title">
+                    <FileText size={16} />
+                    {document.title}
+                  </span>
+                </td>
+                <td>{document.room}</td>
+                <td>{document.owner}</td>
+                <td>
+                  {document.status === "active" ? dictionary.draft : dictionary.approved}
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    className="table-action"
+                    onClick={() =>
+                      document.roomId
+                        ? onOpenDocument(document.roomId)
+                        : onNotify(dictionary.metadataOnlyNotice)
+                    }
+                  >
+                    {dictionary.openDocument}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         {visibleRows.length === 0 ? (
           <p className="document-empty-copy">{dictionary.noDocuments}</p>
         ) : null}
-      </section>
+      </div>
     </div>
   );
 }

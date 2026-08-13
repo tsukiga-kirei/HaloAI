@@ -14,7 +14,7 @@ The root route `/` only enters the collaboration surface and does not host a sec
 
 ## 2. Navigation and visual boundaries
 
-- Collaboration is organized around rooms, conversation, and documents in an immersive workspace shell.
+- Collaboration is a left-navigation / right-workspace shell. The left side owns menus and personal settings; the right side owns the current page. The main workspace must not repeat the left primary destinations.
 - Workspace administration uses a distinct management shell that always shows the current workspace, access role, and configuration scope.
 - Both surfaces share brand tokens, theme, and locale preferences, but not their page hierarchy or primary navigation.
 - Desktop administration uses side navigation and a content canvas. Narrow screens convert navigation into a horizontally browsable section bar instead of shrinking a desktop page.
@@ -45,7 +45,7 @@ Before chat orchestration, model providers, and Agent Runs are connected, collab
 - Inbox switches between mentions, approvals, and invitations. Without an API, it may only mark items read locally and must not claim durable success.
 - The document directory supports search, status filters, and a path back to the document panel in its room.
 - Activity shows attributable people, timestamps, and objects without exposing or implying hidden AI reasoning.
-- These surfaces must not trigger model calls, tool calls, or external writes, and must keep the local-preview boundary visible.
+- These surfaces must not trigger model calls, tool calls, or external writes. Phase boundaries appear only in empty states or toasts after a user action, never as a persistent banner.
 
 The visual hierarchy continues to use HaloAI semantic tokens. Reference products inform information architecture, spacing, and interaction density only; their branding, color systems, and AI permission models are not copied.
 

@@ -25,7 +25,7 @@ HaloAI is a human-led workroom. Conversation helps people coordinate, while docu
 - Workspace switcher
 - Global search
 - Inbox for mentions, invitations, approvals, and completed work
-- User settings for locale, theme, notification preferences, devices, and security
+- User settings for locale, theme, current role, notification preferences, devices, and security; the entry is personal settings at the bottom of the left navigation, not a right-hand rail or page header
 
 ### Workspace level
 
@@ -72,14 +72,16 @@ Breakpoints describe layout behavior rather than device identity. The interface 
 
 | Viewport      | Required layout                                                                                                                                    |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `>= 1440px`   | 64px workspace rail, 256–288px room navigation, conversation pane, document pane, and an optional 320–380px contextual drawer                      |
-| `1200–1439px` | Workspace rail, 240–256px room navigation, one primary work surface, optional conversation/document split, contextual content in a drawer          |
+| `>= 1440px`   | Left 232–256px workspace menu; right main workspace. Inside a room, split conversation and document; context uses a drawer, never a fourth column |
+| `1200–1439px` | Left menu plus one primary surface; the room document may collapse into a drawer; no right-hand utility rail                                       |
 | `768–1199px`  | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet             |
 | `< 768px`     | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
 
+The collaboration shell is always two regions: the left side owns navigation and personal settings, and the right side owns the current work. Language, theme, and role switching live in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat the same primary destinations inside the main workspace.
+
 ### Wide desktop
 
-At 1440px and above, the primary room experience follows a room / conversation / document structure. A narrow workspace rail may sit to the far left, but it must not compete with those three working regions.
+At 1440px and above, the shell is “menu | workspace”. After entering a room, the workspace splits into conversation and document; the sidebar must not compete with those reading surfaces. The main workspace uses the same neutral canvas as the page. The top bar keeps the page name and current actions only—no slogans or runtime notices.
 
 Users can choose:
 
@@ -136,18 +138,19 @@ The first screen answers four questions:
 - Which documents need review?
 - What needs my response or approval?
 
-The initial modules are workspace goal, recent rooms, pending approvals, recent documents, and mentions. The strongest action is **Create room**. Empty states include one concrete next action and must not rely on illustration alone.
+The initial modules are recent rooms, pending approvals, recent documents, and mentions. The visually strongest action is **New room**. Empty states must offer a clear next step and must not rely on illustration alone. Overview must not repeat the same four primary destinations already shown in the left navigation.
 
 ### Room
 
 The room header contains:
 
-- Room name and short goal
-- Status: active, waiting for approval, complete, or archived
-- Human and AI participant group
-- Linked document entry point
-- Conversation/document/detail switch
-- Search and overflow actions
+- Room name
+- A short user-authored goal when one exists; no placeholder slogan otherwise
+- Human and AI participant avatar group
+- Linked document entry
+- Overflow actions
+
+The header must not show product slogans, demo-runtime notes, or marketing copy for the room.
 
 Conversation rules:
 
@@ -315,15 +318,16 @@ It does not appear behind long-form text, around every card, on human messages, 
 Initial light theme values:
 
 ```text
-canvas          #F7F8FA
+canvas          #F4F6FB
+sidebar         #EEF0F6
 surface         #FFFFFF
-surface-muted   #F1F3F7
-text            #171A21
-text-muted      #5E6573
-border          #E2E6ED
-accent          #6D5CE7
-accent-hover    #5B4AD1
-halo-start      #7C6CF2
+surface-muted   #F1F3F8
+text            #0F172A
+text-muted      #5B6578
+border          #DDE3EE
+accent          #5B5BD6
+accent-hover    #4A4AC4
+halo-start      #5B5BD6
 halo-end        #38BDF8
 success         #16805A
 warning         #A35C00
@@ -349,7 +353,7 @@ These are starting tokens, not proof of compliance. Every text, icon, border, fo
 Use a modern Latin sans-serif with system Chinese fallbacks:
 
 ```text
-Geist Sans, Inter, ui-sans-serif, system-ui,
+Inter, Noto Sans SC, ui-sans-serif, system-ui,
 PingFang SC, Microsoft YaHei, sans-serif
 ```
 
@@ -357,12 +361,12 @@ Type scale:
 
 | Role                      | Size / line height | Weight    |
 | ------------------------- | ------------------ | --------- |
-| Page title                | `28 / 36`          | 600       |
-| Secondary title           | `22 / 30`          | 600       |
-| Section title             | `16 / 24`          | 600       |
-| Body                      | `15 / 24`          | 400       |
-| Supporting text           | `13 / 18`          | 400–500   |
-| Code and technical values | `13 / 20`          | monospace |
+| Page title                | `22 / 28`          | 600       |
+| Secondary title           | `18 / 26`          | 600       |
+| Section title             | `14 / 22`          | 600       |
+| Body                      | `14 / 22`          | 400       |
+| Supporting text           | `12 / 18`          | 400–500   |
+| Code and technical values | `12 / 18`          | monospace |
 
 Normal interface text does not go below 12px. A page uses no more than four font weights. Critical information may wrap and must not become understandable only after opening a tooltip.
 
@@ -396,6 +400,8 @@ drawer or dialog    240ms
 ```
 
 Normal UI motion stays below 300ms. Streaming text does not bounce or animate word by word. Reduced-motion mode removes displacement and pulsing while preserving state meaning.
+
+Micro-interactions use CSS tokens. Sidebar collapse, drawers, and page transitions use GSAP and must honor `prefers-reduced-motion`; reduced-motion mode switches state immediately. Data tables use TanStack Table for sorting, filtering, and virtualization. Visual styling still uses HaloAI tokens; Ant Design and a second component skin are not adopted.
 
 ## Quantified visual acceptance
 
