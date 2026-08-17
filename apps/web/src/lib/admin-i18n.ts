@@ -130,6 +130,9 @@ export interface AdminDictionary {
   tenantPlan: string;
   healthService: string;
   healthState: string;
+  tenantBeichen: string;
+  tenantAurora: string;
+  tenantPlanPilot: string;
 }
 
 const zhCN: AdminDictionary = {
@@ -262,6 +265,9 @@ const zhCN: AdminDictionary = {
   tenantPlan: "方案",
   healthService: "服务",
   healthState: "状态",
+  tenantBeichen: "北辰产品组",
+  tenantAurora: "Aurora Labs",
+  tenantPlanPilot: "试点",
 };
 
 const enUS: AdminDictionary = {
@@ -401,6 +407,9 @@ const enUS: AdminDictionary = {
   tenantPlan: "Plan",
   healthService: "Service",
   healthState: "State",
+  tenantBeichen: "Beichen Product",
+  tenantAurora: "Aurora Labs",
+  tenantPlanPilot: "Pilot",
 };
 
 export const adminDictionaries: Record<Locale, AdminDictionary> = {

@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   LoaderCircle,
   LockKeyhole,
-  LogIn,
   Mail,
   Settings2,
   Shield,
@@ -20,10 +19,11 @@ import { type FormEvent, useEffect, useState } from "react";
 import { HaloMark } from "@/components/workspace/primitives";
 import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
 import { getApiBaseUrl } from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
+import { HaloSegmented } from "@/components/ui/halo-segmented";
+import { HaloSelect } from "@/components/ui/halo-select";
 import { authCopy, type AuthLocale } from "./auth-copy";
 import styles from "./auth-shell.module.css";
-
-type AuthMode = "sign-in" | "sign-up";
 
 const fallbackPortal = {
   key: "member" as const,
@@ -47,32 +47,53 @@ const portals = [
   },
 ];
 
+type LoginRole = "member" | "guest" | "admin" | "owner";
+
+function looksLikeEmail(value: string): boolean {
+  // 登录页禁止浏览器原生气泡，邮箱格式只在提交时由产品浮层提示。
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<AuthLocale>("zh-CN");
-  const [mode, setMode] = useState<AuthMode>("sign-in");
   const [portal, setPortal] = useState<PortalKey>("member");
+  const [loginRole, setLoginRole] = useState<LoginRole>("member");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<"email" | "password" | null>(null);
   const copy = authCopy[locale];
   const demoMode = process.env.NEXT_PUBLIC_AUTH_MODE === "demo";
   const activePortal = portals.find((item) => item.key === portal) ?? fallbackPortal;
   const ActiveIcon = activePortal.icon;
+  const needsRole = portal !== "system_admin";
+  const roleOptions =
+    portal === "workspace_admin"
+      ? [
+          { value: "admin", label: copy.roleAdminOption },
+          { value: "owner", label: copy.roleOwnerOption },
+        ]
+      : [
+          { value: "member", label: copy.roleMemberOption },
+          { value: "guest", label: copy.roleGuestOption },
+        ];
 
   useEffect(() => {
     const saved = window.localStorage.getItem("haloai.locale");
     if (saved === "zh-CN" || saved === "en-US") setLocale(saved);
   }, []);
 
-  function changeMode(nextMode: AuthMode): void {
-    setMode(nextMode);
+  useEffect(() => {
+    setLoginRole(portal === "workspace_admin" ? "admin" : "member");
+    setFieldError(null);
     setError(null);
-  }
+  }, [portal]);
 
   function enterWorkspace(): void {
     persistPortal(portal);
+    window.localStorage.setItem("haloai.loginRole", loginRole);
     const requestedNext = searchParams.get("next");
     const safeNext =
       requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
@@ -86,26 +107,39 @@ export function LoginForm() {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
+    setFieldError(null);
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    if (email.length > 0 && !looksLikeEmail(email)) {
+      setFieldError("email");
+      setSubmitting(false);
+      return;
+    }
+    if (!demoMode && email.length === 0) {
+      setFieldError("email");
+      setSubmitting(false);
+      return;
+    }
+    if (!demoMode && password.length < 10) {
+      setFieldError("password");
+      setSubmitting(false);
+      return;
+    }
     if (demoMode) {
       enterWorkspace();
       setSubmitting(false);
       return;
     }
-    const data = new FormData(event.currentTarget);
-    const email = String(data.get("email") ?? "").trim();
-    const password = String(data.get("password") ?? "");
-    const name = String(data.get("name") ?? "").trim();
     try {
-      const endpoint = mode === "sign-in" ? "/api/auth/sign-in/email" : "/api/auth/sign-up/email";
-      const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/auth/sign-in/email`, {
         method: "POST",
         credentials: "include",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(mode === "sign-in" ? { email, password } : { name, email, password }),
+        body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { code?: string } | null;
-        setError(payload?.code?.includes("USER_ALREADY_EXISTS") ? copy.duplicate : copy.invalid);
+        setError(copy.invalid);
         return;
       }
       enterWorkspace();
@@ -156,108 +190,80 @@ export function LoginForm() {
         >
           <Languages size={16} /> {copy.language}
         </button>
-        <div className={styles.formCard}>
-          <h2>{mode === "sign-in" ? copy.welcome : copy.createTitle}</h2>
-          <p className={styles.formLead}>
-            {mode === "sign-in" ? copy.welcomeDetail : copy.createDetail}
-          </p>
-          <div className={styles.tabs} role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "sign-in"}
-              className={mode === "sign-in" ? styles.activeTab : ""}
-              onClick={() => changeMode("sign-in")}
-            >
-              <LogIn size={15} /> {copy.signIn}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "sign-up"}
-              className={mode === "sign-up" ? styles.activeTab : ""}
-              onClick={() => changeMode("sign-up")}
-            >
-              <UserRound size={15} /> {copy.signUp}
-            </button>
-          </div>
-          <div className={styles.portalSelector} role="radiogroup" aria-label={copy.selectIdentity}>
-            {portals.map((item) => {
-              const Icon = item.icon;
-              const selected = item.key === portal;
-              return (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  className={selected ? styles.portalActive : styles.portalPill}
-                  key={item.key}
-                  onClick={() => setPortal(item.key)}
-                >
-                  <Icon size={15} />
-                  {copy[item.label]}
-                </button>
-              );
-            })}
-          </div>
+        <div className={styles.formCard} data-portal={portal}>
+          <h2>{copy.welcome}</h2>
+          <p className={styles.formLead}>{copy.welcomeDetail}</p>
+          <HaloSegmented
+            fill
+            ariaLabel={copy.selectIdentity}
+            value={portal}
+            items={portals.map((item) => ({
+              value: item.key,
+              label: copy[item.label],
+              icon: item.icon,
+            }))}
+            onChange={(next) => {
+              setPortal(next);
+              setLoginRole(next === "workspace_admin" ? "admin" : "member");
+            }}
+          />
           <p className={styles.portalDesc}>
             <span className={`${styles.portalDot} ${styles[`dot-${portal}`]}`} />
             {copy[activePortal.description]}
           </p>
-          <form className={styles.form} onSubmit={(event) => void submit(event)}>
-            {mode === "sign-up" ? (
+          <form className={styles.form} noValidate onSubmit={(event) => void submit(event)}>
+            {needsRole ? (
               <label className={styles.field}>
-                <span>{copy.name}</span>
-                <div className={styles.inputWrap}>
-                  <UserRound size={16} />
-                  <input
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    minLength={1}
-                    maxLength={120}
-                    required
-                    placeholder={copy.namePlaceholder}
-                  />
-                </div>
+                <span>{copy.selectRole}</span>
+                <HaloSelect
+                  value={loginRole}
+                  onValueChange={(next) => setLoginRole(next as LoginRole)}
+                  ariaLabel={copy.selectRole}
+                  prefix={<UserRound size={16} />}
+                  options={roleOptions}
+                />
               </label>
             ) : null}
             <label className={styles.field}>
               <span>{copy.email}</span>
-              <div className={styles.inputWrap}>
-                <Mail size={16} />
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  maxLength={320}
-                  required={!demoMode}
-                  placeholder={copy.emailPlaceholder}
-                />
-              </div>
+              <FieldError open={fieldError === "email"} message={copy.emailInvalid}>
+                <div className={styles.inputWrap}>
+                  <Mail size={16} />
+                  <input
+                    name="email"
+                    type="text"
+                    inputMode="email"
+                    autoComplete="email"
+                    maxLength={320}
+                    placeholder={copy.emailPlaceholder}
+                    onChange={() => setFieldError(null)}
+                  />
+                </div>
+              </FieldError>
             </label>
             <label className={styles.field}>
               <span>{copy.password}</span>
-              <div className={styles.inputWrap}>
-                <LockKeyhole size={16} />
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-                  minLength={demoMode ? 0 : 10}
-                  maxLength={128}
-                  required={!demoMode}
-                  placeholder={copy.passwordPlaceholder}
-                />
-                <button
-                  type="button"
-                  className={styles.passwordToggle}
-                  onClick={() => setShowPassword((current) => !current)}
-                  aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <FieldError open={fieldError === "password"} message={copy.passwordRequired}>
+                <div className={styles.inputWrap}>
+                  <LockKeyhole size={16} />
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    maxLength={128}
+                    placeholder={copy.passwordPlaceholder}
+                    onChange={() => setFieldError(null)}
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </FieldError>
             </label>
             {error ? (
               <p className={styles.error} role="alert">
@@ -275,10 +281,6 @@ export function LoginForm() {
                 : copy.submitAs.replace("{role}", copy[activePortal.label])}
             </button>
           </form>
-          <p className={styles.securityNote}>
-            <ShieldCheck size={16} />
-            {copy.security}
-          </p>
         </div>
       </section>
     </main>

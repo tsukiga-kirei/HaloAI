@@ -143,12 +143,27 @@
   color: #5b6578;
 }
 .formCard {
+  --portal: #5b5bd6;
   width: min(100%, 440px);
   padding: 32px;
   border: 1px solid #dde3ee;
   border-radius: 16px;
   background: white;
   box-shadow: 0 12px 32px rgb(24 29 40 / 8%);
+}
+.formCard[data-portal="workspace_admin"] {
+  --portal: #d97706;
+}
+.formCard[data-portal="system_admin"] {
+  --portal: #dc2626;
+}
+.formCard :global(.halo-segmented) {
+  margin-bottom: 10px;
+}
+.formCard :global(.halo-select-trigger[data-state="open"]),
+.formCard :global(.halo-select-trigger:focus-visible) {
+  border-color: var(--portal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--portal) 18%, white);
 }
 .formCard h2 {
   margin: 0;
@@ -160,61 +175,6 @@
   margin: 12px 0 30px;
   color: #696f7f;
   line-height: 1.7;
-}
-.tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-bottom: 28px;
-  padding: 4px;
-  border-radius: 12px;
-  background: #eff1f6;
-}
-.tabs button {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 9px;
-  background: transparent;
-  color: #656b7a;
-  font-weight: 650;
-}
-.tabs .activeTab {
-  background: white;
-  color: #1e2030;
-  box-shadow: 0 2px 10px rgb(28 32 52 / 8%);
-}
-.portalSelector {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  margin-bottom: 10px;
-  padding: 4px;
-  border: 1px solid #e3e5ed;
-  border-radius: 14px;
-  background: #eff1f6;
-}
-.portalPill,
-.portalActive {
-  display: inline-flex;
-  min-height: 38px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 0 8px;
-  border-radius: 10px;
-  background: transparent;
-  color: #656b7a;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.portalActive {
-  background: white;
-  color: #5b5bd6;
-  box-shadow: 0 2px 10px rgb(28 32 52 / 8%);
 }
 .portalDesc {
   display: flex;
@@ -267,8 +227,8 @@
     box-shadow 120ms;
 }
 .inputWrap:focus-within {
-  border-color: #315dd8;
-  box-shadow: 0 0 0 3px #ededfc;
+  border-color: var(--portal, #315dd8);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--portal, #5b5bd6) 18%, white);
 }
 .inputWrap:not(:has(button)) {
   grid-template-columns: 18px minmax(0, 1fr);
@@ -307,26 +267,12 @@
   width: 100%;
   min-height: 44px;
   border-radius: 8px;
-  background: #5b5bd6;
+  background: var(--portal, #5b5bd6);
   color: white;
   font-weight: 700;
 }
 .submit:hover {
-  background: #4a4ac4;
-}
-.securityNote {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  margin: 18px 0 0;
-  color: #7a8090;
-  font-size: 12px;
-  line-height: 1.55;
-}
-.securityNote svg {
-  flex: 0 0 auto;
-  margin-top: 2px;
-  color: #5c62c8;
+  filter: brightness(0.96);
 }
 
 .statusPage {

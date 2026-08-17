@@ -4,14 +4,12 @@ import type { LucideIcon } from "lucide-react";
 import { PanelLeft } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { HaloMark } from "@/components/workspace/primitives";
-import type { Theme } from "@/components/workspace/types";
 import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
-import type { Locale } from "@/lib/i18n";
-import { readStoredPortal, type PortalKey } from "@/lib/portals";
+import { useShellPreferences } from "@/lib/shell-preferences";
 
 export function ManagementShell({
   titleKey,
@@ -28,36 +26,17 @@ export function ManagementShell({
   workspaceName?: string;
   children: (dictionary: AdminDictionary) => ReactNode;
 }) {
-  const [locale, setLocale] = useState<Locale>("zh-CN");
-  const [theme, setTheme] = useState<Theme>("light");
-  const [collapsed, setCollapsed] = useState(false);
-  const [portal, setPortal] = useState<PortalKey>("member");
+  const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, portal, sidebarMotion } =
+    useShellPreferences();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [ready, setReady] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
 
-  useEffect(() => {
-    const savedLocale = window.localStorage.getItem("haloai.locale");
-    const savedTheme = window.localStorage.getItem("haloai.theme");
-    const savedCollapsed = window.localStorage.getItem("haloai.sidebarCollapsed");
-    if (savedLocale === "zh-CN" || savedLocale === "en-US") setLocale(savedLocale);
-    if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
-    if (savedCollapsed === "true") setCollapsed(true);
-    setPortal(readStoredPortal());
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    document.documentElement.lang = locale;
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("haloai.locale", locale);
-    window.localStorage.setItem("haloai.theme", theme);
-    window.localStorage.setItem("haloai.sidebarCollapsed", collapsed ? "true" : "false");
-  }, [collapsed, locale, ready, theme]);
-
   return (
-    <div className={`halo-shell is-management${collapsed ? " is-collapsed" : ""}`}>
+    <div
+      className={`halo-shell is-management${collapsed ? " is-collapsed" : ""}${
+        sidebarMotion ? " is-sidebar-motion" : ""
+      }`}
+    >
       <aside
         className={`workspace-sidebar ${collapsed ? "is-collapsed" : ""}`}
         aria-label={dictionary[navLabelKey]}
@@ -82,9 +61,8 @@ export function ManagementShell({
             <>
               <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
                 <HaloMark />
-                <span className="brand-copy">
+                <span className="brand-copy sidebar-label">
                   <strong>HaloAI</strong>
-                  <small>{dictionary[titleKey]}</small>
                 </span>
               </Link>
               <button
@@ -99,6 +77,7 @@ export function ManagementShell({
           )}
         </div>
         <nav className="primary-nav" aria-label={dictionary[navLabelKey]}>
+          <p className="sidebar-kicker sidebar-label">{dictionary[titleKey]}</p>
           {items.map((item) => {
             const Icon = item.icon;
             const active = activeHref === item.href;
@@ -112,7 +91,7 @@ export function ManagementShell({
                 title={label}
               >
                 <Icon size={18} />
-                {collapsed ? null : <span>{label}</span>}
+                <span className="sidebar-label">{label}</span>
               </Link>
             );
           })}
@@ -142,8 +121,7 @@ export function ManagementShell({
               switchedToRole: dictionary.switchedToRole,
               signOut: dictionary.signOut,
             }}
-            onToggle={() => setMenuOpen((current) => !current)}
-            onClose={() => setMenuOpen(false)}
+            onOpenChange={setMenuOpen}
             onToggleLocale={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
             onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
           />

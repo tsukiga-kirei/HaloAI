@@ -4,13 +4,13 @@ import {
   FileText,
   Hash,
   Menu,
-  MoreHorizontal,
   PanelRight,
   Paperclip,
   Send,
   UserRoundPlus,
 } from "lucide-react";
 import type { KeyboardEventHandler, RefObject } from "react";
+import { HaloNoticeMenu } from "@/components/ui/halo-notice-menu";
 import { Avatar } from "./primitives";
 import type { DisplayMessage, Participant, WorkspaceViewProps } from "./types";
 
@@ -108,14 +108,7 @@ export function ConversationPanel({
           >
             <PanelRight size={18} />
           </button>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label={dictionary.moreActions}
-            onClick={() => onNotify(dictionary.moreActionsPreview)}
-          >
-            <MoreHorizontal size={19} />
-          </button>
+          <HaloNoticeMenu label={dictionary.moreActions} message={dictionary.moreActionsPreview} />
         </div>
       </header>
 
@@ -203,16 +196,13 @@ export function ConversationPanel({
               >
                 <AtSign size={18} />
               </button>
-              <button
-                type="button"
-                className="composer-tool"
-                aria-label={dictionary.moreActions}
-                title={dictionary.moreActions}
-                onClick={() => onNotify(dictionary.moreActionsPreview)}
+              <HaloNoticeMenu
+                label={dictionary.moreActions}
+                message={dictionary.moreActionsPreview}
+                triggerClassName="composer-tool"
                 disabled={!chatEnabled}
-              >
-                <CirclePlus size={18} />
-              </button>
+                icon={<CirclePlus size={18} />}
+              />
               <span className="composer-hint">{dictionary.messageHint}</span>
             </div>
             <button

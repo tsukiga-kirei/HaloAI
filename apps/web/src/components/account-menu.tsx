@@ -1,9 +1,12 @@
 "use client";
 
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import type { WorkspaceSummary } from "@haloai/contracts";
 import {
   Building2,
   Check,
   ChevronRight,
+  ChevronsUpDown,
   Languages,
   LayoutDashboard,
   LogOut,
@@ -13,14 +16,12 @@ import {
   Sun,
 } from "lucide-react";
 import type { Route } from "next";
-import type { WorkspaceSummary } from "@haloai/contracts";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
-import type { Locale } from "@/lib/i18n";
 import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
+import type { Locale } from "@/lib/i18n";
 import type { Theme } from "@/components/workspace/types";
 import { notify } from "@/components/toast-host";
+import { animateOverlayIn } from "@/lib/motion";
 
 const roles: Array<{
   key: PortalKey;
@@ -32,7 +33,7 @@ const roles: Array<{
 ];
 
 /**
- * 语言、主题、工作区和角色只出现在左下角账户菜单。弹出层挂到 body，避免被侧栏裁切。
+ * 账户菜单使用 Radix 二级子菜单弹出层，角色选项不再挤在同一列里缩进。
  */
 export function AccountMenu({
   open,
@@ -46,8 +47,7 @@ export function AccountMenu({
   workspaces = [],
   activeWorkspaceId,
   labels,
-  onToggle,
-  onClose,
+  onOpenChange,
   onToggleLocale,
   onToggleTheme,
   onWorkspaceChange,
@@ -77,61 +77,13 @@ export function AccountMenu({
     switchedToRole: string;
     signOut: string;
   };
-  onToggle: () => void;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
   onToggleLocale: () => void;
   onToggleTheme: () => void;
   onWorkspaceChange?: ((workspace: WorkspaceSummary) => void) | undefined;
   onSignOut?: (() => void) | undefined;
 }) {
   const router = useRouter();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const [coords, setCoords] = useState<CSSProperties>({});
-  const [submenu, setSubmenu] = useState<"role" | "workspace" | null>(null);
-
-  useLayoutEffect(() => {
-    if (!open || !rootRef.current) return;
-    const rect = rootRef.current.getBoundingClientRect();
-    if (collapsed) {
-      setCoords({
-        position: "fixed",
-        left: rect.right + 10,
-        bottom: window.innerHeight - rect.bottom,
-        zIndex: 240,
-      });
-      return;
-    }
-    setCoords({
-      position: "fixed",
-      left: rect.left,
-      bottom: window.innerHeight - rect.top + 8,
-      minWidth: Math.max(240, rect.width),
-      zIndex: 240,
-    });
-  }, [collapsed, open]);
-
-  useEffect(() => {
-    if (!open) {
-      setSubmenu(null);
-      return;
-    }
-    function handlePointer(event: MouseEvent): void {
-      const target = event.target as Node;
-      if (rootRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
-      onClose();
-    }
-    function handleKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") onClose();
-    }
-    window.addEventListener("mousedown", handlePointer);
-    window.addEventListener("keydown", handleKey);
-    return () => {
-      window.removeEventListener("mousedown", handlePointer);
-      window.removeEventListener("keydown", handleKey);
-    };
-  }, [onClose, open]);
-
   const roleLabel = {
     member: labels.roleMember,
     workspace_admin: labels.roleWorkspaceAdmin,
@@ -140,118 +92,156 @@ export function AccountMenu({
 
   function switchPortal(next: PortalKey): void {
     persistPortal(next);
-    onClose();
+    onOpenChange(false);
     notify(labels.switchedToRole.replace("{role}", roleLabel[next]));
     router.push(portalPath(next) as Route);
   }
 
   return (
-    <div className={`account-menu ${collapsed ? "is-collapsed" : ""}`} ref={rootRef}>
-      <button
-        type="button"
-        className="profile-button"
-        aria-label={labels.personalSettings}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={onToggle}
-      >
-        <span className="account-avatar">{initials}</span>
-        {collapsed ? null : (
-          <span>
-            <strong>{name}</strong>
-            <small>{roleLabel[portal]}</small>
-          </span>
-        )}
-      </button>
-      {open
-        ? createPortal(
-            <div className="account-popover" role="menu" ref={popoverRef} style={coords}>
-              <p className="account-popover-identity">
-                <strong>{name}</strong>
-                <small>{detail}</small>
-              </p>
-              <button type="button" role="menuitem" onClick={onToggleLocale}>
-                <Languages size={16} />
-                {labels.language}
-                <small>{locale === "zh-CN" ? "中" : "EN"}</small>
-              </button>
-              <button type="button" role="menuitem" onClick={onToggleTheme}>
-                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-                {labels.theme}
-                <small>{theme === "light" ? labels.lightTheme : labels.darkTheme}</small>
-              </button>
-              {workspaces.length > 1 ? (
-                <button
-                  type="button"
-                  role="menuitem"
-                  aria-expanded={submenu === "workspace"}
-                  onClick={() => setSubmenu((current) => (current === "workspace" ? null : "workspace"))}
-                >
+    <div className={`account-menu ${collapsed ? "is-collapsed" : ""}`}>
+      <DropdownMenu.Root open={open} onOpenChange={onOpenChange} modal={false}>
+        <DropdownMenu.Trigger asChild>
+          <button type="button" className="account-trigger" aria-label={labels.personalSettings}>
+            <span className="account-avatar">{initials}</span>
+            <span className="account-meta sidebar-label">
+              <strong>{name}</strong>
+              <small>{roleLabel[portal]}</small>
+            </span>
+            <ChevronsUpDown size={14} aria-hidden="true" />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            className="halo-menu-content"
+            side="top"
+            align={collapsed ? "start" : "start"}
+            sideOffset={8}
+            collisionPadding={12}
+            ref={(node) => {
+              if (node) animateOverlayIn(node);
+            }}
+          >
+            <div className="halo-menu-label">
+              <strong>{name}</strong>
+              <small>{detail}</small>
+            </div>
+            <DropdownMenu.Item
+              className="halo-menu-item"
+              onSelect={(event) => {
+                event.preventDefault();
+                onToggleLocale();
+              }}
+            >
+              <Languages size={16} />
+              {labels.language}
+              <small>{locale === "zh-CN" ? "中" : "EN"}</small>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              className="halo-menu-item"
+              onSelect={(event) => {
+                event.preventDefault();
+                onToggleTheme();
+              }}
+            >
+              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              {labels.theme}
+              <small>{theme === "light" ? labels.lightTheme : labels.darkTheme}</small>
+            </DropdownMenu.Item>
+            {workspaces.length > 1 ? (
+              <DropdownMenu.Sub>
+                <DropdownMenu.SubTrigger className="halo-menu-item">
                   <Building2 size={16} />
                   {labels.switchWorkspace}
-                  <ChevronRight size={14} />
-                </button>
-              ) : null}
-              {submenu === "workspace"
-                ? workspaces.map((workspace) => (
-                    <button
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={workspace.id === activeWorkspaceId}
-                      className="account-subitem"
-                      key={workspace.id}
-                      onClick={() => {
-                        onWorkspaceChange?.(workspace);
-                        onClose();
-                      }}
-                    >
-                      <Building2 size={14} />
-                      {workspace.name}
-                      {workspace.id === activeWorkspaceId ? <Check size={14} /> : null}
-                    </button>
-                  ))
-                : null}
-              <button
-                type="button"
-                role="menuitem"
-                aria-expanded={submenu === "role"}
-                onClick={() => setSubmenu((current) => (current === "role" ? null : "role"))}
-              >
+                  <ChevronRight size={14} className="halo-menu-trailing" />
+                </DropdownMenu.SubTrigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.SubContent
+                    className="halo-menu-sub"
+                    align="end"
+                    sideOffset={8}
+                    collisionPadding={16}
+                    ref={(node) => {
+                      if (node) animateOverlayIn(node);
+                    }}
+                  >
+                    {workspaces.map((workspace) => (
+                      <DropdownMenu.Item
+                        className="halo-menu-item"
+                        key={workspace.id}
+                        onSelect={() => {
+                          onWorkspaceChange?.(workspace);
+                          onOpenChange(false);
+                        }}
+                      >
+                        <Building2 size={14} />
+                        {workspace.name}
+                        {workspace.id === activeWorkspaceId ? (
+                          <Check size={14} className="halo-menu-trailing" />
+                        ) : null}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.SubContent>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Sub>
+            ) : null}
+            <DropdownMenu.Sub>
+              <DropdownMenu.SubTrigger className="halo-menu-item">
                 <Settings2 size={16} />
                 {labels.switchRole}
-                <ChevronRight size={14} />
-              </button>
-              {submenu === "role"
-                ? roles.map((role) => {
-                    const Icon = role.icon;
-                    const active = role.key === portal;
-                    return (
-                      <button
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={active}
-                        className="account-subitem"
-                        key={role.key}
-                        disabled={active}
-                        onClick={() => switchPortal(role.key)}
-                      >
-                        <Icon size={14} />
-                        {roleLabel[role.key]}
-                        {active ? <Check size={14} /> : null}
-                      </button>
-                    );
-                  })
-                : null}
-              {onSignOut ? (
-                <button type="button" role="menuitem" className="is-danger" onClick={onSignOut}>
+                <ChevronRight size={14} className="halo-menu-trailing" />
+              </DropdownMenu.SubTrigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.SubContent
+                  className="halo-menu-sub"
+                  align="end"
+                  sideOffset={8}
+                  collisionPadding={16}
+                  ref={(node) => {
+                    if (node) animateOverlayIn(node);
+                  }}
+                >
+                  <DropdownMenu.RadioGroup
+                    value={portal}
+                    onValueChange={(next) => switchPortal(next as PortalKey)}
+                  >
+                    {roles.map((role) => {
+                      const Icon = role.icon;
+                      return (
+                        <DropdownMenu.RadioItem
+                          className="halo-menu-radio"
+                          key={role.key}
+                          value={role.key}
+                          disabled={role.key === portal}
+                        >
+                          <span className="halo-menu-indicator">
+                            <DropdownMenu.ItemIndicator>
+                              <Check size={14} />
+                            </DropdownMenu.ItemIndicator>
+                          </span>
+                          <Icon size={14} />
+                          {roleLabel[role.key]}
+                        </DropdownMenu.RadioItem>
+                      );
+                    })}
+                  </DropdownMenu.RadioGroup>
+                </DropdownMenu.SubContent>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Sub>
+            {onSignOut ? (
+              <>
+                <DropdownMenu.Separator className="halo-menu-separator" />
+                <DropdownMenu.Item
+                  className="halo-menu-item is-danger"
+                  onSelect={() => onSignOut()}
+                >
                   <LogOut size={16} />
                   {labels.signOut}
-                </button>
-              ) : null}
-            </div>,
-            document.body,
-          )
-        : null}
+                </DropdownMenu.Item>
+              </>
+            ) : null}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     </div>
   );
 }

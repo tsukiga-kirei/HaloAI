@@ -4,9 +4,7 @@ import { Activity, Building2, LayoutDashboard, ScrollText, ShieldCheck } from "l
 import type { Route } from "next";
 import { ManagementShell } from "./management-shell";
 import type { AdminDictionary } from "@/lib/admin-i18n";
-
-export const systemSections = ["overview", "tenants", "health", "policy", "audit"] as const;
-export type SystemSection = (typeof systemSections)[number];
+import { type SystemSection } from "@/lib/system-sections";
 
 const navigation = [
   { section: "overview", href: "/system" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
@@ -45,7 +43,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
             <h1>{titleFrom(section, dictionary)}</h1>
           </div>
           {section === "overview" ? (
-            <section className="admin-metrics">
+            <section className="admin-metrics is-three">
               <article className="admin-metric-card">
                 <span>{dictionary.navTenants}</span>
                 <strong>3</strong>
@@ -72,14 +70,14 @@ export function SystemConsole({ section }: { section: SystemSection }) {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>北辰产品组</td>
+                    <td>{dictionary.tenantBeichen}</td>
                     <td>{dictionary.statusActive}</td>
-                    <td>Pilot</td>
+                    <td>{dictionary.tenantPlanPilot}</td>
                   </tr>
                   <tr>
-                    <td>Aurora Labs</td>
+                    <td>{dictionary.tenantAurora}</td>
                     <td>{dictionary.statusActive}</td>
-                    <td>Pilot</td>
+                    <td>{dictionary.tenantPlanPilot}</td>
                   </tr>
                 </tbody>
               </table>
@@ -112,7 +110,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
             </section>
           ) : null}
           {section === "policy" ? (
-            <section className="admin-security-grid">
+            <section className="admin-security-grid is-two">
               <article className="admin-security-card">
                 <h2>{dictionary.securitySession}</h2>
                 <p>{dictionary.securitySessionDetail}</p>

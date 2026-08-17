@@ -64,7 +64,6 @@ export interface Dictionary {
   mobileNavigation: string;
   workspaceHome: string;
   addTeammate: string;
-  teammateSubtitle: string;
   human: string;
   aiTeammate: string;
   name: string;
@@ -279,7 +278,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     mobileNavigation: "移动端主导航",
     workspaceHome: "工作台",
     addTeammate: "添加协作者",
-    teammateSubtitle: "人和 AI 都是成员，但权限必须独立配置。",
     human: "人员",
     aiTeammate: "AI 角色",
     name: "名称",
@@ -497,8 +495,6 @@ export const dictionaries: Record<Locale, Dictionary> = {
     mobileNavigation: "Mobile primary navigation",
     workspaceHome: "Workspace",
     addTeammate: "Add collaborator",
-    teammateSubtitle:
-      "People and AI are both members, but their permissions are configured independently.",
     human: "Person",
     aiTeammate: "AI role",
     name: "Name",

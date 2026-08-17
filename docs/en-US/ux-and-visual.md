@@ -77,7 +77,7 @@ Breakpoints describe layout behavior rather than device identity. The interface 
 | `768–1199px`  | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet             |
 | `< 768px`     | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
 
-The collaboration shell is always two regions: a white left navigation with personal settings, and a gray right canvas for the current work. Language, theme, workspace, and role switching live only in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat those controls in the top bar or main workspace. The desktop sidebar can collapse to an icon rail; hovering the top-left mark expands it again.
+The collaboration shell is always two regions: a white left navigation with personal settings, and a gray right canvas for the current work. Language, theme, workspace, and role switching live only in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat those controls in the top bar or main workspace. The desktop sidebar can collapse to an about-64px icon rail; collapsed items must stay square and must not stack hidden labels into a tall strip. Hovering the top-left mark expands it again. Collapsed rooms must not reuse a single hash icon; they use the first character of the room name and a stable color tile. Collaboration, workspace administration, and system administration share one sidebar structure: a vertical flex column with the account avatar pinned to the bottom. Expanded nav items are about 34px tall, with a neutral wash for the selected row rather than a full accent fill. Workspace and system administration have no room list, so the nav may fill the space between the brand and the account footer for scrolling, but the rows themselves must not stretch into cards; leftover space stays between the last item and the account control. Collapse and expand animate the sidebar width (about 300ms) and clip/fade labels; do not unmount those nodes and cause a jump. Reduced-motion mode changes width immediately. That width transition is only for an explicit collapse/expand click. Restoring the saved collapsed state, or switching among collaboration, workspace administration, and system administration, must land on the target width with no extra collapse or expand animation. Inside a room, conversation occupies about 40 percent and the document about 60 percent. Extra width from a collapsed sidebar goes to the document first and must not stretch the conversation into an empty column.
 
 The favicon, login brand, and sidebar mark must share the same `icon.svg`. Size may change; the letterform and corner radius must not.
 
@@ -392,7 +392,15 @@ pills         status and short filter labels only
 
 Use only two elevation levels: menus/popovers and modal/drawer surfaces. Content cards normally use background and border rather than heavy shadow.
 
-Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name. Text buttons also include an icon. Inputs, selects, dialogs, and toasts share the same radius, border, and focus ring. Dialogs and toasts appear in the center of the viewport, never docked to an edge.
+Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name. Text buttons also include an icon. Inputs, selects, drawers, and toasts share the same radius, border, and focus ring. Toasts appear in the center of the viewport. Create, invite, and edit forms use a right-hand drawer: about 460–480px on desktop, still docked to the right on tablet, and full width on narrow viewports while still sliding in from the right. Do not revert to a centered modal or a bottom sheet.
+
+Overlays, selects, dialogs, and field errors use unstyled Radix primitives for focus, positioning, and keyboard behavior. Visual styling uses Halo semantic tokens only; entrance motion uses GSAP. Toasts use the open-source Sonner library’s default info layout and motion, mapped to Halo tokens through CSS variables, and must not be restyled into a homemade white box. Native `<select>` menus and browser validation bubbles are forbidden. Segmented tabs size to their options and must not stretch across the row. Ant Design and AntV are not the product skin; AntV is a charting library and is not used for form overlays.
+
+Role and workspace switching in the account menu must use a nested submenu that opens to the side, not an indented list in the same column.
+
+List-page toolbars (such as the document directory): the search field fills remaining width; status filters and the primary action sit as a right-hand group of equal-height controls with 8px gaps. Do not use `space-between` to spread three items across the row. On narrow viewports the toolbar stacks, and both the search field and the action group stretch to full width.
+
+Data tables (collaboration directories and admin member/audit tables share one treatment): the header uses the same `surface` as the body and is separated only by a hairline. Do not fill the header with `surface-muted`, accent, or a lavender wash. Do not use tracked uppercase or Ant Design–style colored header bands. Headers are 12px / weight 600 / sentence case. Rows are about 48px tall. The primary column uses body text color; the action column is right-aligned; in-row actions are neutral text buttons and must not sit on an accent fill.
 
 ### Motion
 
@@ -404,7 +412,7 @@ drawer or dialog    240ms
 
 Normal UI motion stays below 300ms. Streaming text does not bounce or animate word by word. Reduced-motion mode removes displacement and pulsing while preserving state meaning.
 
-Micro-interactions use CSS tokens. Sidebar collapse, drawers, and page transitions use GSAP and must honor `prefers-reduced-motion`; reduced-motion mode switches state immediately. Data tables use TanStack Table for sorting, filtering, and virtualization. Visual styling still uses HaloAI tokens; Ant Design and a second component skin are not adopted.
+Micro-interactions use CSS tokens. Sidebar collapse primarily animates width in CSS (matching the workbench reference), and only when the user explicitly collapses or expands it; restoring a preference or switching portals must not play that transition. Drawers, dialogs, selects, and page transitions use GSAP and must honor `prefers-reduced-motion`; reduced-motion mode switches state immediately. Data tables use TanStack Table for sorting, filtering, and virtualization. Visual styling still uses HaloAI tokens; Ant Design and a second component skin are not adopted.
 
 ## Quantified visual acceptance
 

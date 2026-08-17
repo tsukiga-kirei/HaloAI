@@ -3,6 +3,7 @@
 import { ArrowRight, FileText, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DocumentSummary } from "@haloai/contracts";
+import { HaloSelect } from "@/components/ui/halo-select";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
 
 type DocumentFilter = "all" | "active" | "archived";
@@ -81,27 +82,31 @@ export function WorkspaceDocumentsView({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={dictionary.searchDocuments}
+            aria-label={dictionary.searchDocuments}
           />
         </label>
-        <select
-          className="halo-select"
-          value={filter}
-          onChange={(event) => setFilter(event.target.value as DocumentFilter)}
-          aria-label={dictionary.allStatuses}
-        >
-          <option value="all">{dictionary.allStatuses}</option>
-          <option value="active">{dictionary.draft}</option>
-          <option value="archived">{dictionary.approved}</option>
-        </select>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={onCreateDocument}
-          disabled={!canCreateDocument}
-        >
-          <Plus size={16} />
-          {dictionary.newDocument}
-        </button>
+        <div className="document-toolbar-actions">
+          <HaloSelect
+            compact
+            value={filter}
+            onValueChange={(next) => setFilter(next as DocumentFilter)}
+            ariaLabel={dictionary.allStatuses}
+            options={[
+              { value: "all", label: dictionary.allStatuses },
+              { value: "active", label: dictionary.draft },
+              { value: "archived", label: dictionary.approved },
+            ]}
+          />
+          <button
+            type="button"
+            className="primary-button"
+            onClick={onCreateDocument}
+            disabled={!canCreateDocument}
+          >
+            <Plus size={16} />
+            {dictionary.newDocument}
+          </button>
+        </div>
       </div>
       <div className="data-table-wrap">
         <table className="data-table">
@@ -125,11 +130,17 @@ export function WorkspaceDocumentsView({
                 </td>
                 <td>{document.room}</td>
                 <td>{document.owner}</td>
-                <td>{document.status === "active" ? dictionary.draft : dictionary.approved}</td>
+                <td>
+                  <span
+                    className={`halo-badge${document.status === "archived" ? " is-approvals" : ""}`}
+                  >
+                    {document.status === "active" ? dictionary.draft : dictionary.approved}
+                  </span>
+                </td>
                 <td>
                   <button
                     type="button"
-                    className="table-action"
+                    className="table-action is-ghost"
                     onClick={() =>
                       document.roomId
                         ? onOpenDocument(document.roomId)

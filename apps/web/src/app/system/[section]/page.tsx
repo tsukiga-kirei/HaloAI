@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
-import { SystemConsole, systemSections } from "@/components/admin/system-console";
+import { SystemConsole } from "@/components/admin/system-console";
+import { RestrictedSurface } from "@/components/admin/restricted-surface";
+import { isSystemSection } from "@/lib/system-sections";
+import { getSystemAdminAccess } from "@/server/system-admin-access";
 
 export default async function SystemSectionPage({
   params,
@@ -7,8 +10,14 @@ export default async function SystemSectionPage({
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
-  if (!systemSections.includes(section as (typeof systemSections)[number]) || section === "overview") {
+  if (!isSystemSection(section) || section === "overview") {
     notFound();
   }
-  return <SystemConsole section={section as Exclude<(typeof systemSections)[number], "overview">} />;
+
+  if (process.env.NEXT_PUBLIC_AUTH_MODE === "real") {
+    return <SystemConsole section={section} />;
+  }
+  const access = getSystemAdminAccess();
+  if (!access.allowed) return <RestrictedSurface kind="system" />;
+  return <SystemConsole section={section} />;
 }

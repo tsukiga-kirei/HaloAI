@@ -1,5 +1,10 @@
+"use client";
+
 import { Bot, Plus, ShieldCheck, UserRoundPlus, Users, X } from "lucide-react";
-import type { FormEventHandler, MouseEventHandler } from "react";
+import { type FormEventHandler, useState } from "react";
+import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloSegmented } from "@/components/ui/halo-segmented";
+import { HaloSelect } from "@/components/ui/halo-select";
 import type { WorkspaceViewProps } from "./types";
 
 interface MemberDialogProps extends WorkspaceViewProps {
@@ -16,102 +21,73 @@ export function MemberDialog({
   onClose,
   onSubmit,
 }: MemberDialogProps) {
-  const closeFromBackdrop: MouseEventHandler<HTMLDivElement> = (event) => {
-    if (event.currentTarget === event.target) onClose();
-  };
+  const [model, setModel] = useState("workspace-default");
 
   return (
-    <div className="dialog-backdrop" onMouseDown={closeFromBackdrop}>
-      <div
-        className="member-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="member-dialog-title"
-      >
-        <div className="dialog-heading">
-          <div>
-            <span className="dialog-icon">
-              <UserRoundPlus size={20} />
-            </span>
-            <div>
-              <h2 id="member-dialog-title">{dictionary.addTeammate}</h2>
-              <p>{dictionary.teammateSubtitle}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onClose}
-            aria-label={dictionary.cancel}
-          >
-            <X size={19} />
+    <HaloDialog
+      open
+      title={dictionary.addTeammate}
+      icon={<UserRoundPlus size={20} />}
+      onClose={onClose}
+      closeLabel={dictionary.cancel}
+    >
+      <HaloSegmented
+        fill
+        ariaLabel={dictionary.addTeammate}
+        value={kind}
+        onChange={onKindChange}
+        items={[
+          { value: "human", label: dictionary.human, icon: Users },
+          { value: "agent", label: dictionary.aiTeammate, icon: Bot },
+        ]}
+      />
+      <form onSubmit={onSubmit}>
+        <label>
+          <span>{dictionary.name}</span>
+          <input name="name" required autoFocus placeholder={kind === "agent" ? "Atlas" : "Alex"} />
+        </label>
+        <label>
+          <span>{dictionary.role}</span>
+          <input name="role" placeholder={dictionary.rolePlaceholder} />
+        </label>
+        {kind === "agent" ? (
+          <>
+            <label>
+              <span>{dictionary.model}</span>
+              <HaloSelect
+                name="model"
+                value={model}
+                onValueChange={setModel}
+                ariaLabel={dictionary.model}
+                options={[
+                  { value: "workspace-default", label: dictionary.modelWorkspaceDefault },
+                  { value: "openai-compatible", label: dictionary.modelOpenAICompatible },
+                  { value: "local", label: dictionary.modelLocalPrivate },
+                ]}
+              />
+            </label>
+            <label>
+              <span>{dictionary.instructions}</span>
+              <textarea
+                name="instructions"
+                rows={4}
+                placeholder={dictionary.instructionsPlaceholder}
+              />
+            </label>
+          </>
+        ) : null}
+        <div className="security-note">
+          <ShieldCheck size={16} /> {dictionary.privacyNote}
+        </div>
+        <div className="dialog-actions">
+          <button type="button" className="secondary-button" onClick={onClose}>
+            <X size={16} /> {dictionary.cancel}
+          </button>
+          <button type="submit" className="primary-button">
+            <Plus size={16} /> {dictionary.create}
           </button>
         </div>
-
-        <div className="member-kind-tabs">
-          <button
-            type="button"
-            className={kind === "human" ? "is-active" : ""}
-            onClick={() => onKindChange("human")}
-          >
-            <Users size={17} /> {dictionary.human}
-          </button>
-          <button
-            type="button"
-            className={kind === "agent" ? "is-active" : ""}
-            onClick={() => onKindChange("agent")}
-          >
-            <Bot size={17} /> {dictionary.aiTeammate}
-          </button>
-        </div>
-
-        <form onSubmit={onSubmit}>
-          <label>
-            <span>{dictionary.name}</span>
-            <input
-              name="name"
-              required
-              autoFocus
-              placeholder={kind === "agent" ? "Atlas" : "Alex"}
-            />
-          </label>
-          <label>
-            <span>{dictionary.role}</span>
-            <input name="role" placeholder={dictionary.rolePlaceholder} />
-          </label>
-          {kind === "agent" ? (
-            <>
-              <label>
-                <span>{dictionary.model}</span>
-                <select name="model" defaultValue="workspace-default">
-                  <option value="workspace-default">{dictionary.modelWorkspaceDefault}</option>
-                  <option value="openai-compatible">{dictionary.modelOpenAICompatible}</option>
-                  <option value="local">{dictionary.modelLocalPrivate}</option>
-                </select>
-              </label>
-              <label>
-                <span>{dictionary.instructions}</span>
-                <textarea
-                  name="instructions"
-                  rows={4}
-                  placeholder={dictionary.instructionsPlaceholder}
-                />
-              </label>
-            </>
-          ) : null}
-          <div className="security-note">
-            <ShieldCheck size={16} /> {dictionary.privacyNote}
-          </div>
-          <div className="dialog-actions">
-            <button type="button" className="secondary-button" onClick={onClose}>
-              <X size={16} /> {dictionary.cancel}
-            </button>
-            <button type="submit" className="primary-button">
-              <Plus size={16} /> {dictionary.create}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </HaloDialog>
   );
 }

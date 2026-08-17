@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
+import "@/components/ui/halo-overlay.css";
 
 const inter = Inter({
   subsets: ["latin"],

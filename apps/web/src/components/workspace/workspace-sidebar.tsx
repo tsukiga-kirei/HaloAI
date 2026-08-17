@@ -1,20 +1,11 @@
 import type { AuthenticatedUser, WorkspaceSummary } from "@haloai/contracts";
-import {
-  Bell,
-  Hash,
-  Inbox,
-  FileText,
-  LayoutDashboard,
-  PanelLeft,
-  Plus,
-  Search,
-} from "lucide-react";
+import { Bell, Inbox, FileText, LayoutDashboard, PanelLeft, Search } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccountMenu } from "@/components/account-menu";
-import { Avatar, HaloMark, SidebarSection } from "./primitives";
+import { Avatar, HaloMark, RoomGlyph, SidebarSection } from "./primitives";
 import type { PortalKey } from "@/lib/portals";
 import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
 
@@ -90,6 +81,10 @@ export function WorkspaceSidebar({
       .slice(0, 2)
       .toLocaleUpperCase() || "AY";
 
+  function displayRoomName(room: DemoRoom): string {
+    return room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey]);
+  }
+
   useEffect(() => {
     const focusSearch = (event: globalThis.KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLocaleLowerCase() === "k") {
@@ -126,7 +121,7 @@ export function WorkspaceSidebar({
           <>
             <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
               <HaloMark />
-              <span className="brand-copy">
+              <span className="brand-copy sidebar-label">
                 <strong>HaloAI</strong>
               </span>
             </Link>
@@ -142,19 +137,17 @@ export function WorkspaceSidebar({
         )}
       </div>
 
-      {collapsed ? null : (
-        <label className="sidebar-search">
-          <Search size={16} aria-hidden="true" />
-          <input
-            ref={searchRef}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={dictionary.searchPlaceholder}
-          />
-          <kbd>⌘K</kbd>
-        </label>
-      )}
+      <label className="sidebar-search">
+        <Search size={16} aria-hidden="true" />
+        <input
+          ref={searchRef}
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={dictionary.searchPlaceholder}
+        />
+        <kbd>⌘K</kbd>
+      </label>
 
       <nav className="primary-nav">
         {(
@@ -175,79 +168,64 @@ export function WorkspaceSidebar({
             onClick={() => onSectionSelect(section)}
           >
             <Icon size={18} />
-            {collapsed ? null : <span>{label}</span>}
-            {collapsed || section !== "inbox" ? null : <span className="nav-count">4</span>}
+            <span className="sidebar-label">{label}</span>
+            {section !== "inbox" ? null : <span className="nav-count">4</span>}
           </button>
         ))}
       </nav>
 
       <div className="sidebar-scroll">
-        {collapsed ? (
+        <SidebarSection
+          title={dictionary.projectRooms}
+          actionLabel={dictionary.newRoom}
+          onAction={onCreateRoom}
+        >
           <div className="room-list">
-            {visibleRooms.map((room) => (
-              <button
-                type="button"
-                className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
-                key={room.id}
-                aria-label={
-                  room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])
-                }
-                title={room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
-                aria-pressed={room.id === activeRoomId}
-                onClick={() => onRoomSelect(room.id)}
-              >
-                <Hash size={16} />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <>
-            <SidebarSection
-              title={dictionary.projectRooms}
-              actionLabel={dictionary.newRoom}
-              onAction={onCreateRoom}
-            >
-              <div className="room-list">
-                {visibleRooms.map((room) => (
-                  <button
-                    type="button"
-                    className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
-                    key={room.id}
-                    aria-pressed={room.id === activeRoomId}
-                    onClick={() => onRoomSelect(room.id)}
-                  >
-                    <Hash size={16} />
-                    <span>
-                      {room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
-                    </span>
-                    {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
-                  </button>
-                ))}
-              </div>
-            </SidebarSection>
-            <SidebarSection
-              title={dictionary.directMessages}
-              actionLabel={dictionary.invite}
-              onAction={onOpenMemberDialog}
-            >
-              {directMessages.map((item) => (
+            {visibleRooms.map((room) => {
+              const name = displayRoomName(room);
+              return (
                 <button
                   type="button"
-                  className="dm-item"
-                  key={item.id}
-                  onClick={() => onNotify(dictionary.directMessagePreview)}
+                  className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
+                  key={room.id}
+                  aria-label={name}
+                  title={name}
+                  aria-pressed={activeSection === "room" && room.id === activeRoomId}
+                  onClick={() => onRoomSelect(room.id)}
                 >
-                  <Avatar initials={item.initials} color={item.color} ai={item.ai} size="small" />
-                  <span>{item.label}</span>
-                  <i className="presence-dot" aria-label={dictionary.online} />
+                  <span className="room-glyph-wrap">
+                    <RoomGlyph id={room.id} name={name} />
+                    {room.unread > 0 ? <i className="room-unread-dot" /> : null}
+                  </span>
+                  <span className="sidebar-label">{name}</span>
+                  {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
                 </button>
-              ))}
-            </SidebarSection>
-            {visibleRooms.length === 0 && directMessages.length === 0 ? (
-              <p className="sidebar-empty">{dictionary.noSearchResults}</p>
-            ) : null}
-          </>
-        )}
+              );
+            })}
+          </div>
+        </SidebarSection>
+        <SidebarSection
+          className="is-direct-messages"
+          title={dictionary.directMessages}
+          actionLabel={dictionary.invite}
+          onAction={onOpenMemberDialog}
+        >
+          {directMessages.map((item) => (
+            <button
+              type="button"
+              className="dm-item"
+              key={item.id}
+              onClick={() => onNotify(dictionary.directMessagePreview)}
+            >
+              <Avatar initials={item.initials} color={item.color} ai={item.ai} size="small" />
+              <span className="sidebar-label">{item.label}</span>
+              <i className="presence-dot" aria-label={dictionary.online} />
+            </button>
+          ))}
+        </SidebarSection>
+        {visibleRooms.length === 0 && directMessages.length === 0 ? (
+          <p className="sidebar-empty">{dictionary.noSearchResults}</p>
+        ) : null}
       </div>
 
       <div className="sidebar-footer">
@@ -276,8 +254,7 @@ export function WorkspaceSidebar({
             switchedToRole: dictionary.switchedToRole,
             signOut: dictionary.signOut,
           }}
-          onToggle={() => setProfileMenuOpen((current) => !current)}
-          onClose={() => setProfileMenuOpen(false)}
+          onOpenChange={setProfileMenuOpen}
           onToggleLocale={onToggleLocale}
           onToggleTheme={onToggleTheme}
           onWorkspaceChange={onWorkspaceChange}

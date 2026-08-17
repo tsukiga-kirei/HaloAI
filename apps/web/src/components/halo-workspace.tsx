@@ -13,8 +13,8 @@ import type {
   WorkspaceCollaborationSnapshot,
   WorkspaceSummary,
 } from "@haloai/contracts";
-import { getDictionary, type Locale } from "@/lib/i18n";
-import { readStoredPortal, type PortalKey } from "@/lib/portals";
+import { getDictionary } from "@/lib/i18n";
+import { useShellPreferences } from "@/lib/shell-preferences";
 import { notify } from "@/components/toast-host";
 import { ConversationPanel } from "./workspace/conversation-panel";
 import { demoParticipants } from "./workspace/demo-data";
@@ -30,7 +30,6 @@ import type {
   MobileView,
   Participant,
   RoleKey,
-  Theme,
   WorkspaceSection,
 } from "./workspace/types";
 import { WorkspaceHub } from "./workspace/workspace-hub";
@@ -69,11 +68,16 @@ export function HaloWorkspace({
   const durableMode = collaboration !== undefined;
   const canCreateProject =
     !durableMode || activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin";
-  const [locale, setLocale] = useState<Locale>("zh-CN");
-  const [theme, setTheme] = useState<Theme>("light");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [portal, setPortal] = useState<PortalKey>("member");
-  const [preferencesReady, setPreferencesReady] = useState(false);
+  const {
+    locale,
+    setLocale,
+    theme,
+    setTheme,
+    collapsed: sidebarCollapsed,
+    setCollapsed: setSidebarCollapsed,
+    portal,
+    sidebarMotion,
+  } = useShellPreferences();
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>(
     durableMode ? "overview" : "room",
@@ -152,30 +156,6 @@ export function HaloWorkspace({
     .replace("{agents}", String(agentCount));
 
   useEffect(() => {
-    const savedLocale = window.localStorage.getItem("haloai.locale");
-    const savedTheme = window.localStorage.getItem("haloai.theme");
-    const savedCollapsed = window.localStorage.getItem("haloai.sidebarCollapsed");
-    if (savedLocale === "zh-CN" || savedLocale === "en-US") setLocale(savedLocale);
-    if (savedTheme === "light" || savedTheme === "dark") {
-      setTheme(savedTheme);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
-    }
-    if (savedCollapsed === "true") setSidebarCollapsed(true);
-    setPortal(readStoredPortal());
-    setPreferencesReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!preferencesReady) return;
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.lang = locale;
-    window.localStorage.setItem("haloai.theme", theme);
-    window.localStorage.setItem("haloai.locale", locale);
-    window.localStorage.setItem("haloai.sidebarCollapsed", sidebarCollapsed ? "true" : "false");
-  }, [locale, preferencesReady, sidebarCollapsed, theme]);
-
-  useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     endOfMessagesRef.current?.scrollIntoView({
       behavior: reduceMotion ? "auto" : "smooth",
@@ -220,8 +200,8 @@ export function HaloWorkspace({
   const toggleTheme = () => setTheme((current) => (current === "light" ? "dark" : "light"));
 
   /**
-   * Foundation Demo 仍按正式 SSE 信封消费事件：校验 JSON、去重序号并拒绝事件缺口。
-   * 正式客户端遇到缺口会携带 Last-Event-ID 重连；当前无持久服务，因此直接显示可重试错误。
+   * Foundation Demo ???? SSE ????????? JSON?????????????
+   * ???????????? Last-Event-ID ???????????????????????
    */
   function updateRoomMessages(
     roomId: string,
@@ -394,7 +374,12 @@ export function HaloWorkspace({
   }
 
   return (
-    <div className={`halo-shell view-${mobileView}${sidebarCollapsed ? " is-collapsed" : ""}`} id="workspace">
+    <div
+      className={`halo-shell view-${mobileView}${sidebarCollapsed ? " is-collapsed" : ""}${
+        sidebarMotion ? " is-sidebar-motion" : ""
+      }`}
+      id="workspace"
+    >
       <WorkspaceSidebar
         dictionary={dictionary}
         rooms={rooms}

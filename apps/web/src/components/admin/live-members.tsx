@@ -6,17 +6,25 @@ import type {
   WorkspaceMember,
   WorkspaceRole,
 } from "@haloai/contracts";
-import { Check, Copy, LoaderCircle, Mail, UserPlus, X } from "lucide-react";
+import { Copy, LoaderCircle, Mail, UserPlus, X } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { notify } from "@/components/toast-host";
+import { FieldError } from "@/components/ui/field-error";
+import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloSelect } from "@/components/ui/halo-select";
 
 const roles: readonly WorkspaceRole[] = ["owner", "admin", "member", "guest"];
 
 function roleLabel(role: WorkspaceRole, chinese: boolean): string {
   if (!chinese) return { owner: "Owner", admin: "Admin", member: "Member", guest: "Guest" }[role];
   return { owner: "所有者", admin: "管理员", member: "成员", guest: "访客" }[role];
+}
+
+function looksLikeEmail(value: string): boolean {
+  // 邀请表单禁止 type=email 原生气泡，校验必须走产品浮层。
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
@@ -27,6 +35,8 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteRole, setInviteRole] = useState<WorkspaceRole>("member");
+  const [emailError, setEmailError] = useState(false);
 
   const activeWorkspace =
     session?.workspaces.find(
@@ -64,16 +74,21 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
   async function invite(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     if (!activeWorkspace) return;
-    setSubmitting(true);
     const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") ?? "").trim();
+    if (!looksLikeEmail(email)) {
+      setEmailError(true);
+      return;
+    }
+    setSubmitting(true);
     try {
       const result = await apiFetch<{ invitation: WorkspaceInvitationCreated }>(
         `/v1/workspaces/${activeWorkspace.id}/invitations`,
         {
           method: "POST",
           body: JSON.stringify({
-            email: String(data.get("email")),
-            role: String(data.get("role")),
+            email,
+            role: inviteRole,
           }),
         },
       );
@@ -149,6 +164,8 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
           onClick={() => {
             setInviteOpen(true);
             setInviteLink(null);
+            setInviteRole("member");
+            setEmailError(false);
           }}
         >
           <UserPlus size={17} /> {dictionary.inviteMember}
@@ -182,18 +199,17 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
                 {dictionary.typePerson}
               </span>
               <span role="cell" data-label={dictionary.tableRole}>
-                <select
-                  className="admin-role-select"
+                <HaloSelect
+                  compact
                   value={member.role}
                   disabled={activeWorkspace?.role !== "owner"}
-                  onChange={(event) => void updateRole(member, event.target.value as WorkspaceRole)}
-                >
-                  {roles.map((role) => (
-                    <option value={role} key={role}>
-                      {roleLabel(role, chinese)}
-                    </option>
-                  ))}
-                </select>
+                  ariaLabel={dictionary.tableRole}
+                  onValueChange={(next) => void updateRole(member, next as WorkspaceRole)}
+                  options={roles.map((role) => ({
+                    value: role,
+                    label: roleLabel(role, chinese),
+                  }))}
+                />
               </span>
               <span role="cell" data-label={dictionary.tableStatus}>
                 <span className="admin-status-badge is-success">
@@ -213,87 +229,74 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
         </div>
       </section>
 
-      {inviteOpen ? (
-        <div className="dialog-backdrop">
-          <div
-            className="member-dialog admin-invite-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="invite-member-title"
-          >
-            <div className="dialog-heading">
+      <HaloDialog
+        open={inviteOpen}
+        title={dictionary.inviteMember}
+        description={
+          chinese
+            ? "邀请与登录邮箱绑定，链接 72 小时内有效。"
+            : "Invites are email-bound and valid for 72 hours."
+        }
+        icon={<Mail size={20} />}
+        onClose={() => setInviteOpen(false)}
+        closeLabel={chinese ? "关闭邀请窗口" : "Close invitation dialog"}
+      >
+        <form noValidate onSubmit={(event) => void invite(event)}>
+          <label>
+            <span>{chinese ? "成员邮箱" : "Member email"}</span>
+            <FieldError
+              open={emailError}
+              message={chinese ? "请输入有效的工作邮箱。" : "Enter a valid work email."}
+            >
               <div>
-                <span className="dialog-icon">
-                  <Mail size={20} />
-                </span>
-                <div>
-                  <h2 id="invite-member-title">{dictionary.inviteMember}</h2>
-                  <p>
-                    {chinese
-                      ? "邀请与登录邮箱绑定，链接 72 小时内有效。"
-                      : "Invites are email-bound and valid for 72 hours."}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="icon-button"
-                onClick={() => setInviteOpen(false)}
-                aria-label={chinese ? "关闭邀请窗口" : "Close invitation dialog"}
-              >
-                <X size={19} />
-              </button>
-            </div>
-            <form onSubmit={(event) => void invite(event)}>
-              <label>
-                <span>{chinese ? "成员邮箱" : "Member email"}</span>
                 <input
                   name="email"
-                  type="email"
-                  required
+                  type="text"
+                  inputMode="email"
+                  autoComplete="email"
                   autoFocus
                   placeholder="name@company.com"
+                  onChange={() => setEmailError(false)}
                 />
-              </label>
-              <label>
-                <span>{dictionary.tableRole}</span>
-                <select name="role" defaultValue="member">
-                  <option value="member">{roleLabel("member", chinese)}</option>
-                  <option value="guest">{roleLabel("guest", chinese)}</option>
-                  {activeWorkspace?.role === "owner" ? (
-                    <option value="admin">{roleLabel("admin", chinese)}</option>
-                  ) : null}
-                </select>
-              </label>
-              {inviteLink ? (
-                <div className="admin-invite-link">
-                  <span>{chinese ? "开发环境邀请链接" : "Development invite link"}</span>
-                  <code>{inviteLink}</code>
-                  <button
-                    type="button"
-                    onClick={() => void navigator.clipboard.writeText(inviteLink)}
-                  >
-                    <Copy size={15} /> {chinese ? "复制" : "Copy"}
-                  </button>
-                </div>
-              ) : null}
-              <div className="dialog-actions">
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => setInviteOpen(false)}
-                >
-                  <X size={16} /> {chinese ? "取消" : "Cancel"}
-                </button>
-                <button type="submit" className="primary-button" disabled={submitting}>
-                  {submitting ? <LoaderCircle size={16} /> : <UserPlus size={16} />}
-                  {submitting ? (chinese ? "正在创建…" : "Creating…") : dictionary.inviteMember}
-                </button>
               </div>
-            </form>
+            </FieldError>
+          </label>
+          <label>
+            <span>{dictionary.tableRole}</span>
+            <HaloSelect
+              name="role"
+              value={inviteRole}
+              onValueChange={(next) => setInviteRole(next as WorkspaceRole)}
+              ariaLabel={dictionary.tableRole}
+              options={[
+                { value: "member", label: roleLabel("member", chinese) },
+                { value: "guest", label: roleLabel("guest", chinese) },
+                ...(activeWorkspace?.role === "owner"
+                  ? [{ value: "admin" as const, label: roleLabel("admin", chinese) }]
+                  : []),
+              ]}
+            />
+          </label>
+          {inviteLink ? (
+            <div className="admin-invite-link">
+              <span>{chinese ? "开发环境邀请链接" : "Development invite link"}</span>
+              <code>{inviteLink}</code>
+              <button type="button" onClick={() => void navigator.clipboard.writeText(inviteLink)}>
+                <Copy size={15} /> {chinese ? "复制" : "Copy"}
+              </button>
+            </div>
+          ) : null}
+          <div className="dialog-actions">
+            <button type="button" className="secondary-button" onClick={() => setInviteOpen(false)}>
+              <X size={16} /> {chinese ? "取消" : "Cancel"}
+            </button>
+            <button type="submit" className="primary-button" disabled={submitting}>
+              {submitting ? <LoaderCircle size={16} /> : <UserPlus size={16} />}
+              {submitting ? (chinese ? "正在创建…" : "Creating…") : dictionary.inviteMember}
+            </button>
           </div>
-        </div>
-      ) : null}
+        </form>
+      </HaloDialog>
     </>
   );
 }

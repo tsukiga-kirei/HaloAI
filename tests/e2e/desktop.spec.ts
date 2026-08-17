@@ -44,7 +44,7 @@ test.describe("桌面工作台", () => {
     await expect(page.locator(".workspace-hub-tabs")).toHaveCount(0);
 
     await page.getByRole("button", { name: "收件箱" }).first().click();
-    await page.getByRole("button", { name: "待审批" }).click();
+    await page.getByRole("tab", { name: "待审批" }).click();
     await expect(page.getByText("「品牌与官网」的首页文案等待人工审批。")).toBeVisible();
     await page.getByRole("button", { name: "标记已读" }).click();
     await expect(page.locator("[data-sonner-toast]")).toContainText("已在本地标记为已读");
@@ -123,7 +123,7 @@ test.describe("桌面工作台", () => {
 
     const dialog = page.getByRole("dialog", { name: "添加协作者" });
     await expect(dialog).toBeVisible();
-    await dialog.getByRole("button", { name: "AI 角色" }).click();
+    await dialog.getByRole("tab", { name: "AI 角色" }).click();
     await expect(dialog.getByLabel("模型适配器")).toBeVisible();
     await expect(
       dialog.getByText("权限由服务端策略执行，不会仅依赖 AI 提示词。", { exact: true }),
@@ -203,5 +203,21 @@ test.describe("桌面工作台", () => {
     await expect(page.getByRole("heading", { level: 1, name: "平台总览" })).toBeVisible();
     await expect(page.getByText("内测发布", { exact: true })).toHaveCount(0);
     await expect(page.getByText("用户研究", { exact: true })).toHaveCount(0);
+
+    await page.getByRole("link", { name: "租户" }).click();
+    await expect(page).toHaveURL(/\/system\/tenants$/);
+    await expect(page.getByRole("heading", { level: 1, name: "租户目录" })).toBeVisible();
+
+    await page.getByRole("link", { name: "健康" }).click();
+    await expect(page).toHaveURL(/\/system\/health$/);
+    await expect(page.getByRole("heading", { level: 1, name: "平台健康" })).toBeVisible();
+
+    await page.getByRole("link", { name: "策略" }).click();
+    await expect(page).toHaveURL(/\/system\/policy$/);
+    await expect(page.getByRole("heading", { level: 1, name: "全局策略" })).toBeVisible();
+
+    await page.getByRole("link", { name: "审计记录" }).click();
+    await expect(page).toHaveURL(/\/system\/audit$/);
+    await expect(page.getByRole("heading", { level: 1, name: "审计记录" })).toBeVisible();
   });
 });

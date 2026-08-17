@@ -1,12 +1,5 @@
-import {
-  Check,
-  FileText,
-  Link2,
-  MessageCircleMore,
-  MoreHorizontal,
-  WandSparkles,
-  X,
-} from "lucide-react";
+import { Check, FileText, Link2, MessageCircleMore, WandSparkles, X } from "lucide-react";
+import { HaloNoticeMenu } from "@/components/ui/halo-notice-menu";
 import { Avatar } from "./primitives";
 import type { DocumentTab, WorkspaceViewProps } from "./types";
 
@@ -68,14 +61,10 @@ export function DocumentPanel({
                 <Check size={16} />
                 {dictionary.save}
               </button>
-              <button
-                type="button"
-                className="icon-button"
-                aria-label={dictionary.moreActions}
-                onClick={() => onNotify(dictionary.moreActionsPreview)}
-              >
-                <MoreHorizontal size={18} />
-              </button>
+              <HaloNoticeMenu
+                label={dictionary.moreActions}
+                message={dictionary.moreActionsPreview}
+              />
             </>
           ) : null}
         </div>

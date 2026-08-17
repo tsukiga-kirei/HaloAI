@@ -16,6 +16,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { DocumentSummary, ProjectSummary } from "@haloai/contracts";
+import { HaloSegmented } from "@/components/ui/halo-segmented";
 import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
 import { WorkspaceDocumentsView } from "./workspace-documents-view";
 
@@ -307,26 +308,17 @@ function InboxView({
   } as const;
   return (
     <div className="workspace-hub-body">
-      <div className="filter-bar" role="group" aria-label={dictionary.inbox}>
-        {(
-          [
-            ["all", dictionary.allItems, Inbox],
-            ["mentions", dictionary.mentions, AtSign],
-            ["approvals", dictionary.approvals, FileCheck2],
-            ["invitations", dictionary.invitations, UserRound],
-          ] as const
-        ).map(([value, label, Icon]) => (
-          <button
-            type="button"
-            key={value}
-            className={filter === value ? "is-active" : ""}
-            onClick={() => setFilter(value)}
-          >
-            <Icon size={15} />
-            {label}
-          </button>
-        ))}
-      </div>
+      <HaloSegmented
+        ariaLabel={dictionary.inbox}
+        value={filter}
+        onChange={setFilter}
+        items={[
+          { value: "all", label: dictionary.allItems, icon: Inbox },
+          { value: "mentions", label: dictionary.mentions, icon: AtSign },
+          { value: "approvals", label: dictionary.approvals, icon: FileCheck2 },
+          { value: "invitations", label: dictionary.invitations, icon: UserRound },
+        ]}
+      />
       <div className="data-table-wrap">
         <table className="data-table">
           <thead>
@@ -345,12 +337,14 @@ function InboxView({
                   <td>
                     <strong className={isRead ? "" : "is-unread"}>{item.label}</strong>
                   </td>
-                  <td>{typeLabel[item.type]}</td>
+                  <td>
+                    <span className={`halo-badge is-${item.type}`}>{typeLabel[item.type]}</span>
+                  </td>
                   <td>{item.meta.split(" · ")[0]}</td>
                   <td>
                     <button
                       type="button"
-                      className="table-action"
+                      className="table-action is-ghost"
                       disabled={isRead}
                       onClick={() => {
                         setReadIds((current) => [...current, item.id]);

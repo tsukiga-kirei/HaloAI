@@ -15,7 +15,7 @@ The root route `/` only enters the collaboration surface and does not host a sec
 ## 2. Navigation and visual boundaries
 
 - Collaboration is a left-navigation / right-workspace shell: white left menus and personal settings, gray right canvas. The main workspace must not repeat the left primary destinations.
-- Workspace administration and system administration share one management shell: a white collapsible sidebar and a bottom-left account menu.
+- Workspace administration and system administration reuse the collaboration sidebar: white, collapsible, with the account control pinned to the bottom. Do not introduce a second glowing navigation skin. Primary items stay about 34px tall with a neutral selected wash; do not stretch those rows to fill the sidebar. Each portal mounts its own shell, so switching must restore the saved collapsed width immediately and must not play a collapse animation while doing so.
 - The three surfaces share brand tokens, the product mark, theme, and locale preferences, but not their page hierarchy or primary navigation.
 - Desktop administration uses side navigation and a content canvas. Narrow screens convert navigation into a horizontally browsable section bar instead of shrinking a desktop page.
 - Transitions between collaboration and administration use the account menu’s role switch. Do not add a second language, theme, or role control in the top bar.
@@ -43,7 +43,7 @@ Before chat orchestration, model providers, and Agent Runs are connected, collab
 
 - Workspace overview collects recent rooms, action items, and shared documents with explicit owners and states.
 - Inbox switches between mentions, approvals, and invitations. Without an API, it may only mark items read locally and must not claim durable success.
-- The document directory supports search, status filters, and a path back to the document panel in its room.
+- The document directory supports search, status filters, and a path back to the document panel in its room. The toolbar search field fills remaining width; filters and create sit together on the right.
 - Activity shows attributable people, timestamps, and objects without exposing or implying hidden AI reasoning.
 - These surfaces must not trigger model calls, tool calls, or external writes. Phase boundaries appear only in empty states or toasts after a user action, never as a persistent banner.
 
@@ -51,7 +51,7 @@ The visual hierarchy continues to use HaloAI semantic tokens. Reference products
 
 ## 5. Completion criteria
 
-- `/app`, `/admin/overview`, `/system`, and all administration sections navigate through real links.
+- `/app`, `/admin/overview`, `/system`, and `/system/tenants`, `/system/health`, `/system/policy`, `/system/audit` navigate through real links. Section-route validation must not be imported from a Client Component module.
 - Administration has no unexpected horizontal overflow on desktop or a 390px mobile viewport, and interaction targets are at least 44×44 CSS pixels.
 - Chinese, English, light theme, and dark theme cover collaboration, administration, and denial states.
 - Unauthorized principals cannot bypass the server guard by entering a route directly.

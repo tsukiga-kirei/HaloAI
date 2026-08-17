@@ -1,6 +1,10 @@
+"use client";
+
 import { FilePlus2, Plus, ShieldCheck, X } from "lucide-react";
 import { type FormEventHandler, useState } from "react";
 import type { ProjectSummary } from "@haloai/contracts";
+import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloSelect } from "@/components/ui/halo-select";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
 
 interface DocumentDialogProps extends WorkspaceViewProps {
@@ -10,6 +14,8 @@ interface DocumentDialogProps extends WorkspaceViewProps {
   onSubmit: FormEventHandler<HTMLFormElement>;
 }
 
+const NONE_ROOM = "__none__";
+
 export function DocumentDialog({
   dictionary,
   projects,
@@ -18,88 +24,81 @@ export function DocumentDialog({
   onSubmit,
 }: DocumentDialogProps) {
   const [selectedProjectId, setSelectedProjectId] = useState(projects[0]?.id ?? "");
+  const [selectedRoomId, setSelectedRoomId] = useState(NONE_ROOM);
   const projectRooms = rooms.filter((room) => room.projectId === selectedProjectId);
+
   return (
-    <div className="dialog-backdrop" role="presentation" onMouseDown={onClose}>
-      <section
-        className="member-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-document-title"
-        onMouseDown={(event) => event.stopPropagation()}
+    <HaloDialog
+      open
+      title={dictionary.createDocumentTitle}
+      description={dictionary.createDocumentSubtitle}
+      icon={<FilePlus2 size={18} />}
+      onClose={onClose}
+      closeLabel={dictionary.cancel}
+    >
+      <form
+        onSubmit={(event) => {
+          const roomField = event.currentTarget.elements.namedItem("roomId");
+          if (roomField instanceof HTMLInputElement && roomField.value === NONE_ROOM) {
+            roomField.value = "";
+          }
+          onSubmit(event);
+        }}
       >
-        <div className="dialog-heading">
-          <div>
-            <span className="dialog-icon">
-              <FilePlus2 size={18} />
-            </span>
-            <div>
-              <h2 id="create-document-title">{dictionary.createDocumentTitle}</h2>
-              <p>{dictionary.createDocumentSubtitle}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={onClose}
-            aria-label={dictionary.cancel}
-          >
-            <X size={18} />
+        <label>
+          {dictionary.documentTitle}
+          <input
+            name="title"
+            required
+            maxLength={300}
+            autoFocus
+            placeholder={dictionary.documentTitlePlaceholder}
+          />
+        </label>
+        <label>
+          {dictionary.selectProject}
+          <HaloSelect
+            name="projectId"
+            value={selectedProjectId}
+            onValueChange={(next) => {
+              setSelectedProjectId(next);
+              setSelectedRoomId(NONE_ROOM);
+            }}
+            ariaLabel={dictionary.selectProject}
+            options={projects.map((project) => ({ value: project.id, label: project.name }))}
+          />
+        </label>
+        <label>
+          {dictionary.optionalRoom}
+          <HaloSelect
+            name="roomId"
+            value={selectedRoomId}
+            onValueChange={setSelectedRoomId}
+            ariaLabel={dictionary.optionalRoom}
+            options={[
+              { value: NONE_ROOM, label: dictionary.noRoom },
+              ...projectRooms.map((room) => ({
+                value: room.id,
+                label: room.name ?? room.id,
+              })),
+            ]}
+          />
+        </label>
+        <p className="security-note">
+          <ShieldCheck size={15} />
+          {dictionary.metadataOnlyNotice}
+        </p>
+        <div className="dialog-actions">
+          <button type="button" className="secondary-button" onClick={onClose}>
+            <X size={16} />
+            {dictionary.cancel}
+          </button>
+          <button type="submit" className="primary-button">
+            <Plus size={16} />
+            {dictionary.createDocumentTitle}
           </button>
         </div>
-        <form onSubmit={onSubmit}>
-          <label>
-            {dictionary.documentTitle}
-            <input
-              name="title"
-              required
-              maxLength={300}
-              autoFocus
-              placeholder={dictionary.documentTitlePlaceholder}
-            />
-          </label>
-          <label>
-            {dictionary.selectProject}
-            <select
-              name="projectId"
-              required
-              value={selectedProjectId}
-              onChange={(event) => setSelectedProjectId(event.target.value)}
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {dictionary.optionalRoom}
-            <select name="roomId">
-              <option value="">{dictionary.noRoom}</option>
-              {projectRooms.map((room) => (
-                <option key={room.id} value={room.id}>
-                  {room.name ?? room.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          <p className="security-note">
-            <ShieldCheck size={15} />
-            {dictionary.metadataOnlyNotice}
-          </p>
-          <div className="dialog-actions">
-            <button type="button" className="secondary-button" onClick={onClose}>
-              <X size={16} />
-              {dictionary.cancel}
-            </button>
-            <button type="submit" className="primary-button">
-              <Plus size={16} />
-              {dictionary.createDocumentTitle}
-            </button>
-          </div>
-        </form>
-      </section>
-    </div>
+      </form>
+    </HaloDialog>
   );
 }
