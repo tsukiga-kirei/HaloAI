@@ -8,8 +8,6 @@ import {
   KeyRound,
   LockKeyhole,
   Plus,
-  ServerCog,
-  Settings2,
   ShieldCheck,
   UserPlus,
   UsersRound,
@@ -17,6 +15,7 @@ import {
 import type { ReactNode } from "react";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
+import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import { LiveMembers } from "./live-members";
 
 interface AdminSectionContentProps {
@@ -39,7 +38,8 @@ function SectionHeading({
   section,
   action,
   onNotify,
-}: AdminSectionContentProps & { action?: "invite" | "agent" | "export" }) {
+  description,
+}: AdminSectionContentProps & { action?: "invite" | "agent" | "export"; description?: string }) {
   const actionLabel =
     action === "invite"
       ? dictionary.inviteMember
@@ -51,7 +51,10 @@ function SectionHeading({
 
   return (
     <div className="admin-section-heading">
-      <h1>{dictionary[sectionTitleKeys[section]]}</h1>
+      <div>
+        <h1>{dictionary[sectionTitleKeys[section]]}</h1>
+        {description ? <p>{description}</p> : null}
+      </div>
       {actionLabel === undefined ? null : (
         <button type="button" className="admin-primary-button" onClick={onNotify}>
           {action === "invite" ? (
@@ -65,29 +68,6 @@ function SectionHeading({
         </button>
       )}
     </div>
-  );
-}
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  detail,
-  tone,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  detail: string;
-  tone: string;
-}) {
-  return (
-    <article className={`admin-metric-card tone-${tone}`}>
-      <div className="admin-metric-icon">{icon}</div>
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{detail}</small>
-    </article>
   );
 }
 
@@ -107,28 +87,28 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
     <>
       <SectionHeading {...props} />
       <section className="admin-metrics" aria-label={dictionary.overviewTitle}>
-        <MetricCard
+        <HaloMetricCard
           icon={<UsersRound size={20} />}
           label={dictionary.activeMembers}
           value="8"
           detail={dictionary.availableNow}
           tone="violet"
         />
-        <MetricCard
+        <HaloMetricCard
           icon={<Bot size={20} />}
           label={dictionary.aiCollaborators}
           value="3"
           detail={dictionary.availableNow}
           tone="blue"
         />
-        <MetricCard
+        <HaloMetricCard
           icon={<Activity size={20} />}
           label={dictionary.monthlyRuns}
           value="1,284"
           detail={dictionary.comparedToLastMonth}
           tone="mint"
         />
-        <MetricCard
+        <HaloMetricCard
           icon={<CircleAlert size={20} />}
           label={dictionary.pendingApprovals}
           value="2"
@@ -267,16 +247,16 @@ function Members({ props }: { props: AdminSectionContentProps }) {
 
 function Agents({ props }: { props: AdminSectionContentProps }) {
   const { dictionary } = props;
-  const agents: ReadonlyArray<readonly [string, string, string, string]> = [
-    [dictionary.agentNova, dictionary.agentResearch, "4", "3"],
-    [dictionary.agentMuse, dictionary.agentWriting, "3", "2"],
-    [dictionary.agentHalo, dictionary.agentFacilitator, "5", "1"],
+  const agents: ReadonlyArray<readonly [string, string, string, string, string]> = [
+    [dictionary.agentNova, dictionary.agentResearch, "4", "3", dictionary.modelConversationDefault],
+    [dictionary.agentMuse, dictionary.agentWriting, "3", "2", dictionary.modelConversationDefault],
+    [dictionary.agentHalo, dictionary.agentFacilitator, "5", "1", dictionary.modelLocalName],
   ];
   return (
     <>
       <SectionHeading {...props} action="agent" />
       <section className="admin-card-grid">
-        {agents.map(([name, description, version, tools], index) => (
+        {agents.map(([name, description, version, tools, model], index) => (
           <article className="admin-agent-card" key={name}>
             <div className={`admin-agent-orbit is-${index + 1}`}>
               <span>{name.slice(0, 1)}</span>
@@ -286,6 +266,10 @@ function Agents({ props }: { props: AdminSectionContentProps }) {
               <p>{description}</p>
             </div>
             <StatusBadge>{dictionary.publishedVersion.replace("{version}", version)}</StatusBadge>
+            <div className="admin-agent-meta">
+              <span>{dictionary.agentAssignedModel}</span>
+              <strong>{model}</strong>
+            </div>
             <div className="admin-agent-meta">
               <span>{dictionary.toolScope}</span>
               <strong>{tools}</strong>
@@ -303,48 +287,68 @@ function Agents({ props }: { props: AdminSectionContentProps }) {
 
 function Integrations({ props }: { props: AdminSectionContentProps }) {
   const { dictionary } = props;
-  const items = [
+  const allocated = [
     {
-      icon: <ServerCog size={21} />,
-      title: dictionary.integrationModel,
-      description: dictionary.integrationModelDetail,
-      status: dictionary.connected,
-      connected: true,
+      name: dictionary.modelConversationDefault,
+      agents: [dictionary.agentNova, dictionary.agentMuse].join(dictionary.listSeparator),
     },
+  ] as const;
+  const extras = [
     {
       icon: <Database size={21} />,
       title: dictionary.integrationStorage,
       description: dictionary.integrationStorageDetail,
-      status: dictionary.notConnected,
-      connected: false,
     },
     {
       icon: <KeyRound size={21} />,
       title: dictionary.integrationMcp,
       description: dictionary.integrationMcpDetail,
-      status: dictionary.notConnected,
-      connected: false,
     },
   ] as const;
   return (
     <>
-      <SectionHeading {...props} />
-      <section className="admin-stack-list">
-        {items.map((item) => (
-          <article className="admin-integration-row" key={item.title}>
-            <span className="admin-integration-icon">{item.icon}</span>
-            <span>
-              <h2>{item.title}</h2>
-              <p>{item.description}</p>
-            </span>
-            <StatusBadge tone={item.connected ? "success" : "muted"}>{item.status}</StatusBadge>
-            <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
-              <Settings2 size={15} />
-              {dictionary.configure}
-            </button>
-          </article>
-        ))}
+      <SectionHeading {...props} description={dictionary.workspaceModelsIntro} />
+      <section className="admin-panel admin-table-panel">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>{dictionary.tableName}</th>
+              <th>{dictionary.tableStatus}</th>
+              <th>{dictionary.agentAssignedModel}</th>
+              <th>{dictionary.tableActions}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allocated.map((row) => (
+              <tr key={row.name}>
+                <td>{row.name}</td>
+                <td>{dictionary.workspaceModelAllocated}</td>
+                <td>{row.agents}</td>
+                <td>
+                  <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
+                    {dictionary.assignToAgent}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </section>
+      <div className="admin-section-stack">
+        <h2 className="admin-subheading">{dictionary.workspaceIntegrationsTitle}</h2>
+        <section className="admin-stack-list">
+          {extras.map((item) => (
+            <article className="admin-integration-row" key={item.title}>
+              <span className="admin-integration-icon">{item.icon}</span>
+              <span>
+                <h2>{item.title}</h2>
+                <p>{item.description}</p>
+              </span>
+              <StatusBadge tone="muted">{dictionary.notConnected}</StatusBadge>
+            </article>
+          ))}
+        </section>
+      </div>
     </>
   );
 }

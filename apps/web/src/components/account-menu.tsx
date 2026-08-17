@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
+import { persistPortal, portalPath, clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import type { Locale } from "@/lib/i18n";
 import type { Theme } from "@/components/workspace/types";
 import { notify } from "@/components/toast-host";
@@ -112,7 +112,7 @@ export function AccountMenu({
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
-            className="halo-menu-content"
+            className="halo-menu-content is-account"
             side="top"
             align={collapsed ? "start" : "start"}
             sideOffset={8}
@@ -156,14 +156,14 @@ export function AccountMenu({
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.SubContent
-                    className="halo-menu-sub"
-                    align="end"
-                    sideOffset={8}
-                    collisionPadding={16}
-                    ref={(node) => {
-                      if (node) animateOverlayIn(node);
-                    }}
-                  >
+                  className="halo-menu-sub is-account"
+                  align="end"
+                  sideOffset={8}
+                  collisionPadding={16}
+                  ref={(node) => {
+                    if (node) animateOverlayIn(node);
+                  }}
+                >
                     {workspaces.map((workspace) => (
                       <DropdownMenu.Item
                         className="halo-menu-item"
@@ -192,7 +192,7 @@ export function AccountMenu({
               </DropdownMenu.SubTrigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.SubContent
-                  className="halo-menu-sub"
+                  className="halo-menu-sub is-account"
                   align="end"
                   sideOffset={8}
                   collisionPadding={16}
@@ -213,13 +213,13 @@ export function AccountMenu({
                           value={role.key}
                           disabled={role.key === portal}
                         >
-                          <span className="halo-menu-indicator">
+                          <Icon size={14} />
+                          {roleLabel[role.key]}
+                          <span className="halo-menu-indicator halo-menu-trailing">
                             <DropdownMenu.ItemIndicator>
                               <Check size={14} />
                             </DropdownMenu.ItemIndicator>
                           </span>
-                          <Icon size={14} />
-                          {roleLabel[role.key]}
                         </DropdownMenu.RadioItem>
                       );
                     })}
@@ -227,18 +227,23 @@ export function AccountMenu({
                 </DropdownMenu.SubContent>
               </DropdownMenu.Portal>
             </DropdownMenu.Sub>
-            {onSignOut ? (
-              <>
-                <DropdownMenu.Separator className="halo-menu-separator" />
-                <DropdownMenu.Item
-                  className="halo-menu-item is-danger"
-                  onSelect={() => onSignOut()}
-                >
-                  <LogOut size={16} />
-                  {labels.signOut}
-                </DropdownMenu.Item>
-              </>
-            ) : null}
+            <DropdownMenu.Separator className="halo-menu-separator" />
+            <DropdownMenu.Item
+              className="halo-menu-item is-danger"
+              onSelect={() => {
+                onOpenChange(false);
+                if (onSignOut) {
+                  onSignOut();
+                  return;
+                }
+                clearClientPortalSession();
+                router.replace("/login" as Route);
+                router.refresh();
+              }}
+            >
+              <LogOut size={16} />
+              {labels.signOut}
+            </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>

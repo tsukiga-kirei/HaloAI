@@ -61,11 +61,14 @@ export function MemberDialog({
                 ariaLabel={dictionary.model}
                 options={[
                   { value: "workspace-default", label: dictionary.modelWorkspaceDefault },
-                  { value: "openai-compatible", label: dictionary.modelOpenAICompatible },
+                  { value: "conversation-default", label: dictionary.modelOpenAICompatible },
                   { value: "local", label: dictionary.modelLocalPrivate },
                 ]}
               />
             </label>
+            <p className="security-note">
+              <ShieldCheck size={16} /> {dictionary.modelAllocatedOnly}
+            </p>
             <label>
               <span>{dictionary.instructions}</span>
               <textarea

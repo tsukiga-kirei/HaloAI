@@ -59,6 +59,7 @@ test.describe("桌面工作台", () => {
 
   test("可在中文与英文之间切换", async ({ page }) => {
     await page.getByRole("button", { name: "个人设置" }).click();
+    await expect(page.getByRole("menuitem", { name: "退出登录" })).toBeVisible();
     await page.getByRole("menuitem", { name: "切换语言" }).click();
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
@@ -124,7 +125,7 @@ test.describe("桌面工作台", () => {
     const dialog = page.getByRole("dialog", { name: "添加协作者" });
     await expect(dialog).toBeVisible();
     await dialog.getByRole("tab", { name: "AI 角色" }).click();
-    await expect(dialog.getByLabel("模型适配器")).toBeVisible();
+    await expect(dialog.getByLabel("模型")).toBeVisible();
     await expect(
       dialog.getByText("权限由服务端策略执行，不会仅依赖 AI 提示词。", { exact: true }),
     ).toBeVisible();
@@ -207,6 +208,10 @@ test.describe("桌面工作台", () => {
     await page.getByRole("link", { name: "租户" }).click();
     await expect(page).toHaveURL(/\/system\/tenants$/);
     await expect(page.getByRole("heading", { level: 1, name: "租户目录" })).toBeVisible();
+
+    await page.getByRole("link", { name: "模型" }).click();
+    await expect(page).toHaveURL(/\/system\/models$/);
+    await expect(page.getByRole("heading", { level: 1, name: "平台模型" })).toBeVisible();
 
     await page.getByRole("link", { name: "健康" }).click();
     await expect(page).toHaveURL(/\/system\/health$/);

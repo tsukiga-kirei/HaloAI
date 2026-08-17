@@ -72,6 +72,7 @@ export interface Dictionary {
   modelWorkspaceDefault: string;
   modelOpenAICompatible: string;
   modelLocalPrivate: string;
+  modelAllocatedOnly: string;
   instructions: string;
   cancel: string;
   create: string;
@@ -282,10 +283,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     aiTeammate: "AI 角色",
     name: "名称",
     role: "项目角色",
-    model: "模型适配器",
-    modelWorkspaceDefault: "使用工作空间默认模型",
-    modelOpenAICompatible: "OpenAI 兼容模型",
-    modelLocalPrivate: "本地或私有模型",
+    model: "模型",
+    modelWorkspaceDefault: "本空间默认",
+    modelOpenAICompatible: "对话默认模型",
+    modelLocalPrivate: "本地私有模型",
+    modelAllocatedOnly: "只能选择系统已分配给本空间的模型，不能在此接入新服务或填写密钥。",
     instructions: "角色说明",
     cancel: "取消",
     create: "添加到房间",
@@ -499,10 +501,12 @@ export const dictionaries: Record<Locale, Dictionary> = {
     aiTeammate: "AI role",
     name: "Name",
     role: "Project role",
-    model: "Model adapter",
-    modelWorkspaceDefault: "Use workspace default",
-    modelOpenAICompatible: "OpenAI-compatible model",
-    modelLocalPrivate: "Local or private model",
+    model: "Model",
+    modelWorkspaceDefault: "Workspace default",
+    modelOpenAICompatible: "Conversation default",
+    modelLocalPrivate: "Local private model",
+    modelAllocatedOnly:
+      "You can only choose a model allocated to this workspace. Do not connect a new service or enter a secret here.",
     instructions: "Role instructions",
     cancel: "Cancel",
     create: "Add to room",

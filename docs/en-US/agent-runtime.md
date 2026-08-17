@@ -64,7 +64,7 @@ AgentProfile is the stable product identity for an AI teammate. It contains the 
 AgentVersion is an immutable published configuration containing:
 
 - persona and instructions;
-- model selection policy and generation settings;
+- model selection policy and generation settings (only platform models already allocated to the workspace; the server rechecks before a run, and a client selection is not authorization);
 - allowed tool capability versions;
 - collaboration behavior;
 - context and memory policy;

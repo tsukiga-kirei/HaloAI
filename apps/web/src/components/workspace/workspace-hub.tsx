@@ -17,6 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 import type { DocumentSummary, ProjectSummary } from "@haloai/contracts";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
+import { HaloMetricCard, type HaloMetricTone } from "@/components/ui/halo-metric-card";
 import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
 import { WorkspaceDocumentsView } from "./workspace-documents-view";
 
@@ -136,29 +137,38 @@ function Overview({
   onSectionChange: (section: WorkspaceSection) => void;
 }) {
   const roomCards = rooms.slice(0, 3);
-  const metrics: Array<{ label: string; value: string; Icon: LucideIcon }> = [
-    { label: dictionary.projectRooms, value: String(projects.length), Icon: FolderKanban },
-    { label: dictionary.activeRooms, value: String(rooms.length), Icon: Hash },
-    { label: dictionary.pendingItems, value: "2", Icon: Clock3 },
+  const metrics: Array<{
+    label: string;
+    value: string;
+    Icon: LucideIcon;
+    tone: HaloMetricTone;
+  }> = [
+    {
+      label: dictionary.projectRooms,
+      value: String(projects.length),
+      Icon: FolderKanban,
+      tone: "violet",
+    },
+    { label: dictionary.activeRooms, value: String(rooms.length), Icon: Hash, tone: "blue" },
+    { label: dictionary.pendingItems, value: "2", Icon: Clock3, tone: "amber" },
     {
       label: dictionary.sharedDocuments,
       value: String(durable ? documents.length : 3),
       Icon: FileText,
+      tone: "mint",
     },
   ];
   return (
     <div className="workspace-hub-body overview-layout">
       <section className="workspace-metrics" aria-label={dictionary.overview}>
-        {metrics.map(({ label, value, Icon }) => (
-          <article className="workspace-metric" key={label}>
-            <span>
-              <Icon size={16} />
-            </span>
-            <div>
-              <strong>{value}</strong>
-              <small>{label}</small>
-            </div>
-          </article>
+        {metrics.map(({ label, value, Icon, tone }) => (
+          <HaloMetricCard
+            key={label}
+            icon={<Icon size={20} />}
+            label={label}
+            value={value}
+            tone={tone}
+          />
         ))}
       </section>
 

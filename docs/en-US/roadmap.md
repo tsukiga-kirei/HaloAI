@@ -16,7 +16,7 @@
 - [x] Authentication, workspace creation and switching, invitation acceptance, and built-in role protection.
 - [ ] Project memberships and room-level authorization.
 - Real room/message/document APIs.
-- One configurable model provider with streaming.
+- One configurable model provider, connected by a system administrator and allocated to a pilot tenant, with streaming.
 - Agent creation, mention routing, run budgets, and audit timeline.
 - Local document versions and human approval flow.
 
@@ -40,7 +40,7 @@ Acceptance requires a lead to create a project, add a member, create a private r
 - Yjs-backed collaborative editing and comments.
 - Durable job queue, retries, cancellation, and resume.
 - Governed knowledge sources and permission-aware retrieval.
-- Provider vault, model routing, cost dashboards, and usage limits.
+- Provider vault on the platform, per-tenant allocation, cost dashboards, and usage limits.
 - PWA installability, push notifications, and offline draft support.
 
 ## Phase 3 — controlled action

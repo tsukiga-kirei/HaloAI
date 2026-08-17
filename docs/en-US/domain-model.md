@@ -41,7 +41,7 @@ A `User` is a human account that can authenticate. It contains global identity a
 
 ### 3.2 Workspace
 
-A `Workspace` is the primary tenant and policy boundary. It owns projects, rooms, agent profiles, documents, integrations, budgets, and retention policy. Human-readable slugs are scoped but are never used as authorization evidence.
+A `Workspace` is the primary tenant and policy boundary. It owns projects, rooms, agent profiles, documents, integrations, budgets, and retention policy. It does not own the platform model catalog or provider secrets; it only holds the right to use models a system administrator allocated to that tenant. Human-readable slugs are scoped but are never used as authorization evidence.
 
 ### 3.3 Actor
 
@@ -139,7 +139,7 @@ Publishing creates an immutable `AgentVersion` containing:
 
 - responsibility and explicit non-responsibilities;
 - behavior instructions and output contract;
-- model policy and fallback policy;
+- model policy and fallback policy (only platform model identifiers already allocated to this tenant);
 - knowledge-source selectors;
 - tool allowlist and per-tool constraints;
 - initiative level and collaboration policy;

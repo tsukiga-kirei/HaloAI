@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
 import { HaloWorkspace } from "@/components/halo-workspace";
+import { clearClientPortalSession } from "@/lib/portals";
 import styles from "./auth-shell.module.css";
 
 const demoMode = process.env.NEXT_PUBLIC_AUTH_MODE === "demo";
@@ -124,7 +125,7 @@ export function SessionGate() {
       headers: { "content-type": "application/json" },
       body: "{}",
     });
-    window.localStorage.removeItem("haloai.workspaceId");
+    clearClientPortalSession();
     router.replace("/login" as Route);
     router.refresh();
   }

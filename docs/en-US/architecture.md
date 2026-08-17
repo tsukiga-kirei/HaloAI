@@ -15,7 +15,7 @@ Web / PWA
        -> document and version service
        -> approval and audit service
        -> agent coordinator
-            -> model provider adapters
+            -> model provider adapters (configured by system admins; callable only after allocation to the tenant)
             -> tool policy gateway
             -> sandbox / MCP adapters
   -> PostgreSQL / object storage / event stream
@@ -55,6 +55,8 @@ Raw chat history is not automatically promoted to durable memory.
 ### Foundation
 
 Next.js hosts the interface, validation routes, and SSE demo runtime. PostgreSQL is the planned source of truth. This keeps local setup small while the domain stabilizes.
+
+Models are connected at the platform: system administrators maintain the catalog and allocate models to tenants. A workspace cannot connect a provider itself.
 
 ### Team beta
 

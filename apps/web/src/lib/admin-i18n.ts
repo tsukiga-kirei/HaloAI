@@ -119,12 +119,39 @@ export interface AdminDictionary {
   systemNavLabel: string;
   systemConsoleTitle: string;
   navTenants: string;
+  navModels: string;
   navHealth: string;
   navPolicy: string;
   systemOverviewTitle: string;
   systemTenantsTitle: string;
+  systemModelsTitle: string;
   systemHealthTitle: string;
   systemPolicyTitle: string;
+  systemModelsIntro: string;
+  systemModelsCatalog: string;
+  systemModelsAllocation: string;
+  registerModel: string;
+  allocateToTenant: string;
+  revokeFromTenant: string;
+  modelSource: string;
+  modelSecret: string;
+  modelSecretStored: string;
+  modelSecretMissing: string;
+  allocatedTo: string;
+  allocatedModels: string;
+  noneAllocated: string;
+  tableActions: string;
+  modelSourceCompatible: string;
+  modelSourceLocal: string;
+  modelConversationDefault: string;
+  modelLocalName: string;
+  modelResearchName: string;
+  workspaceModelsIntro: string;
+  workspaceIntegrationsTitle: string;
+  assignToAgent: string;
+  agentAssignedModel: string;
+  workspaceModelAllocated: string;
+  listSeparator: string;
   tenantName: string;
   tenantStatus: string;
   tenantPlan: string;
@@ -159,13 +186,13 @@ const zhCN: AdminDictionary = {
   navOverview: "总览",
   navMembers: "成员与角色",
   navAgents: "AI 协作者",
-  navIntegrations: "模型与集成",
+  navIntegrations: "可用模型",
   navSecurity: "安全策略",
   navAudit: "审计记录",
   overviewTitle: "工作空间总览",
   membersTitle: "成员与访问角色",
   agentsTitle: "AI 协作者",
-  integrationsTitle: "模型与集成",
+  integrationsTitle: "本空间可用模型",
   securityTitle: "安全策略",
   auditTitle: "审计记录",
   inviteMember: "邀请成员",
@@ -217,10 +244,10 @@ const zhCN: AdminDictionary = {
   agentFacilitator: "按房间策略分派最少必要参与者",
   publishedVersion: "已发布 · v{version}",
   toolScope: "工具范围",
-  integrationModel: "模型网关",
-  integrationModelDetail: "工作空间默认策略已配置，密钥仅在服务端解析",
+  integrationModel: "对话默认模型",
+  integrationModelDetail: "系统已分配给本空间，可配给 AI 协作者。密钥不在此填写。",
   integrationStorage: "对象存储",
-  integrationStorageDetail: "等待接入扫描、隔离与生命周期策略",
+  integrationStorageDetail: "由平台提供；本空间不能自行接入。",
   integrationMcp: "MCP 工具",
   integrationMcpDetail: "尚未连接；启用前需要域名白名单与审批策略",
   connected: "已连接",
@@ -254,12 +281,39 @@ const zhCN: AdminDictionary = {
   systemNavLabel: "系统后台导航",
   systemConsoleTitle: "系统管理",
   navTenants: "租户",
+  navModels: "模型",
   navHealth: "健康",
   navPolicy: "策略",
   systemOverviewTitle: "平台总览",
   systemTenantsTitle: "租户目录",
+  systemModelsTitle: "平台模型",
   systemHealthTitle: "平台健康",
   systemPolicyTitle: "全局策略",
+  systemModelsIntro: "在这里维护整套可用模型，再分配给租户。密钥只保存在服务端，页面不展示明文。",
+  systemModelsCatalog: "模型目录",
+  systemModelsAllocation: "分配给租户",
+  registerModel: "登记模型",
+  allocateToTenant: "分配",
+  revokeFromTenant: "收回",
+  modelSource: "来源服务",
+  modelSecret: "密钥",
+  modelSecretStored: "已保存在服务端",
+  modelSecretMissing: "未配置",
+  allocatedTo: "已分配租户",
+  allocatedModels: "已分配模型",
+  noneAllocated: "未分配",
+  tableActions: "操作",
+  modelSourceCompatible: "兼容 OpenAI 接口的服务",
+  modelSourceLocal: "本地或私有服务",
+  modelConversationDefault: "对话默认模型",
+  modelLocalName: "本地私有模型",
+  modelResearchName: "研究用模型",
+  workspaceModelsIntro: "这些模型由系统管理分配给本空间。不能在此接入新服务或填写密钥，只能配给本空间的 AI。",
+  workspaceIntegrationsTitle: "其他集成",
+  assignToAgent: "分配给 AI",
+  agentAssignedModel: "使用模型",
+  workspaceModelAllocated: "已分配",
+  listSeparator: "、",
   tenantName: "租户",
   tenantStatus: "状态",
   tenantPlan: "方案",
@@ -294,13 +348,13 @@ const enUS: AdminDictionary = {
   navOverview: "Overview",
   navMembers: "Members & roles",
   navAgents: "AI collaborators",
-  navIntegrations: "Models & integrations",
+  navIntegrations: "Available models",
   navSecurity: "Security policy",
   navAudit: "Audit log",
   overviewTitle: "Workspace overview",
   membersTitle: "Members and access roles",
   agentsTitle: "AI collaborators",
-  integrationsTitle: "Models and integrations",
+  integrationsTitle: "Models available here",
   securityTitle: "Security policy",
   auditTitle: "Audit log",
   inviteMember: "Invite member",
@@ -353,11 +407,11 @@ const enUS: AdminDictionary = {
   agentFacilitator: "Routes the minimum necessary participants under room policy",
   publishedVersion: "Published · v{version}",
   toolScope: "Tool scope",
-  integrationModel: "Model gateway",
+  integrationModel: "Conversation default model",
   integrationModelDetail:
-    "Workspace default policy configured; credentials resolve only on the server",
-  integrationStorage: "Object storage",
-  integrationStorageDetail: "Waiting for scanning, quarantine, and lifecycle policy",
+    "Allocated to this workspace by system administration. Assign it to an AI collaborator; do not enter a secret here.",
+  integrationStorage: "File storage",
+  integrationStorageDetail: "Provided by the platform; this workspace cannot connect its own store.",
   integrationMcp: "MCP tools",
   integrationMcpDetail: "Not connected; domain allowlists and approval policy are required first",
   connected: "Connected",
@@ -396,12 +450,41 @@ const enUS: AdminDictionary = {
   systemNavLabel: "System administration navigation",
   systemConsoleTitle: "System administration",
   navTenants: "Tenants",
+  navModels: "Models",
   navHealth: "Health",
   navPolicy: "Policy",
   systemOverviewTitle: "Platform overview",
   systemTenantsTitle: "Tenant directory",
+  systemModelsTitle: "Platform models",
   systemHealthTitle: "Platform health",
   systemPolicyTitle: "Global policy",
+  systemModelsIntro:
+    "Maintain the full catalog here, then allocate models to tenants. Secrets stay on the server and never appear on this page.",
+  systemModelsCatalog: "Model catalog",
+  systemModelsAllocation: "Tenant allocation",
+  registerModel: "Register model",
+  allocateToTenant: "Allocate",
+  revokeFromTenant: "Revoke",
+  modelSource: "Source service",
+  modelSecret: "Secret",
+  modelSecretStored: "Stored on the server",
+  modelSecretMissing: "Not configured",
+  allocatedTo: "Allocated tenants",
+  allocatedModels: "Allocated models",
+  noneAllocated: "None allocated",
+  tableActions: "Actions",
+  modelSourceCompatible: "OpenAI-compatible service",
+  modelSourceLocal: "Local or private service",
+  modelConversationDefault: "Conversation default",
+  modelLocalName: "Local private model",
+  modelResearchName: "Research model",
+  workspaceModelsIntro:
+    "System administration allocated these models to this workspace. You cannot connect a new service or enter a secret here; you may only assign them to this workspace’s AI members.",
+  workspaceIntegrationsTitle: "Other integrations",
+  assignToAgent: "Assign to AI",
+  agentAssignedModel: "Model in use",
+  workspaceModelAllocated: "Allocated",
+  listSeparator: ", ",
   tenantName: "Tenant",
   tenantStatus: "Status",
   tenantPlan: "Plan",

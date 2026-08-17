@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the user experience, responsive information architecture, interaction rules, visual language, accessibility baseline, performance budget, and visual acceptance gates for HaloAI.
+This document defines the user experience, responsive information architecture, interaction rules, visual language, accessibility baseline, performance budget, and visual acceptance gates for HaloAI. Hard visual constraints are in “Style invariants” below.
 
 HaloAI is a human-led workroom. Conversation helps people coordinate, while documents, decisions, tasks, approvals, and audit records preserve the durable outcome. The interface must make human responsibility, AI participation, current work state, and the next useful action obvious without turning the product into a monitoring dashboard.
 
@@ -72,12 +72,12 @@ Breakpoints describe layout behavior rather than device identity. The interface 
 
 | Viewport      | Required layout                                                                                                                                    |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `>= 1440px`   | Left 232–256px workspace menu; right main workspace. Inside a room, split conversation and document; context uses a drawer, never a fourth column  |
+| `>= 1440px`   | Left 232–256px menu (same width for collaboration, workspace administration, and system administration). Right main workspace. Inside a room, split conversation and document; context uses a drawer, never a fourth column |
 | `1200–1439px` | Left menu plus one primary surface; the room document may collapse into a drawer; no right-hand utility rail                                       |
 | `768–1199px`  | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet             |
 | `< 768px`     | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
 
-The collaboration shell is always two regions: a white left navigation with personal settings, and a gray right canvas for the current work. Language, theme, workspace, and role switching live only in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat those controls in the top bar or main workspace. The desktop sidebar can collapse to an about-64px icon rail; collapsed items must stay square and must not stack hidden labels into a tall strip. Hovering the top-left mark expands it again. Collapsed rooms must not reuse a single hash icon; they use the first character of the room name and a stable color tile. Collaboration, workspace administration, and system administration share one sidebar structure: a vertical flex column with the account avatar pinned to the bottom. Expanded nav items are about 34px tall, with a neutral wash for the selected row rather than a full accent fill. Workspace and system administration have no room list, so the nav may fill the space between the brand and the account footer for scrolling, but the rows themselves must not stretch into cards; leftover space stays between the last item and the account control. Collapse and expand animate the sidebar width (about 300ms) and clip/fade labels; do not unmount those nodes and cause a jump. Reduced-motion mode changes width immediately. That width transition is only for an explicit collapse/expand click. Restoring the saved collapsed state, or switching among collaboration, workspace administration, and system administration, must land on the target width with no extra collapse or expand animation. Inside a room, conversation occupies about 40 percent and the document about 60 percent. Extra width from a collapsed sidebar goes to the document first and must not stretch the conversation into an empty column.
+The collaboration shell is always two regions: a white left navigation with personal settings, and a gray right canvas for the current work. Language, theme, workspace, and role switching live only in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat those controls in the top bar or main workspace. The desktop sidebar can collapse to an about-64px icon rail; collapsed items must stay square and must not stack hidden labels into a tall strip. Hovering the top-left mark expands it again. Collapsed rooms must not reuse a single hash icon; they use the first character of the room name and a stable color tile. Collaboration, workspace administration, and system administration share one sidebar structure and the same expanded width: a vertical flex column with the account avatar pinned to the bottom. Collaboration nav items are about 34px tall. Workspace and system administration have no room list, so rows are about 44px with looser gaps so a short menu does not look cramped, but the sidebar width must not become a second size. The selected row uses a light purple wash and accent text, never a full saturated fill, and never a purple canvas, sidebar, or border wash. The nav may fill the space between the brand and the account footer for scrolling, but the rows themselves must not stretch into cards; leftover space stays between the last item and the account control. All three portals use the same account dropdown: locale, theme, role switch, and sign out at the bottom. Do not add a second sign-out control in the sidebar footer. Collapse and expand animate the sidebar width (about 300ms) and clip/fade labels; do not unmount those nodes and cause a jump. Reduced-motion mode changes width immediately. That width transition is only for an explicit collapse/expand click. Restoring the saved collapsed state, or switching among collaboration, workspace administration, and system administration, must land on the target width with no extra collapse or expand animation. Inside a room, conversation occupies about 40 percent and the document about 60 percent. Extra width from a collapsed sidebar goes to the document first and must not stretch the conversation into an empty column.
 
 The favicon, login brand, and sidebar mark must share the same `icon.svg`. Size may change; the letterform and corner radius must not.
 
@@ -140,7 +140,7 @@ The first screen answers four questions:
 - Which documents need review?
 - What needs my response or approval?
 
-The initial modules are recent rooms, pending approvals, recent documents, and mentions. The visually strongest action is **New room**. Empty states must offer a clear next step and must not rely on illustration alone. Overview must not repeat the same four primary destinations already shown in the left navigation.
+The initial modules are recent rooms, pending approvals, recent documents, and mentions. The visually strongest action is **New room**. Empty states must offer a clear next step and must not rely on illustration alone. Overview must not repeat the same four primary destinations already shown in the left navigation. Collaboration, workspace administration, and system administration share one colorful metric-card treatment: an icon, a tinted border, and a light accent wash. The page canvas stays a neutral gray and must not be flooded with purple.
 
 ### Room
 
@@ -200,7 +200,7 @@ The creation flow has five steps:
 4. Capabilities: tools, write scope, and approval gates.
 5. Behavior: response language, initiative level, budget, and run limits.
 
-Provider, model, and sampling parameters belong in advanced settings. They are not the primary mental model for ordinary members.
+Provider connections and secrets appear only in system administration. Workspace administration may only choose from models already allocated to that tenant. Ordinary members do not configure providers or the model catalog. Low-level sampling parameters, if needed, stay in advanced settings and are not the primary mental model for ordinary members.
 
 ### Inbox
 
@@ -268,7 +268,7 @@ The approval surface shows the initiating human, acting AI, exact target, parame
 
 - One screen has one visually dominant primary action.
 - Optimistic UI is allowed only when failure can be safely reconciled.
-- Destructive actions require explicit language and do not rely on color alone.
+- Destructive actions require explicit language and do not rely on color alone. Revoke, delete, and sign out use the danger color. Cancel on create/edit forms stays a secondary neutral button and must not turn red.
 - Toasts report brief completion; errors requiring decisions remain inline.
 - Drawers preserve the current room context; full pages are reserved for durable destinations.
 - Streaming content does not force-scroll users who are reading history.
@@ -304,6 +304,24 @@ Implementation requirements:
 
 ## Quiet Halo visual system
 
+### Style invariants
+
+These rules match the current implementation. Change this table first when the visual system changes, and keep `docs/zh-CN/ux-and-visual.md` semantically aligned. Navigation boundaries for the shell and account menu are in `frontend-surfaces.md`.
+
+| Topic | Rule |
+| --- | --- |
+| Purple usage | Purple is an ornament, not a page fill. Use it on primary buttons, selected rows, segmented tabs, focus rings, drawer icons, metric-card tints, and toast borders/icons. Canvas, sidebar, table headers, and overlay surfaces stay neutral and must not become a purple wash |
+| Sidebar width | Collaboration, workspace administration, and system administration share the same expanded width (about 232–256px). Administration must not grow a wider sidebar |
+| Sidebar density | Collaboration rows are about 34px. Workspace and system administration have no room list, so rows are about 44px with looser gaps so a short menu does not look cramped. Rows must not stretch into cards |
+| Selection | A light purple wash and accent text; never a full saturated fill |
+| Account menu | All three portals share one dropdown: locale, theme, role switch, and sign out only at the bottom. Do not add a second sign-out control in the sidebar footer. Menu items are bold. The current-role checkmark sits at the end of the row |
+| Danger color | Revoke, delete, and sign out use the danger color. Cancel on create/edit forms stays a secondary neutral button and must not turn red |
+| Overview cards | Collaboration, workspace administration, and system administration share colorful metric cards (icon, tinted border, light wash). The canvas stays a neutral gray |
+| Toasts | Keep Sonner’s default info layout. Map accent border, a light wash, and an accent icon through tokens. Do not ship a black-and-white info bar or a homemade white box |
+| Segmented tabs | Size to the options; do not stretch across the row. The active tab uses a light purple wash and accent text; the track stays a neutral surface |
+| Type | Page title 22px; section title 15px; body 14px; collaboration nav 13px; administration nav 14px; supporting text no smaller than 12px |
+| Pagination | Preview lists do not show pagination yet. Later administration lists default to 20 rows per page, right-aligned under the table; room message history keeps cursor pagination |
+
 ### Brand expression
 
 Quiet Halo means professional, calm, trustworthy, and slightly future-facing. The halo appears as:
@@ -327,14 +345,16 @@ surface-muted   #F1F3F8
 text            #0F172A
 text-muted      #5B6578
 border          #DDE3EE
-accent          #5B5BD6
-accent-hover    #4A4AC4
-halo-start      #5B5BD6
+accent          #6D5CE7
+accent-hover    #5A49D4
+halo-start      #6D5CE7
 halo-end        #38BDF8
 success         #16805A
 warning         #A35C00
 danger          #C23B3B
 ```
+
+Purple is an ornament for primary buttons, selected rows, segmented tabs, focus rings, drawer icons, metric-card tints, and toasts. Do not turn the canvas, sidebar, table header, or overlay surfaces into a purple wash. See “Style invariants” above.
 
 Initial dark theme values:
 
@@ -346,7 +366,7 @@ surface-muted   #1A2540
 text            #F1F5F9
 text-muted      #94A3B8
 border          #253352
-accent          #7C7CF0
+accent          #9B8CFF
 ```
 
 These are starting tokens, not proof of compliance. Every text, icon, border, focus, and state combination must pass the required contrast checks.
@@ -366,8 +386,10 @@ Type scale:
 | ------------------------- | ------------------ | --------- |
 | Page title                | `22 / 28`          | 600       |
 | Secondary title           | `18 / 26`          | 600       |
-| Section title             | `14 / 22`          | 600       |
+| Section title             | `15 / 22`          | 600       |
 | Body                      | `14 / 22`          | 400       |
+| Collaboration nav         | `13 / 20`          | 500       |
+| Administration nav        | `14 / 22`          | 560       |
 | Supporting text           | `12 / 18`          | 400–500   |
 | Code and technical values | `12 / 18`          | monospace |
 
@@ -394,13 +416,24 @@ Use only two elevation levels: menus/popovers and modal/drawer surfaces. Content
 
 Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name. Text buttons also include an icon. Inputs, selects, drawers, and toasts share the same radius, border, and focus ring. Toasts appear in the center of the viewport. Create, invite, and edit forms use a right-hand drawer: about 460–480px on desktop, still docked to the right on tablet, and full width on narrow viewports while still sliding in from the right. Do not revert to a centered modal or a bottom sheet.
 
-Overlays, selects, dialogs, and field errors use unstyled Radix primitives for focus, positioning, and keyboard behavior. Visual styling uses Halo semantic tokens only; entrance motion uses GSAP. Toasts use the open-source Sonner library’s default info layout and motion, mapped to Halo tokens through CSS variables, and must not be restyled into a homemade white box. Native `<select>` menus and browser validation bubbles are forbidden. Segmented tabs size to their options and must not stretch across the row. Ant Design and AntV are not the product skin; AntV is a charting library and is not used for form overlays.
+Overlays, selects, dialogs, and field errors use unstyled Radix primitives for focus, positioning, and keyboard behavior. Visual styling uses Halo semantic tokens only; entrance motion uses GSAP. Toasts use the open-source Sonner library’s default info layout and motion, mapped to Halo tokens through CSS variables, and must not be restyled into a homemade white box. The toast uses an accent border, a light accent wash, and an accent icon—not a black-and-white info bar. Native `<select>` menus and browser validation bubbles are forbidden. Segmented tabs size to their options and must not stretch across the row; the active tab uses a light purple wash and accent text, while the track stays a neutral surface. Ant Design and AntV are not the product skin; AntV is a charting library and is not used for form overlays.
 
-Role and workspace switching in the account menu must use a nested submenu that opens to the side, not an indented list in the same column.
+Role and workspace switching in the account menu must use a nested submenu that opens to the side, not an indented list in the same column. The current-role checkmark sits at the end of the row. Account menu items use a bold weight.
 
 List-page toolbars (such as the document directory): the search field fills remaining width; status filters and the primary action sit as a right-hand group of equal-height controls with 8px gaps. Do not use `space-between` to spread three items across the row. On narrow viewports the toolbar stacks, and both the search field and the action group stretch to full width.
 
-Data tables (collaboration directories and admin member/audit tables share one treatment): the header uses the same `surface` as the body and is separated only by a hairline. Do not fill the header with `surface-muted`, accent, or a lavender wash. Do not use tracked uppercase or Ant Design–style colored header bands. Headers are 12px / weight 600 / sentence case. Rows are about 48px tall. The primary column uses body text color; the action column is right-aligned; in-row actions are neutral text buttons and must not sit on an accent fill.
+### Pagination
+
+The current preview shell’s member, audit, tenant, and model-catalog lists are small, so pages do not show pagination controls yet. Empty pagination would read as if durable data were already connected.
+
+When a list grows past one screen (members, audit, tenants, model allocation, document directory), add:
+
+- Page-number pagination for administration lists and directories: 20 rows per page by default, previous/next and current page, right-aligned under the table.
+- Cursor pagination for room message history (see product requirement RM-005); do not convert that history to page numbers.
+- Pagination must not change permission filtering order: filter the visible scope first, then page.
+- On narrow viewports the pager stretches to full width and stays at least 44×44.
+
+Data tables (collaboration directories and admin member/audit tables share one treatment): the header uses the same `surface` as the body and is separated only by a hairline. Do not fill the header with `surface-muted`, accent, or a lavender wash. Do not use tracked uppercase or Ant Design–style colored header bands. Headers are 12px / weight 600 / sentence case. Rows are about 48px tall. The primary column uses body text color; the action column is right-aligned. Ordinary in-row actions are neutral text buttons and must not sit on an accent fill; revoke and delete use danger-colored text.
 
 ### Motion
 

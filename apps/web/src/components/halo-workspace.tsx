@@ -1,6 +1,8 @@
 "use client";
 
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import type {
   AuthenticatedUser,
@@ -14,6 +16,7 @@ import type {
   WorkspaceSummary,
 } from "@haloai/contracts";
 import { getDictionary } from "@/lib/i18n";
+import { clearClientPortalSession } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import { notify } from "@/components/toast-host";
 import { ConversationPanel } from "./workspace/conversation-panel";
@@ -65,6 +68,7 @@ export function HaloWorkspace({
   onCreateDocument?:
     ((projectId: string, input: CreateDocumentInput) => Promise<DocumentSummary>) | undefined;
 } = {}) {
+  const router = useRouter();
   const durableMode = collaboration !== undefined;
   const canCreateProject =
     !durableMode || activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin";
@@ -394,7 +398,15 @@ export function HaloWorkspace({
         workspaces={workspaces}
         activeWorkspace={activeWorkspace}
         onWorkspaceChange={onWorkspaceChange}
-        onSignOut={onSignOut}
+        onSignOut={() => {
+          if (onSignOut) {
+            onSignOut();
+            return;
+          }
+          clearClientPortalSession();
+          router.replace("/login" as Route);
+          router.refresh();
+        }}
         activeSection={workspaceSection}
         onSectionSelect={selectWorkspaceSection}
         locale={locale}

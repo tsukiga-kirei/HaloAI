@@ -40,16 +40,18 @@ An AI actor MUST NOT obtain, copy, simulate, or refresh a human login session. A
 | Role template   | Default purpose                                                                                                  |
 | --------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Workspace Owner | Workspace lifecycle, ownership, security, membership, billing, export, and deletion                              |
-| Workspace Admin | Membership, projects, agents, and integrations, excluding secret disclosure and destructive ownership operations |
+| Workspace Admin | Membership, projects, agents, and approved integrations; cannot register model providers, read raw secrets, or perform destructive ownership operations |
 | Security Admin  | Policies, session revocation, audit, retention, and integration approval                                         |
 | Billing Admin   | Usage, budgets, and billing without automatic access to conversation or document contents                        |
-| Agent Manager   | Agent creation, versioning, model assignment, and tool-scope configuration                                       |
+| Agent Manager   | Agent creation, versioning, model choice from this tenant’s allocated catalog, and tool-scope configuration      |
 | Member          | Collaboration in explicitly accessible projects, rooms, and artifacts                                            |
 | Guest           | Access only to resources explicitly shared with the guest membership                                             |
 | Auditor         | Read-only audit and compliance export; content access requires a separate grant                                  |
 | Agent Member    | Messaging and artifact actions within an explicitly delegated scope                                              |
 
 Built-in roles are templates over capabilities. Custom roles MUST be capability sets, not page paths or UI menu definitions. A principal MUST NOT assign capabilities it does not hold, except through a separately authorized administrative workflow.
+
+Platform operations are a separate identity domain from these workspace roles. System administrators maintain the full model catalog, provider secret references, and which models are allocated to which tenants. A Workspace Owner is never treated as a system administrator because they own a tenant.
 
 ## 3. Resource and action matrix
 
@@ -64,8 +66,9 @@ Built-in roles are templates over capabilities. Custom roles MUST be capability 
 | Artifact version              | `read`, `compare`, `restore`                                                     | Artifact readers; editors for restore              | Restore creates a new version and never overwrites history                            |
 | File and attachment           | `upload`, `read`, `download`, `delete`                                           | Room or artifact participants                      | Malware scan, type/size limits, and short-lived signed delivery                       |
 | Knowledge and memory          | `read`, `write`, `mount`, `delete`                                               | Explicit members and agents                        | Authorization filtering occurs before ranking or model context assembly               |
-| Agent profile and version     | `create`, `read`, `update`, `delete`, `invoke`                                   | Agent Manager; authorized invokers                 | Configuration and invocation are separate capabilities; run uses an immutable version |
-| Secret and credential binding | `bind`, `rotate`, `revoke`                                                       | Owner, Security Admin                              | Plaintext is never returned; binding scope is narrower than the managing actor        |
+| Agent profile and version     | `create`, `read`, `update`, `delete`, `invoke`                                   | Agent Manager; authorized invokers                 | Configuration and invocation are separate capabilities; run uses an immutable version; the chosen model must already be allocated to the tenant |
+| Secret and credential binding | `bind`, `rotate`, `revoke`                                                       | System administrators for model-provider secrets; workspaces only for approved connector bindings | Plaintext is never returned; binding scope is narrower than the managing actor        |
+| Platform model catalog        | `create`, `read`, `update`, `allocate`, `revoke`                                 | System administrators only                         | A model not allocated to the tenant must not appear in the workspace picker and the server rejects its invocation |
 | Tool and integration          | `install`, `configure`, `invoke`, `disable`                                      | Admin for management; agents for scoped invocation | Allowlist, argument policy, risk class, egress policy, and approval state             |
 | Run and job                   | `create`, `read`, `cancel`, `retry`                                              | Initiator, sponsor, project administrator          | Budget, concurrency, idempotency, delegation, and current authorization               |
 | Approval                      | `request`, `read`, `approve`, `reject`                                           | Named approvers                                    | Requesting agent cannot approve; bound parameters and expiry still match              |

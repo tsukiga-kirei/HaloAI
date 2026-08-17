@@ -4,11 +4,13 @@ import type { LucideIcon } from "lucide-react";
 import { PanelLeft } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { HaloMark } from "@/components/workspace/primitives";
 import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
+import { clearClientPortalSession } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 
 export function ManagementShell({
@@ -30,6 +32,13 @@ export function ManagementShell({
     useShellPreferences();
   const [menuOpen, setMenuOpen] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
+  const router = useRouter();
+
+  function signOut(): void {
+    clearClientPortalSession();
+    router.replace("/login" as Route);
+    router.refresh();
+  }
 
   return (
     <div
@@ -124,6 +133,7 @@ export function ManagementShell({
             onOpenChange={setMenuOpen}
             onToggleLocale={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
             onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+            onSignOut={signOut}
           />
         </div>
       </aside>

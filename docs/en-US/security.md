@@ -26,8 +26,8 @@ Every AI teammate is an untrusted service principal with narrowly delegated auth
 
 ## Permission layers
 
-- Platform: operator-only deployment and billing controls.
-- Workspace: ownership, membership, provider, and retention controls.
+- Platform: operator-only deployment, global security, and the full model catalog (providers, secrets, and per-tenant allocation).
+- Workspace: ownership, membership, choosing a model for AI members from the allocated catalog, and retention.
 - Project: rooms, documents, knowledge, and participant scope.
 - Resource: read, write, publish, delete, and share actions.
 - Tool: invoke scope plus risk category and approval policy.
