@@ -143,6 +143,10 @@ export interface Dictionary {
   darkTheme: string;
   switchRole: string;
   switchRolePreview: string;
+  roleMember: string;
+  roleWorkspaceAdmin: string;
+  roleSystemAdmin: string;
+  switchedToRole: string;
   collapseSidebar: string;
   expandSidebar: string;
   workspaceOverviewTitle: string;
@@ -354,6 +358,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     darkTheme: "深色",
     switchRole: "切换角色",
     switchRolePreview: "角色切换将在认证接入后开放。",
+    roleMember: "协作成员",
+    roleWorkspaceAdmin: "空间管理",
+    roleSystemAdmin: "系统管理",
+    switchedToRole: "已切换到{role}",
     collapseSidebar: "收起侧栏",
     expandSidebar: "展开侧栏",
     workspaceOverviewTitle: "团队工作总览",
@@ -583,6 +591,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
     darkTheme: "Dark",
     switchRole: "Switch role",
     switchRolePreview: "Role switching opens after authentication is connected.",
+    roleMember: "Collaborator",
+    roleWorkspaceAdmin: "Workspace admin",
+    roleSystemAdmin: "System admin",
+    switchedToRole: "Switched to {role}",
     collapseSidebar: "Collapse sidebar",
     expandSidebar: "Expand sidebar",
     workspaceOverviewTitle: "Team workspace overview",

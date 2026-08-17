@@ -72,12 +72,14 @@ Breakpoints describe layout behavior rather than device identity. The interface 
 
 | Viewport      | Required layout                                                                                                                                    |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `>= 1440px`   | Left 232–256px workspace menu; right main workspace. Inside a room, split conversation and document; context uses a drawer, never a fourth column |
+| `>= 1440px`   | Left 232–256px workspace menu; right main workspace. Inside a room, split conversation and document; context uses a drawer, never a fourth column  |
 | `1200–1439px` | Left menu plus one primary surface; the room document may collapse into a drawer; no right-hand utility rail                                       |
 | `768–1199px`  | One primary surface, room navigation in a drawer, conversation/document segmented switch, contextual details in a side or bottom sheet             |
 | `< 768px`     | Single-view navigation stack, compact top bar, one conversation or document surface, bottom navigation, safe-area-aware composer or editor toolbar |
 
-The collaboration shell is always two regions: the left side owns navigation and personal settings, and the right side owns the current work. Language, theme, and role switching live in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat the same primary destinations inside the main workspace.
+The collaboration shell is always two regions: a white left navigation with personal settings, and a gray right canvas for the current work. Language, theme, workspace, and role switching live only in the bottom-left personal menu. Do not add a docked utility rail, and do not repeat those controls in the top bar or main workspace. The desktop sidebar can collapse to an icon rail; hovering the top-left mark expands it again.
+
+The favicon, login brand, and sidebar mark must share the same `icon.svg`. Size may change; the letterform and corner radius must not.
 
 ### Wide desktop
 
@@ -319,7 +321,7 @@ Initial light theme values:
 
 ```text
 canvas          #F4F6FB
-sidebar         #EEF0F6
+sidebar         #FFFFFF
 surface         #FFFFFF
 surface-muted   #F1F3F8
 text            #0F172A
@@ -337,13 +339,14 @@ danger          #C23B3B
 Initial dark theme values:
 
 ```text
-canvas          #0F1117
-surface         #171A22
-surface-muted   #20242F
-text            #F4F6FA
-text-muted      #A9B0BE
-border          #2C3240
-accent          #9A8CFF
+canvas          #0C1222
+sidebar         #151E31
+surface         #151E31
+surface-muted   #1A2540
+text            #F1F5F9
+text-muted      #94A3B8
+border          #253352
+accent          #7C7CF0
 ```
 
 These are starting tokens, not proof of compliance. Every text, icon, border, focus, and state combination must pass the required contrast checks.
@@ -389,7 +392,7 @@ pills         status and short filter labels only
 
 Use only two elevation levels: menus/popovers and modal/drawer surfaces. Content cards normally use background and border rather than heavy shadow.
 
-Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name.
+Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name. Text buttons also include an icon. Inputs, selects, dialogs, and toasts share the same radius, border, and focus ring. Dialogs and toasts appear in the center of the viewport, never docked to an edge.
 
 ### Motion
 

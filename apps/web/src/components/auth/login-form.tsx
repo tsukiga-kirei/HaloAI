@@ -1,25 +1,65 @@
 "use client";
 
-import { Check, Eye, EyeOff, Languages, LoaderCircle, ShieldCheck } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Languages,
+  LayoutDashboard,
+  LoaderCircle,
+  LockKeyhole,
+  LogIn,
+  Mail,
+  Settings2,
+  Shield,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { HaloMark } from "@/components/workspace/primitives";
+import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
 import { getApiBaseUrl } from "@/lib/api-client";
 import { authCopy, type AuthLocale } from "./auth-copy";
 import styles from "./auth-shell.module.css";
 
 type AuthMode = "sign-in" | "sign-up";
 
+const fallbackPortal = {
+  key: "member" as const,
+  icon: LayoutDashboard,
+  label: "portalMember" as const,
+  description: "portalMemberDesc" as const,
+};
+const portals = [
+  fallbackPortal,
+  {
+    key: "workspace_admin" as const,
+    icon: Settings2,
+    label: "portalWorkspace" as const,
+    description: "portalWorkspaceDesc" as const,
+  },
+  {
+    key: "system_admin" as const,
+    icon: Shield,
+    label: "portalSystem" as const,
+    description: "portalSystemDesc" as const,
+  },
+];
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<AuthLocale>("zh-CN");
   const [mode, setMode] = useState<AuthMode>("sign-in");
+  const [portal, setPortal] = useState<PortalKey>("member");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const copy = authCopy[locale];
+  const demoMode = process.env.NEXT_PUBLIC_AUTH_MODE === "demo";
+  const activePortal = portals.find((item) => item.key === portal) ?? fallbackPortal;
+  const ActiveIcon = activePortal.icon;
 
   useEffect(() => {
     const saved = window.localStorage.getItem("haloai.locale");
@@ -31,10 +71,26 @@ export function LoginForm() {
     setError(null);
   }
 
+  function enterWorkspace(): void {
+    persistPortal(portal);
+    const requestedNext = searchParams.get("next");
+    const safeNext =
+      requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+        ? requestedNext
+        : portalPath(portal);
+    router.replace(safeNext as Route);
+    router.refresh();
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
+    if (demoMode) {
+      enterWorkspace();
+      setSubmitting(false);
+      return;
+    }
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
@@ -52,11 +108,7 @@ export function LoginForm() {
         setError(payload?.code?.includes("USER_ALREADY_EXISTS") ? copy.duplicate : copy.invalid);
         return;
       }
-      const requestedNext = searchParams.get("next");
-      const safeNext =
-        requestedNext?.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/app";
-      router.replace(safeNext as Route);
-      router.refresh();
+      enterWorkspace();
     } catch {
       setError(copy.generic);
     } finally {
@@ -69,7 +121,7 @@ export function LoginForm() {
       <section className={styles.storyPanel} aria-label={copy.eyebrow}>
         <div className={styles.storyInner}>
           <div className={styles.brand}>
-            <HaloMark />
+            <HaloMark size="brand" />
             <strong>HaloAI</strong>
           </div>
           <div className={styles.storyCopy}>
@@ -80,7 +132,7 @@ export function LoginForm() {
               {copy.benefits.map((benefit) => (
                 <li key={benefit}>
                   <span className={styles.benefitIcon}>
-                    <Check size={16} />
+                    <ShieldCheck size={16} />
                   </span>
                   {benefit}
                 </li>
@@ -117,7 +169,7 @@ export function LoginForm() {
               className={mode === "sign-in" ? styles.activeTab : ""}
               onClick={() => changeMode("sign-in")}
             >
-              {copy.signIn}
+              <LogIn size={15} /> {copy.signIn}
             </button>
             <button
               type="button"
@@ -126,54 +178,84 @@ export function LoginForm() {
               className={mode === "sign-up" ? styles.activeTab : ""}
               onClick={() => changeMode("sign-up")}
             >
-              {copy.signUp}
+              <UserRound size={15} /> {copy.signUp}
             </button>
           </div>
+          <div className={styles.portalSelector} role="radiogroup" aria-label={copy.selectIdentity}>
+            {portals.map((item) => {
+              const Icon = item.icon;
+              const selected = item.key === portal;
+              return (
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  className={selected ? styles.portalActive : styles.portalPill}
+                  key={item.key}
+                  onClick={() => setPortal(item.key)}
+                >
+                  <Icon size={15} />
+                  {copy[item.label]}
+                </button>
+              );
+            })}
+          </div>
+          <p className={styles.portalDesc}>
+            <span className={`${styles.portalDot} ${styles[`dot-${portal}`]}`} />
+            {copy[activePortal.description]}
+          </p>
           <form className={styles.form} onSubmit={(event) => void submit(event)}>
             {mode === "sign-up" ? (
               <label className={styles.field}>
                 <span>{copy.name}</span>
-                <input
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  minLength={1}
-                  maxLength={120}
-                  required
-                  placeholder={copy.namePlaceholder}
-                />
+                <div className={styles.inputWrap}>
+                  <UserRound size={16} />
+                  <input
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    minLength={1}
+                    maxLength={120}
+                    required
+                    placeholder={copy.namePlaceholder}
+                  />
+                </div>
               </label>
             ) : null}
             <label className={styles.field}>
               <span>{copy.email}</span>
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                maxLength={320}
-                required
-                placeholder={copy.emailPlaceholder}
-              />
+              <div className={styles.inputWrap}>
+                <Mail size={16} />
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  maxLength={320}
+                  required={!demoMode}
+                  placeholder={copy.emailPlaceholder}
+                />
+              </div>
             </label>
             <label className={styles.field}>
               <span>{copy.password}</span>
-              <div className={styles.passwordWrap}>
+              <div className={styles.inputWrap}>
+                <LockKeyhole size={16} />
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
-                  minLength={10}
+                  minLength={demoMode ? 0 : 10}
                   maxLength={128}
-                  required
+                  required={!demoMode}
                   placeholder={copy.passwordPlaceholder}
                 />
                 <button
                   type="button"
                   className={styles.passwordToggle}
                   onClick={() => setShowPassword((current) => !current)}
-                  aria-label={showPassword ? "隐藏密码" : "显示密码"}
+                  aria-label={showPassword ? copy.hidePassword : copy.showPassword}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </label>
@@ -184,15 +266,13 @@ export function LoginForm() {
             ) : null}
             <button type="submit" className={styles.submit} disabled={submitting}>
               {submitting ? (
-                <>
-                  <LoaderCircle size={18} className={styles.loadingMark} />
-                  {copy.working}
-                </>
-              ) : mode === "sign-in" ? (
-                copy.submitSignIn
+                <LoaderCircle size={18} className={styles.loadingMark} />
               ) : (
-                copy.submitSignUp
+                <ActiveIcon size={18} />
               )}
+              {submitting
+                ? copy.working
+                : copy.submitAs.replace("{role}", copy[activePortal.label])}
             </button>
           </form>
           <p className={styles.securityNote}>

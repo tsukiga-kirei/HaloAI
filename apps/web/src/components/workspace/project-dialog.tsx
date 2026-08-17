@@ -1,4 +1,4 @@
-import { FolderKanban, ShieldCheck, X } from "lucide-react";
+import { FolderKanban, Plus, ShieldCheck, X } from "lucide-react";
 import type { FormEventHandler } from "react";
 import type { WorkspaceViewProps } from "./types";
 
@@ -69,9 +69,11 @@ export function ProjectDialog({ dictionary, onClose, onSubmit }: ProjectDialogPr
           </p>
           <div className="dialog-actions">
             <button type="button" className="secondary-button" onClick={onClose}>
+              <X size={16} />
               {dictionary.cancel}
             </button>
             <button type="submit" className="primary-button">
+              <Plus size={16} />
               {dictionary.createProjectTitle}
             </button>
           </div>

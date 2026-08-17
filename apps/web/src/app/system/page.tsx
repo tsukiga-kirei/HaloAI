@@ -1,5 +1,5 @@
-import { RestrictedSurface } from "@/components/admin/restricted-surface";
+import { SystemConsole } from "@/components/admin/system-console";
 
 export default function SystemAdministrationPage() {
-  return <RestrictedSurface kind="system" />;
+  return <SystemConsole section="overview" />;
 }

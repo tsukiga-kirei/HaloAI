@@ -65,6 +65,7 @@ export function DocumentPanel({
                 <i /> {dirty ? dictionary.editing : dictionary.saved}
               </span>
               <button type="button" className="secondary-button" onClick={onSave} disabled={!dirty}>
+                <Check size={16} />
                 {dictionary.save}
               </button>
               <button

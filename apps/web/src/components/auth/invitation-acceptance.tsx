@@ -1,7 +1,7 @@
 "use client";
 
 import type { SessionContext, WorkspaceSummary } from "@haloai/contracts";
-import { ArrowRight, Check, KeyRound, LoaderCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, KeyRound, LoaderCircle } from "lucide-react";
 import type { Route } from "next";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -85,7 +85,7 @@ export function InvitationAcceptance() {
         ) : null}
         {state === "error" ? (
           <button type="button" onClick={() => router.replace("/app" as Route)}>
-            返回工作区
+            <ArrowLeft size={16} /> 返回工作区
           </button>
         ) : null}
       </section>

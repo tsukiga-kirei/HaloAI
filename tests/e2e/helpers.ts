@@ -1,11 +1,13 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function openChineseWorkspace(page: Page): Promise<void> {
-  // 每条用例都从可预测的语言与主题开始，避免本地偏好污染验收结果。
+  // 每条用例都从可预测的语言、主题、门户与侧栏状态开始，避免本地偏好污染验收结果。
   await page.addInitScript(() => {
     try {
       window.localStorage.removeItem("haloai.locale");
       window.localStorage.removeItem("haloai.theme");
+      window.localStorage.removeItem("haloai.portal");
+      window.localStorage.removeItem("haloai.sidebarCollapsed");
     } catch {
       // about:blank 等无存储上下文无需处理，进入应用源后脚本会再次执行。
     }

@@ -47,7 +47,7 @@ test.describe("桌面工作台", () => {
     await page.getByRole("button", { name: "待审批" }).click();
     await expect(page.getByText("「品牌与官网」的首页文案等待人工审批。")).toBeVisible();
     await page.getByRole("button", { name: "标记已读" }).click();
-    await expect(page.getByRole("status")).toContainText("已在本地标记为已读");
+    await expect(page.locator("[data-sonner-toast]")).toContainText("已在本地标记为已读");
 
     await page.getByRole("button", { name: "文档" }).first().click();
     await page.locator('input[placeholder="搜索文档"]').fill("访谈");
@@ -59,13 +59,13 @@ test.describe("桌面工作台", () => {
 
   test("可在中文与英文之间切换", async ({ page }) => {
     await page.getByRole("button", { name: "个人设置" }).click();
-    await page.getByRole("button", { name: "切换语言" }).click();
+    await page.getByRole("menuitem", { name: "切换语言" }).click();
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
     await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send" })).toBeVisible();
 
-    await page.getByRole("button", { name: "Change language" }).click();
+    await page.getByRole("menuitem", { name: "Change language" }).click();
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
     await expect(page.getByRole("button", { name: "发送" })).toBeVisible();
   });
@@ -75,13 +75,13 @@ test.describe("桌面工作台", () => {
     await expect(root).toHaveAttribute("data-theme", "light");
 
     await page.getByRole("button", { name: "个人设置" }).click();
-    await page.getByRole("button", { name: "切换主题" }).click();
+    await page.getByRole("menuitem", { name: "切换主题" }).click();
     await expect(root).toHaveAttribute("data-theme", "dark");
     await expect
       .poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme))
       .toBe("dark");
 
-    await page.getByRole("button", { name: "切换主题" }).click();
+    await page.getByRole("menuitem", { name: "切换主题" }).click();
     await expect(root).toHaveAttribute("data-theme", "light");
   });
 
@@ -152,7 +152,7 @@ test.describe("桌面工作台", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "季度复盘" })).toBeVisible();
     await expect(page.getByText("交付一份带负责人和截止日期的复盘文档")).toBeVisible();
-    await expect(page.getByRole("status")).toContainText("新房间已创建");
+    await expect(page.locator("[data-sonner-toast]")).toContainText("新房间已创建");
   });
 
   test("采纳 AI 建议后可保存并查看新文档版本", async ({ page }) => {
@@ -160,14 +160,16 @@ test.describe("桌面工作台", () => {
     const save = page.getByRole("button", { name: "保存版本" });
     await expect(save).toBeEnabled();
     await save.click();
-    await expect(page.getByRole("status")).toContainText("文档新版本已保存");
+    await expect(page.locator("[data-sonner-toast]")).toContainText("文档新版本已保存");
 
     await page.getByRole("tab", { name: "版本" }).click();
     await expect(page.getByText("版本 v4", { exact: true })).toBeVisible();
   });
 
   test("设置入口进入独立工作空间后台", async ({ page }) => {
-    await page.getByRole("link", { name: "设置" }).click();
+    await page.getByRole("button", { name: "个人设置" }).click();
+    await page.getByRole("menuitem", { name: "切换角色" }).click();
+    await page.getByRole("menuitemradio", { name: "空间管理" }).click();
     await expect(page).toHaveURL(/\/admin\/overview$/);
     await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "后台配置导航" })).toBeVisible();
@@ -182,21 +184,23 @@ test.describe("桌面工作台", () => {
     await expect(page).toHaveURL(/\/admin\/members$/);
     await expect(page.getByRole("heading", { level: 1, name: "成员与访问角色" })).toBeVisible();
 
-    await page.getByRole("button", { name: "切换语言" }).click();
+    await page.getByRole("button", { name: "个人设置" }).click();
+    await page.getByRole("menuitem", { name: "切换语言" }).click();
     await expect(
       page.getByRole("heading", { level: 1, name: "Members and access roles" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Change theme" }).click();
+    await page.getByRole("menuitem", { name: "Change theme" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 
-    await page.getByRole("link", { name: "Back to collaboration" }).click();
+    await page.getByRole("menuitem", { name: "Switch role" }).click();
+    await page.getByRole("menuitemradio", { name: "Collaborator" }).click();
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
   });
 
   test("系统后台保持独立锁定且不展示租户内容", async ({ page }) => {
     await page.goto("/system");
-    await expect(page.getByRole("heading", { level: 1, name: "系统后台保持锁定" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "平台总览" })).toBeVisible();
     await expect(page.getByText("内测发布", { exact: true })).toHaveCount(0);
     await expect(page.getByText("用户研究", { exact: true })).toHaveCount(0);
   });

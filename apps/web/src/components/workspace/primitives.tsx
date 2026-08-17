@@ -1,11 +1,18 @@
 import { Plus, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 
-export function HaloMark({ compact = false }: { compact?: boolean }) {
+/** 网页图标、登录页和侧栏共用同一份 SVG，只允许尺寸变化，不允许换图形或圆角比例。 */
+export function HaloMark({
+  compact = false,
+  size,
+}: {
+  compact?: boolean;
+  size?: "default" | "compact" | "brand";
+}) {
+  const resolved = size ?? (compact ? "compact" : "default");
   return (
-    <span className={compact ? "halo-mark is-compact" : "halo-mark"} aria-hidden="true">
-      <span className="halo-letter">H</span>
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/icon.svg" alt="" aria-hidden="true" className={`halo-mark is-${resolved}`} />
   );
 }
 

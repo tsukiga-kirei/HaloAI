@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Plus, Search } from "lucide-react";
+import { ArrowRight, FileText, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DocumentSummary } from "@haloai/contracts";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
@@ -84,7 +84,7 @@ export function WorkspaceDocumentsView({
           />
         </label>
         <select
-          className="field-select"
+          className="halo-select"
           value={filter}
           onChange={(event) => setFilter(event.target.value as DocumentFilter)}
           aria-label={dictionary.allStatuses}
@@ -125,9 +125,7 @@ export function WorkspaceDocumentsView({
                 </td>
                 <td>{document.room}</td>
                 <td>{document.owner}</td>
-                <td>
-                  {document.status === "active" ? dictionary.draft : dictionary.approved}
-                </td>
+                <td>{document.status === "active" ? dictionary.draft : dictionary.approved}</td>
                 <td>
                   <button
                     type="button"
@@ -138,7 +136,7 @@ export function WorkspaceDocumentsView({
                         : onNotify(dictionary.metadataOnlyNotice)
                     }
                   >
-                    {dictionary.openDocument}
+                    {dictionary.openDocument} <ArrowRight size={14} />
                   </button>
                 </td>
               </tr>

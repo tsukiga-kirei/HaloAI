@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
+import { ToastHost } from "@/components/toast-host";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,9 +16,6 @@ export const metadata: Metadata = {
     "A shared workspace where teams and AI collaborators turn conversation into outcomes.",
   applicationName: "HaloAI",
   manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-  },
 };
 
 export const viewport: Viewport = {
@@ -33,7 +31,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="zh-CN" className={inter.variable} suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ToastHost />
+      </body>
     </html>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import type {
@@ -15,6 +14,8 @@ import type {
   WorkspaceSummary,
 } from "@haloai/contracts";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { readStoredPortal, type PortalKey } from "@/lib/portals";
+import { notify } from "@/components/toast-host";
 import { ConversationPanel } from "./workspace/conversation-panel";
 import { demoParticipants } from "./workspace/demo-data";
 import { DocumentPanel } from "./workspace/document-panel";
@@ -71,6 +72,7 @@ export function HaloWorkspace({
   const [locale, setLocale] = useState<Locale>("zh-CN");
   const [theme, setTheme] = useState<Theme>("light");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [portal, setPortal] = useState<PortalKey>("member");
   const [preferencesReady, setPreferencesReady] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>(
@@ -101,7 +103,6 @@ export function HaloWorkspace({
   const [suggestionApplied, setSuggestionApplied] = useState(false);
   const [documentDirty, setDocumentDirty] = useState(false);
   const [documentVersion, setDocumentVersion] = useState(3);
-  const [notice, setNotice] = useState<string | null>(null);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const dictionary = useMemo(() => getDictionary(locale), [locale]);
   const {
@@ -130,7 +131,7 @@ export function HaloWorkspace({
     onCreateProject,
     onCreateRoom,
     onCreateDocument,
-    onNotify: setNotice,
+    onNotify: notify,
     canCreateProject,
     onActivateRoom: () => {
       setWorkspaceSection("room");
@@ -161,6 +162,7 @@ export function HaloWorkspace({
       setTheme("dark");
     }
     if (savedCollapsed === "true") setSidebarCollapsed(true);
+    setPortal(readStoredPortal());
     setPreferencesReady(true);
   }, []);
 
@@ -180,12 +182,6 @@ export function HaloWorkspace({
       block: "end",
     });
   }, [activeMessages]);
-
-  useEffect(() => {
-    if (notice === null) return;
-    const timer = window.setTimeout(() => setNotice(null), 2_600);
-    return () => window.clearTimeout(timer);
-  }, [notice]);
 
   useEffect(() => {
     if (collaboration !== undefined) setWorkspaceSection("overview");
@@ -313,7 +309,7 @@ export function HaloWorkspace({
 
   async function submitMessage(): Promise<void> {
     if (durableMode) {
-      setNotice(dictionary.durableDataBoundary);
+      notify(dictionary.durableDataBoundary);
       return;
     }
     const trimmed = input.trim();
@@ -364,7 +360,7 @@ export function HaloWorkspace({
       },
     ]);
     setMemberDialogOpen(false);
-    setNotice(dictionary.teammateAdded);
+    notify(dictionary.teammateAdded);
   }
 
   function selectRoom(roomId: string): void {
@@ -406,9 +402,9 @@ export function HaloWorkspace({
         onRoomSelect={selectRoom}
         onCreateRoom={requestCreateRoom}
         onOpenMemberDialog={() =>
-          durableMode ? setNotice(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
+          durableMode ? notify(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
         }
-        onNotify={setNotice}
+        onNotify={notify}
         identity={identity}
         workspaces={workspaces}
         activeWorkspace={activeWorkspace}
@@ -418,6 +414,7 @@ export function HaloWorkspace({
         onSectionSelect={selectWorkspaceSection}
         locale={locale}
         theme={theme}
+        portal={portal}
         onToggleLocale={toggleLocale}
         onToggleTheme={toggleTheme}
         collapsed={sidebarCollapsed}
@@ -441,9 +438,9 @@ export function HaloWorkspace({
             onOpenRooms={() => setMobileView("rooms")}
             onOpenDocument={() => setMobileView("document")}
             onOpenMemberDialog={() =>
-              durableMode ? setNotice(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
+              durableMode ? notify(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
             }
-            onNotify={setNotice}
+            onNotify={notify}
             chatEnabled={!durableMode}
           />
           <DocumentPanel
@@ -457,14 +454,14 @@ export function HaloWorkspace({
             onSave={() => {
               setDocumentDirty(false);
               setDocumentVersion((current) => current + 1);
-              setNotice(dictionary.versionSaved);
+              notify(dictionary.versionSaved);
             }}
             onApplySuggestion={() => {
               setSuggestionApplied(true);
               setDocumentDirty(true);
             }}
             onCloseMobile={() => setMobileView("chat")}
-            onNotify={setNotice}
+            onNotify={notify}
             demoContent={!durableMode}
           />
         </>
@@ -486,7 +483,7 @@ export function HaloWorkspace({
           }
           onOpenRoom={selectRoom}
           onOpenDocument={openRoomDocument}
-          onNotify={setNotice}
+          onNotify={notify}
         />
       )}
       <MobileNavigation dictionary={dictionary} view={mobileView} onViewChange={changeMobileView} />
@@ -527,12 +524,6 @@ export function HaloWorkspace({
           onSubmit={(event) => void createDocument(event)}
         />
       ) : null}
-
-      {notice === null ? null : (
-        <div className="toast" role="status">
-          <Check size={16} /> {notice}
-        </div>
-      )}
     </div>
   );
 }

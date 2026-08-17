@@ -92,7 +92,7 @@ export function SessionGate() {
           <h1>暂时无法连接协作服务</h1>
           <p>请确认本地 API 与数据库已经启动，然后重新加载页面。</p>
           <button type="button" onClick={() => window.location.reload()}>
-            重新连接
+            <RefreshCw size={16} /> 重新连接
           </button>
         </div>
       </main>

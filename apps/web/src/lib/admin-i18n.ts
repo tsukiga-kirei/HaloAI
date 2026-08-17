@@ -3,7 +3,6 @@ import type { Locale } from "./i18n";
 export interface AdminDictionary {
   productArea: string;
   administration: string;
-  administrationSubtitle: string;
   workspaceScope: string;
   roleOwner: string;
   backToWork: string;
@@ -17,6 +16,10 @@ export interface AdminDictionary {
   collapseSidebar: string;
   expandSidebar: string;
   signOut: string;
+  roleMember: string;
+  roleWorkspaceAdmin: string;
+  roleSystemAdmin: string;
+  switchedToRole: string;
   navLabel: string;
   navOverview: string;
   navMembers: string;
@@ -24,20 +27,12 @@ export interface AdminDictionary {
   navIntegrations: string;
   navSecurity: string;
   navAudit: string;
-  previewBadge: string;
-  previewNotice: string;
   overviewTitle: string;
-  overviewDescription: string;
   membersTitle: string;
-  membersDescription: string;
   agentsTitle: string;
-  agentsDescription: string;
   integrationsTitle: string;
-  integrationsDescription: string;
   securityTitle: string;
-  securityDescription: string;
   auditTitle: string;
-  auditDescription: string;
   inviteMember: string;
   createAgent: string;
   configure: string;
@@ -121,17 +116,42 @@ export interface AdminDictionary {
   systemRuleTwo: string;
   systemRuleThree: string;
   returnToWorkspace: string;
+  systemNavLabel: string;
+  systemConsoleTitle: string;
+  navTenants: string;
+  navHealth: string;
+  navPolicy: string;
+  systemOverviewTitle: string;
+  systemTenantsTitle: string;
+  systemHealthTitle: string;
+  systemPolicyTitle: string;
+  tenantName: string;
+  tenantStatus: string;
+  tenantPlan: string;
+  healthService: string;
+  healthState: string;
 }
 
 const zhCN: AdminDictionary = {
   productArea: "团队协作前台",
   administration: "工作空间管理",
-  administrationSubtitle: "管理成员、AI 与安全边界",
   workspaceScope: "当前作用域",
   roleOwner: "Workspace Owner",
   backToWork: "返回协作前台",
   changeLanguage: "切换语言",
   changeTheme: "切换主题",
+  personalSettings: "个人设置",
+  lightTheme: "浅色",
+  darkTheme: "深色",
+  switchRole: "切换角色",
+  switchRolePreview: "角色切换将在认证接入后开放。",
+  collapseSidebar: "收起侧栏",
+  expandSidebar: "展开侧栏",
+  signOut: "退出登录",
+  roleMember: "协作成员",
+  roleWorkspaceAdmin: "空间管理",
+  roleSystemAdmin: "系统管理",
+  switchedToRole: "已切换到{role}",
   navLabel: "后台配置导航",
   navOverview: "总览",
   navMembers: "成员与角色",
@@ -139,20 +159,12 @@ const zhCN: AdminDictionary = {
   navIntegrations: "模型与集成",
   navSecurity: "安全策略",
   navAudit: "审计记录",
-  previewBadge: "Alpha 预览",
-  previewNotice: "当前为受控预览数据；未连接 API 的操作不会写入数据库。",
   overviewTitle: "工作空间总览",
-  overviewDescription: "先看团队、AI、审批与治理状态，再决定需要调整什么。",
   membersTitle: "成员与访问角色",
-  membersDescription: "人员身份、成员状态与访问角色彼此独立，撤权后立即生效。",
   agentsTitle: "AI 协作者",
-  agentsDescription: "管理具名 AI 的职责、版本与能力范围，不在提示词中隐藏权限。",
   integrationsTitle: "模型与集成",
-  integrationsDescription: "连接模型、存储与工具，同时保持凭据和网络范围最小化。",
   securityTitle: "安全策略",
-  securityDescription: "检查会话、人工审批与租户隔离是否处于强制执行状态。",
   auditTitle: "审计记录",
-  auditDescription: "以人员、AI 和系统主体重建关键操作的责任链。",
   inviteMember: "邀请成员",
   createAgent: "创建 AI 协作者",
   configure: "查看配置",
@@ -236,17 +248,42 @@ const zhCN: AdminDictionary = {
   systemRuleTwo: "跨租户支持访问必须限时、说明理由并形成独立审计。",
   systemRuleThree: "平台健康信息不得包含可识别的客户内容。",
   returnToWorkspace: "返回 HaloAI 工作空间",
+  systemNavLabel: "系统后台导航",
+  systemConsoleTitle: "系统管理",
+  navTenants: "租户",
+  navHealth: "健康",
+  navPolicy: "策略",
+  systemOverviewTitle: "平台总览",
+  systemTenantsTitle: "租户目录",
+  systemHealthTitle: "平台健康",
+  systemPolicyTitle: "全局策略",
+  tenantName: "租户",
+  tenantStatus: "状态",
+  tenantPlan: "方案",
+  healthService: "服务",
+  healthState: "状态",
 };
 
 const enUS: AdminDictionary = {
   productArea: "Collaboration workspace",
   administration: "Workspace administration",
-  administrationSubtitle: "Manage people, AI, and safety boundaries",
   workspaceScope: "Current scope",
   roleOwner: "Workspace Owner",
   backToWork: "Back to collaboration",
   changeLanguage: "Change language",
   changeTheme: "Change theme",
+  personalSettings: "Personal settings",
+  lightTheme: "Light",
+  darkTheme: "Dark",
+  switchRole: "Switch role",
+  switchRolePreview: "Role switching opens after authentication is connected.",
+  collapseSidebar: "Collapse sidebar",
+  expandSidebar: "Expand sidebar",
+  signOut: "Sign out",
+  roleMember: "Collaborator",
+  roleWorkspaceAdmin: "Workspace admin",
+  roleSystemAdmin: "System admin",
+  switchedToRole: "Switched to {role}",
   navLabel: "Administration navigation",
   navOverview: "Overview",
   navMembers: "Members & roles",
@@ -254,26 +291,12 @@ const enUS: AdminDictionary = {
   navIntegrations: "Models & integrations",
   navSecurity: "Security policy",
   navAudit: "Audit log",
-  previewBadge: "Alpha preview",
-  previewNotice:
-    "This is controlled preview data. Actions without an API do not write to the database.",
   overviewTitle: "Workspace overview",
-  overviewDescription:
-    "Review the team, AI, approvals, and governance state before changing configuration.",
   membersTitle: "Members and access roles",
-  membersDescription:
-    "Identity, membership state, and access roles remain separate. Revocation takes effect immediately.",
   agentsTitle: "AI collaborators",
-  agentsDescription:
-    "Manage named AI responsibilities, versions, and capabilities without hiding permissions in prompts.",
   integrationsTitle: "Models and integrations",
-  integrationsDescription:
-    "Connect models, storage, and tools while keeping credentials and network scope minimal.",
   securityTitle: "Security policy",
-  securityDescription:
-    "Verify that sessions, human approval, and tenant isolation are being enforced.",
   auditTitle: "Audit log",
-  auditDescription: "Reconstruct accountability across human, AI, and system actors.",
   inviteMember: "Invite member",
   createAgent: "Create AI collaborator",
   configure: "View configuration",
@@ -364,6 +387,20 @@ const enUS: AdminDictionary = {
     "Cross-tenant support access must be time-limited, justified, and independently audited.",
   systemRuleThree: "Platform health data must not contain identifiable customer content.",
   returnToWorkspace: "Return to HaloAI workspace",
+  systemNavLabel: "System administration navigation",
+  systemConsoleTitle: "System administration",
+  navTenants: "Tenants",
+  navHealth: "Health",
+  navPolicy: "Policy",
+  systemOverviewTitle: "Platform overview",
+  systemTenantsTitle: "Tenant directory",
+  systemHealthTitle: "Platform health",
+  systemPolicyTitle: "Global policy",
+  tenantName: "Tenant",
+  tenantStatus: "Status",
+  tenantPlan: "Plan",
+  healthService: "Service",
+  healthState: "State",
 };
 
 export const adminDictionaries: Record<Locale, AdminDictionary> = {

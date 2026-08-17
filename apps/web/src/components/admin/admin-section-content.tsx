@@ -1,16 +1,16 @@
 import {
+  Activity,
   ArrowUpRight,
   Bot,
   Check,
   CircleAlert,
-  Clock3,
   Database,
   KeyRound,
   LockKeyhole,
   Plus,
   ServerCog,
+  Settings2,
   ShieldCheck,
-  Sparkles,
   UserPlus,
   UsersRound,
 } from "lucide-react";
@@ -34,15 +34,6 @@ const sectionTitleKeys: Record<AdminSection, keyof AdminDictionary> = {
   audit: "auditTitle",
 };
 
-const sectionDescriptionKeys: Record<AdminSection, keyof AdminDictionary> = {
-  overview: "overviewDescription",
-  members: "membersDescription",
-  agents: "agentsDescription",
-  integrations: "integrationsDescription",
-  security: "securityDescription",
-  audit: "auditDescription",
-};
-
 function SectionHeading({
   dictionary,
   section,
@@ -60,10 +51,7 @@ function SectionHeading({
 
   return (
     <div className="admin-section-heading">
-      <div>
-        <h1>{dictionary[sectionTitleKeys[section]]}</h1>
-        <p>{dictionary[sectionDescriptionKeys[section]]}</p>
-      </div>
+      <h1>{dictionary[sectionTitleKeys[section]]}</h1>
       {actionLabel === undefined ? null : (
         <button type="button" className="admin-primary-button" onClick={onNotify}>
           {action === "invite" ? (
@@ -134,7 +122,7 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
           tone="blue"
         />
         <MetricCard
-          icon={<Sparkles size={20} />}
+          icon={<Activity size={20} />}
           label={dictionary.monthlyRuns}
           value="1,284"
           detail={dictionary.comparedToLastMonth}
@@ -351,6 +339,7 @@ function Integrations({ props }: { props: AdminSectionContentProps }) {
             </span>
             <StatusBadge tone={item.connected ? "success" : "muted"}>{item.status}</StatusBadge>
             <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
+              <Settings2 size={15} />
               {dictionary.configure}
             </button>
           </article>

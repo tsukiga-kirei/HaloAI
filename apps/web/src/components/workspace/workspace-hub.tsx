@@ -2,11 +2,14 @@
 
 import {
   ArrowRight,
+  AtSign,
+  Check,
   Clock3,
   FileCheck2,
   FileText,
   FolderKanban,
   Hash,
+  Inbox,
   Plus,
   UserRound,
 } from "lucide-react";
@@ -184,7 +187,7 @@ function Overview({
           <div className="workspace-block-heading">
             <span>{dictionary.actionQueue}</span>
             <button type="button" onClick={() => onSectionChange("inbox")}>
-              {dictionary.viewAll}
+              {dictionary.viewAll} <ArrowRight size={14} />
             </button>
           </div>
           <div className="compact-list">
@@ -215,7 +218,7 @@ function Overview({
           <div className="workspace-block-heading">
             <span>{dictionary.sharedDocuments}</span>
             <button type="button" onClick={() => onSectionChange("documents")}>
-              {dictionary.viewAll}
+              {dictionary.viewAll} <ArrowRight size={14} />
             </button>
           </div>
           <div className="compact-list document-compact-list">
@@ -307,18 +310,19 @@ function InboxView({
       <div className="filter-bar" role="group" aria-label={dictionary.inbox}>
         {(
           [
-            ["all", dictionary.allItems],
-            ["mentions", dictionary.mentions],
-            ["approvals", dictionary.approvals],
-            ["invitations", dictionary.invitations],
+            ["all", dictionary.allItems, Inbox],
+            ["mentions", dictionary.mentions, AtSign],
+            ["approvals", dictionary.approvals, FileCheck2],
+            ["invitations", dictionary.invitations, UserRound],
           ] as const
-        ).map(([value, label]) => (
+        ).map(([value, label, Icon]) => (
           <button
             type="button"
             key={value}
             className={filter === value ? "is-active" : ""}
             onClick={() => setFilter(value)}
           >
+            <Icon size={15} />
             {label}
           </button>
         ))}
@@ -353,6 +357,7 @@ function InboxView({
                         onNotify(dictionary.markedRead);
                       }}
                     >
+                      <Check size={14} />
                       {isRead ? dictionary.markedRead : dictionary.markAsRead}
                     </button>
                   </td>

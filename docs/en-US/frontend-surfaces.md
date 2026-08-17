@@ -14,11 +14,11 @@ The root route `/` only enters the collaboration surface and does not host a sec
 
 ## 2. Navigation and visual boundaries
 
-- Collaboration is a left-navigation / right-workspace shell. The left side owns menus and personal settings; the right side owns the current page. The main workspace must not repeat the left primary destinations.
-- Workspace administration uses a distinct management shell that always shows the current workspace, access role, and configuration scope.
-- Both surfaces share brand tokens, theme, and locale preferences, but not their page hierarchy or primary navigation.
+- Collaboration is a left-navigation / right-workspace shell: white left menus and personal settings, gray right canvas. The main workspace must not repeat the left primary destinations.
+- Workspace administration and system administration share one management shell: a white collapsible sidebar and a bottom-left account menu.
+- The three surfaces share brand tokens, the product mark, theme, and locale preferences, but not their page hierarchy or primary navigation.
 - Desktop administration uses side navigation and a content canvas. Narrow screens convert navigation into a horizontally browsable section bar instead of shrinking a desktop page.
-- Transitions between collaboration and administration use explicit text links rather than ambiguous icons alone.
+- Transitions between collaboration and administration use the account menu’s role switch. Do not add a second language, theme, or role control in the top bar.
 
 ## 3. Authorization boundary
 
@@ -31,11 +31,11 @@ The root route `/` only enters the collaboration surface and does not host a sec
 
 ## 4. Current Alpha boundary
 
-The current implementation provides complete navigable shells for collaboration and workspace administration. Local development receives a controlled server-side Owner preview identity for design and browser acceptance. Production builds deny administration by default until real authentication is connected.
+The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. Local development receives a controlled server-side Owner preview identity for design and browser acceptance. Production builds deny administration by default until real authentication is connected.
 
-Administration currently renders verifiable sample state. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state clearly.
+Administration currently renders verifiable sample state. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner.
 
-System administration currently provides only a restricted entry and security-boundary explanation. It exposes no tenant data or simulated operational controls.
+System administration provides a navigable platform preview (tenants, health, policy, audit). It shows platform-level names and status only, never tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right.
 
 ### 4.1 Non-AI collaboration shell
 
@@ -51,7 +51,7 @@ The visual hierarchy continues to use HaloAI semantic tokens. Reference products
 
 ## 5. Completion criteria
 
-- `/app`, `/admin/overview`, and all administration sections navigate through real links.
+- `/app`, `/admin/overview`, `/system`, and all administration sections navigate through real links.
 - Administration has no unexpected horizontal overflow on desktop or a 390px mobile viewport, and interaction targets are at least 44×44 CSS pixels.
 - Chinese, English, light theme, and dark theme cover collaboration, administration, and denial states.
 - Unauthorized principals cannot bypass the server guard by entering a route directly.

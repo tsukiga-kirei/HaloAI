@@ -1,7 +1,7 @@
 "use client";
 
 import type { SessionContext, WorkspaceSummary } from "@haloai/contracts";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, Building2, LoaderCircle } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ export function OnboardingForm() {
     <main className={styles.onboardingShell}>
       <aside className={styles.onboardingAside}>
         <div className={styles.brand}>
-          <HaloMark />
+          <HaloMark size="brand" />
           <strong>HaloAI</strong>
         </div>
         <h1>{userName ? `${userName}，建立团队工作区` : "建立团队工作区"}</h1>
@@ -102,15 +102,18 @@ export function OnboardingForm() {
           <form className={styles.form} onSubmit={(event) => void submit(event)}>
             <label className={styles.field}>
               <span>工作区名称</span>
-              <input
-                value={name}
-                onChange={(event) => changeName(event.target.value)}
-                minLength={2}
-                maxLength={80}
-                required
-                autoFocus
-                placeholder="例如：北辰产品团队"
-              />
+              <div className={styles.inputWrap}>
+                <Building2 size={16} />
+                <input
+                  value={name}
+                  onChange={(event) => changeName(event.target.value)}
+                  minLength={2}
+                  maxLength={80}
+                  required
+                  autoFocus
+                  placeholder="例如：北辰产品团队"
+                />
+              </div>
             </label>
             <label className={styles.field}>
               <span>工作区短地址</span>

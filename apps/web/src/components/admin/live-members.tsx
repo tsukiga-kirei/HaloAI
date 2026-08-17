@@ -10,6 +10,7 @@ import { Check, Copy, LoaderCircle, Mail, UserPlus, X } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { notify } from "@/components/toast-host";
 
 const roles: readonly WorkspaceRole[] = ["owner", "admin", "member", "guest"];
 
@@ -26,7 +27,6 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const activeWorkspace =
     session?.workspaces.find(
@@ -47,7 +47,7 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
       );
       setMembers(result.members);
     } catch {
-      setNotice(
+      notify(
         chinese
           ? "无法读取成员列表，请确认当前账户具有管理权限。"
           : "Could not load members. Check your workspace permissions.",
@@ -65,7 +65,6 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
     event.preventDefault();
     if (!activeWorkspace) return;
     setSubmitting(true);
-    setNotice(null);
     const data = new FormData(event.currentTarget);
     try {
       const result = await apiFetch<{ invitation: WorkspaceInvitationCreated }>(
@@ -83,12 +82,12 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
           ? `${window.location.origin}/invite/${result.invitation.token}`
           : null,
       );
-      setNotice(
+      notify(
         chinese ? "邀请已创建，有效期为 72 小时。" : "Invitation created and valid for 72 hours.",
       );
     } catch (caught) {
       const denied = caught instanceof ApiClientError && caught.code === "delegation_denied";
-      setNotice(
+      notify(
         denied
           ? chinese
             ? "当前角色不能授予管理员权限。"
@@ -113,7 +112,7 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
         `/v1/workspaces/${activeWorkspace.id}/members/${member.membershipId}/role`,
         { method: "PATCH", body: JSON.stringify({ role }) },
       );
-      setNotice(chinese ? "成员角色已更新。" : "Member role updated.");
+      notify(chinese ? "成员角色已更新。" : "Member role updated.");
     } catch (caught) {
       setMembers((current) =>
         current.map((item) =>
@@ -121,7 +120,7 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
         ),
       );
       const lastOwner = caught instanceof ApiClientError && caught.code === "last_owner_required";
-      setNotice(
+      notify(
         lastOwner
           ? chinese
             ? "必须先指定另一位所有者，才能调整最后一位所有者。"
@@ -143,10 +142,7 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
   return (
     <>
       <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary.membersTitle}</h1>
-          <p>{dictionary.membersDescription}</p>
-        </div>
+        <h1>{dictionary.membersTitle}</h1>
         <button
           type="button"
           className="admin-primary-button"
@@ -158,11 +154,6 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
           <UserPlus size={17} /> {dictionary.inviteMember}
         </button>
       </div>
-      {notice ? (
-        <div className="admin-inline-notice" role="status">
-          <Check size={15} /> {notice}
-        </div>
-      ) : null}
       <section className="admin-panel admin-table-panel">
         <div className="admin-table" role="table" aria-label={dictionary.membersTitle}>
           <div className="admin-table-row is-header" role="row">
@@ -292,7 +283,7 @@ export function LiveMembers({ dictionary }: { dictionary: AdminDictionary }) {
                   className="secondary-button"
                   onClick={() => setInviteOpen(false)}
                 >
-                  {chinese ? "取消" : "Cancel"}
+                  <X size={16} /> {chinese ? "取消" : "Cancel"}
                 </button>
                 <button type="submit" className="primary-button" disabled={submitting}>
                   {submitting ? <LoaderCircle size={16} /> : <UserPlus size={16} />}

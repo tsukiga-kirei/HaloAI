@@ -1,8 +1,6 @@
 import type { AuthenticatedUser, WorkspaceSummary } from "@haloai/contracts";
 import {
   Bell,
-  Check,
-  ChevronDown,
   Hash,
   Inbox,
   FileText,
@@ -10,7 +8,6 @@ import {
   PanelLeft,
   Plus,
   Search,
-  Settings2,
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
 import type { Route } from "next";
@@ -18,6 +15,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { Avatar, HaloMark, SidebarSection } from "./primitives";
+import type { PortalKey } from "@/lib/portals";
 import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
 
 export function WorkspaceSidebar({
@@ -37,6 +35,7 @@ export function WorkspaceSidebar({
   onSectionSelect,
   locale,
   theme,
+  portal,
   onToggleLocale,
   onToggleTheme,
   collapsed,
@@ -57,13 +56,13 @@ export function WorkspaceSidebar({
   onSectionSelect: (section: WorkspaceSection) => void;
   locale: Locale;
   theme: Theme;
+  portal: PortalKey;
   onToggleLocale: () => void;
   onToggleTheme: () => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
 }) {
   const [query, setQuery] = useState("");
-  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -82,8 +81,6 @@ export function WorkspaceSidebar({
     (item) =>
       normalizedQuery.length === 0 || item.label.toLocaleLowerCase().includes(normalizedQuery),
   );
-  const workspaceName = activeWorkspace?.name ?? "HaloAI Pilot";
-  const workspaceInitial = workspaceName.trim().slice(0, 1).toLocaleUpperCase() || "H";
   const profileName = identity?.name ?? "Andy";
   const profileInitials =
     profileName
@@ -110,76 +107,39 @@ export function WorkspaceSidebar({
       aria-label={dictionary.rooms}
     >
       <div className="brand-row">
-        <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
-          <HaloMark compact={collapsed} />
-          {collapsed ? null : (
-            <span className="brand-copy">
-              <strong>HaloAI</strong>
-            </span>
-          )}
-        </Link>
-        <button
-          type="button"
-          className="icon-button"
-          aria-label={collapsed ? dictionary.expandSidebar : dictionary.collapseSidebar}
-          onClick={onToggleCollapsed}
-        >
-          <PanelLeft size={16} />
-        </button>
-      </div>
-
-      <div className="workspace-switcher-wrap">
-        <button
-          type="button"
-          className="workspace-switcher"
-          aria-label={dictionary.switchWorkspace}
-          aria-expanded={workspaceMenuOpen}
-          title={workspaceName}
-          onClick={() => {
-            setProfileMenuOpen(false);
-            if (workspaces.length === 0) onNotify(dictionary.workspacePreview);
-            else setWorkspaceMenuOpen((current) => !current);
-          }}
-        >
-          <span className="workspace-avatar">{workspaceInitial}</span>
-          {collapsed ? null : (
-            <>
-              <span>
-                <small>{dictionary.workspace}</small>
-                <strong>{workspaceName}</strong>
+        {collapsed ? (
+          <button
+            type="button"
+            className="sidebar-compact-brand"
+            aria-label={dictionary.expandSidebar}
+            onClick={onToggleCollapsed}
+          >
+            <span className="sidebar-mark-slot">
+              <HaloMark compact />
+              <span className="sidebar-mark-toggle">
+                <PanelLeft size={16} />
               </span>
-              <ChevronDown size={15} aria-hidden="true" />
-            </>
-          )}
-        </button>
-        {workspaceMenuOpen ? (
-          <div className="workspace-menu" role="menu">
-            <span className="workspace-menu-label">{dictionary.switchWorkspace}</span>
-            {workspaces.map((workspace) => (
-              <button
-                key={workspace.id}
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  onWorkspaceChange?.(workspace);
-                  setWorkspaceMenuOpen(false);
-                }}
-              >
-                <span className="workspace-mini-avatar">
-                  {workspace.name.slice(0, 1).toLocaleUpperCase()}
-                </span>
-                <span>
-                  <strong>{workspace.name}</strong>
-                  <small>{workspace.role}</small>
-                </span>
-                {workspace.id === activeWorkspace?.id ? <Check size={15} /> : null}
-              </button>
-            ))}
-            <Link href={"/onboarding" as Route} className="workspace-menu-create" role="menuitem">
-              <Plus size={15} /> {dictionary.createWorkspace}
+            </span>
+            <span className="sidebar-expand-hint">{dictionary.expandSidebar}</span>
+          </button>
+        ) : (
+          <>
+            <Link className="brand" href={"/app" as Route} aria-label="HaloAI">
+              <HaloMark />
+              <span className="brand-copy">
+                <strong>HaloAI</strong>
+              </span>
             </Link>
-          </div>
-        ) : null}
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={dictionary.collapseSidebar}
+              onClick={onToggleCollapsed}
+            >
+              <PanelLeft size={16} />
+            </button>
+          </>
+        )}
       </div>
 
       {collapsed ? null : (
@@ -229,7 +189,9 @@ export function WorkspaceSidebar({
                 type="button"
                 className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
                 key={room.id}
-                aria-label={room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
+                aria-label={
+                  room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])
+                }
                 title={room.name ?? (room.nameKey === undefined ? "" : dictionary[room.nameKey])}
                 aria-pressed={room.id === activeRoomId}
                 onClick={() => onRoomSelect(room.id)}
@@ -289,13 +251,6 @@ export function WorkspaceSidebar({
       </div>
 
       <div className="sidebar-footer">
-        <Link
-          className="icon-button sidebar-admin-link"
-          aria-label={dictionary.settings}
-          href={"/admin/overview" as Route}
-        >
-          <Settings2 size={16} />
-        </Link>
         <AccountMenu
           open={profileMenuOpen}
           name={profileName}
@@ -303,7 +258,10 @@ export function WorkspaceSidebar({
           initials={profileInitials}
           locale={locale}
           theme={theme}
+          portal={portal}
           collapsed={collapsed}
+          workspaces={workspaces}
+          activeWorkspaceId={activeWorkspace?.id}
           labels={{
             personalSettings: dictionary.personalSettings,
             language: dictionary.language,
@@ -311,16 +269,18 @@ export function WorkspaceSidebar({
             lightTheme: dictionary.lightTheme,
             darkTheme: dictionary.darkTheme,
             switchRole: dictionary.switchRole,
+            switchWorkspace: dictionary.switchWorkspace,
+            roleMember: dictionary.roleMember,
+            roleWorkspaceAdmin: dictionary.roleWorkspaceAdmin,
+            roleSystemAdmin: dictionary.roleSystemAdmin,
+            switchedToRole: dictionary.switchedToRole,
             signOut: dictionary.signOut,
           }}
-          onToggle={() => {
-            setWorkspaceMenuOpen(false);
-            setProfileMenuOpen((current) => !current);
-          }}
+          onToggle={() => setProfileMenuOpen((current) => !current)}
           onClose={() => setProfileMenuOpen(false)}
           onToggleLocale={onToggleLocale}
           onToggleTheme={onToggleTheme}
-          onSwitchRole={() => onNotify(dictionary.switchRolePreview)}
+          onWorkspaceChange={onWorkspaceChange}
           onSignOut={onSignOut}
         />
       </div>

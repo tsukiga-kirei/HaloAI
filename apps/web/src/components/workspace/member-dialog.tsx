@@ -104,7 +104,7 @@ export function MemberDialog({
           </div>
           <div className="dialog-actions">
             <button type="button" className="secondary-button" onClick={onClose}>
-              {dictionary.cancel}
+              <X size={16} /> {dictionary.cancel}
             </button>
             <button type="submit" className="primary-button">
               <Plus size={16} /> {dictionary.create}
