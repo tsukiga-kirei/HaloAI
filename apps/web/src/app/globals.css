@@ -2668,8 +2668,9 @@ a {
 }
 
 @container (max-width: 520px) {
+  /* 1440 三栏里对话列常低于 520px；目标仍须可见，只允许缩短，不能整段藏掉。 */
   .room-title-block p {
-    display: none;
+    max-width: min(42vw, 220px);
   }
 }
 
@@ -2833,6 +2834,96 @@ a {
     inset: auto;
     width: 100%;
     transform: none;
+  }
+  /* 管理页没有协作底栏。窄屏把侧栏收成顶部分区横滑，禁止 display:none 后只剩无法导航的内容页。 */
+  .halo-shell.is-management {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .halo-shell.is-management .workspace-sidebar,
+  .halo-shell.is-management.is-collapsed .workspace-sidebar,
+  .halo-shell.is-management .workspace-sidebar.is-collapsed {
+    display: grid;
+    position: relative;
+    z-index: 4;
+    inset: auto;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    transform: none;
+    box-shadow: none;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+  }
+  .halo-shell.is-management .brand-row {
+    grid-column: 1;
+    min-height: 52px;
+    padding: 6px 8px 6px 12px;
+  }
+  .halo-shell.is-management .brand-row .icon-button {
+    display: none;
+  }
+  .halo-shell.is-management .sidebar-footer {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    margin: 0;
+    padding: 6px 8px;
+    border-top: 0;
+    justify-content: flex-end;
+  }
+  .halo-shell.is-management .primary-nav {
+    display: flex;
+    grid-column: 1 / -1;
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 4px;
+    min-height: 52px;
+    max-width: 100%;
+    padding: 0 10px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+  .halo-shell.is-management .sidebar-kicker {
+    display: none;
+  }
+  .halo-shell.is-management .nav-item,
+  .halo-shell.is-management:not(.is-collapsed) .nav-item {
+    display: flex;
+    width: max-content;
+    min-width: max-content;
+    height: 44px;
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding: 0 12px;
+    scroll-snap-align: start;
+  }
+  .halo-shell.is-management .account-trigger {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0;
+    padding: 0;
+    grid-template-columns: 32px;
+    justify-content: center;
+  }
+  .halo-shell.is-management .account-meta,
+  .halo-shell.is-management .account-trigger > svg {
+    display: none;
+  }
+  .halo-shell.is-management .management-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    padding: 16px 14px calc(20px + env(safe-area-inset-bottom));
+    overflow: auto;
   }
   .halo-shell::after {
     display: none;

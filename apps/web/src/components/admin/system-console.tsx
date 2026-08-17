@@ -44,6 +44,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
     <ManagementShell
       titleKey="systemConsoleTitle"
       navLabelKey="systemNavLabel"
+      portalKey="system_admin"
       activeHref={section === "overview" ? "/system" : `/system/${section}`}
       items={navigation.map((item) => ({
         href: item.href,

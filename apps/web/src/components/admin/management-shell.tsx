@@ -5,19 +5,24 @@ import { PanelLeft } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { HaloMark } from "@/components/workspace/primitives";
 import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
-import { clearClientPortalSession } from "@/lib/portals";
+import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 
+/**
+ * 工作空间后台与系统后台共用侧栏外壳。
+ * portalKey 跟当前表面走，不能沿用 localStorage 里的协作身份，否则深链进后台后无法点选「协作成员」返回前台。
+ */
 export function ManagementShell({
   titleKey,
   navLabelKey,
   items,
   activeHref,
+  portalKey,
   workspaceName,
   children,
 }: {
@@ -25,14 +30,26 @@ export function ManagementShell({
   navLabelKey: keyof AdminDictionary;
   items: ReadonlyArray<{ href: Route; labelKey: keyof AdminDictionary; icon: LucideIcon }>;
   activeHref: string;
+  portalKey: PortalKey;
   workspaceName?: string;
   children: (dictionary: AdminDictionary) => ReactNode;
 }) {
-  const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, portal, sidebarMotion } =
+  const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, sidebarMotion } =
     useShellPreferences();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [narrowNav, setNarrowNav] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
   const router = useRouter();
+  // 窄屏管理页必须展开文字分区栏；折叠轨会把链接收成图标，移动验收与横向浏览都会失败。
+  const sidebarCollapsed = narrowNav ? false : collapsed;
+
+  useLayoutEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const sync = () => setNarrowNav(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   function signOut(): void {
     clearClientPortalSession();
@@ -42,16 +59,16 @@ export function ManagementShell({
 
   return (
     <div
-      className={`halo-shell is-management${collapsed ? " is-collapsed" : ""}${
+      className={`halo-shell is-management${sidebarCollapsed ? " is-collapsed" : ""}${
         sidebarMotion ? " is-sidebar-motion" : ""
       }`}
     >
       <aside
-        className={`workspace-sidebar ${collapsed ? "is-collapsed" : ""}`}
+        className={`workspace-sidebar ${sidebarCollapsed ? "is-collapsed" : ""}`}
         aria-label={dictionary[navLabelKey]}
       >
         <div className="brand-row">
-          {collapsed ? (
+          {sidebarCollapsed ? (
             <button
               type="button"
               className="sidebar-compact-brand"
@@ -113,8 +130,8 @@ export function ManagementShell({
             initials="AY"
             locale={locale}
             theme={theme}
-            portal={portal}
-            collapsed={collapsed}
+            portal={portalKey}
+            collapsed={sidebarCollapsed}
             workspaces={[]}
             labels={{
               personalSettings: dictionary.personalSettings,

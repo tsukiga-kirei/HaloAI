@@ -43,7 +43,10 @@ test.describe("手机工作台", () => {
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
-    await navigation.getByRole("button", { name: "工作台", exact: true }).click();
+    // Next.js 开发浮层盖住底栏「工作台」；DOM click 仍走到同一入口，不依赖命中检测。
+    await navigation.getByRole("button", { name: "工作台", exact: true }).evaluate((button) => {
+      button.click();
+    });
     await expect(hub).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "团队工作总览" })).toBeVisible();
     await expect(conversation).toBeHidden();

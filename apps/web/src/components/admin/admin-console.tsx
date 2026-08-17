@@ -43,6 +43,7 @@ export function AdminConsole({ section }: { section: AdminSection }) {
     <ManagementShell
       titleKey="administration"
       navLabelKey="navLabel"
+      portalKey="workspace_admin"
       activeHref={`/admin/${section}`}
       workspaceName={activeWorkspace?.name ?? "HaloAI Pilot"}
       items={navigation}
