@@ -92,15 +92,15 @@ Priorities use **Must**, **Should**, and **Later** for the current delivery hori
 
 ### 5.3 AI members
 
-| ID     | Requirement                                                        | Priority | Acceptance criterion                                                               |
-| ------ | ------------------------------------------------------------------ | -------- | ---------------------------------------------------------------------------------- |
-| AI-001 | Create a named AI actor                                            | Must     | AI actor is neither a human user nor an interactive login principal                |
-| AI-002 | Configure responsibility, exclusions, knowledge, tools, and budget | Must     | The default editor does not require understanding low-level model parameters       |
-| AI-003 | Draft and publish immutable agent versions                         | Must     | Every run pins one version; published history cannot be mutated                    |
-| AI-004 | Route by explicit mention by default                               | Must     | Without a mention or explicit coordinator decision, an AI consumes no model budget |
-| AI-005 | Optional coordinator delegation                                    | Should   | UI reveals invited agents, rationale, synthesis owner, and maximum rounds          |
-| AI-006 | Pause, disable, or remove an AI from a room                        | Must     | No new runs start; in-flight behavior follows an explicit cancellation policy      |
-| AI-007 | Support multiple model providers                                   | Should   | Changing a provider is a platform operation and does not alter actor, message, or authorization records |
+| ID     | Requirement                                                        | Priority | Acceptance criterion                                                                                                                                      |
+| ------ | ------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI-001 | Create a named AI actor                                            | Must     | AI actor is neither a human user nor an interactive login principal                                                                                       |
+| AI-002 | Configure responsibility, exclusions, knowledge, tools, and budget | Must     | The default editor does not require understanding low-level model parameters                                                                              |
+| AI-003 | Draft and publish immutable agent versions                         | Must     | Every run pins one version; published history cannot be mutated                                                                                           |
+| AI-004 | Route by explicit mention by default                               | Must     | Without a mention or explicit coordinator decision, an AI consumes no model budget                                                                        |
+| AI-005 | Optional coordinator delegation                                    | Should   | UI reveals invited agents, rationale, synthesis owner, and maximum rounds                                                                                 |
+| AI-006 | Pause, disable, or remove an AI from a room                        | Must     | No new runs start; in-flight behavior follows an explicit cancellation policy                                                                             |
+| AI-007 | Support multiple model providers                                   | Should   | Changing a provider is a platform operation and does not alter actor, message, or authorization records                                                   |
 | AI-008 | Allocate models from the platform to tenants                       | Must     | System admins maintain the catalog and allocations; a workspace may only assign allocated models to its AI members; unallocated models fail at the server |
 
 ### 5.4 Agent runs
@@ -139,11 +139,11 @@ Priorities use **Must**, **Should**, and **Later** for the current delivery hori
 
 ### 5.7 Platform models
 
-| ID      | Requirement                              | Priority | Acceptance criterion                                                                                          |
-| ------- | ---------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
-| SYS-001 | System admins maintain the model catalog | Must     | Providers and available models are registered; secrets stay on the server and never appear in the page        |
+| ID      | Requirement                              | Priority | Acceptance criterion                                                                                           |
+| ------- | ---------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| SYS-001 | System admins maintain the model catalog | Must     | Providers and available models are registered; secrets stay on the server and never appear in the page         |
 | SYS-002 | Allocate available models per tenant     | Must     | A model not allocated to the workspace must not appear in the picker and the server must reject its invocation |
-| SYS-003 | Workspaces only consume allocations      | Must     | Workspace admins cannot add a provider or paste a secret; they only assign allocated models to workspace AI   |
+| SYS-003 | Workspaces only consume allocations      | Must     | Workspace admins cannot add a provider or paste a secret; they only assign allocated models to workspace AI    |
 
 ## 6. Non-functional requirements
 

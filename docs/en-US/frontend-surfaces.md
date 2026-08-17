@@ -4,10 +4,10 @@
 
 HaloAI separates team collaboration, workspace governance, and platform operations into three product surfaces. The split exists to preserve clear mental models and least privilege, not to create more pages.
 
-| Surface                  | Stable route | Audience                                                      | Primary responsibility                                                                   |
-| ------------------------ | ------------ | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Collaboration            | `/app`       | Team members and invited guests                               | Rooms, messages, documents, AI collaboration, approvals, and deliverables                |
-| Workspace administration | `/admin/*`   | Workspace Owners, Workspace Admins, and scoped administrators | Members, roles, AI (using allocated models only), integrations, security, usage, and audit |
+| Surface                  | Stable route | Audience                                                      | Primary responsibility                                                                                                                     |
+| ------------------------ | ------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Collaboration            | `/app`       | Team members and invited guests                               | Rooms, messages, documents, AI collaboration, approvals, and deliverables                                                                  |
+| Workspace administration | `/admin/*`   | Workspace Owners, Workspace Admins, and scoped administrators | Members, roles, AI (using allocated models only), integrations, security, usage, and audit                                                 |
 | System administration    | `/system`    | Platform operations and security staff                        | Tenant lifecycle, the platform model catalog and per-tenant allocation, system health, and global policy; no default tenant-content access |
 
 The root route `/` only enters the collaboration surface and does not host a second home page.
@@ -34,11 +34,11 @@ The root route `/` only enters the collaboration surface and does not host a sec
 
 This is the product boundary for the current page-design stage. Later implementation must follow it; workspace administration must not grow its own “connect a provider” flow first.
 
-| Who | Does | Does not |
-| --- | --- | --- |
-| System administrator | Maintain the full catalog (which providers and model names exist; secrets stay on the server); allocate models to named tenants; watch platform availability and quota | Open a tenant’s rooms, documents, or conversations by default |
-| Workspace administrator | See models allocated to this tenant; pick one for each workspace AI member; view this workspace’s usage within that allocation | Add a provider, paste a secret, or use a model that was not allocated |
-| Collaborating member | Work with AI members that are already configured | Configure providers or the model catalog |
+| Who                     | Does                                                                                                                                                                   | Does not                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| System administrator    | Maintain the full catalog (which providers and model names exist; secrets stay on the server); allocate models to named tenants; watch platform availability and quota | Open a tenant’s rooms, documents, or conversations by default         |
+| Workspace administrator | See models allocated to this tenant; pick one for each workspace AI member; view this workspace’s usage within that allocation                                         | Add a provider, paste a secret, or use a model that was not allocated |
+| Collaborating member    | Work with AI members that are already configured                                                                                                                       | Configure providers or the model catalog                              |
 
 System administration’s page design includes a Models section: catalog, tenant allocation, and availability. The current preview shell provides `/system/models`. Workspace “Available models” may only show this tenant’s allocated options; it must not read as tenant-owned provider onboarding.
 

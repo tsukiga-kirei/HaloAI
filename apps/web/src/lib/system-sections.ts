@@ -1,4 +1,11 @@
-export const systemSections = ["overview", "tenants", "models", "health", "policy", "audit"] as const;
+export const systemSections = [
+  "overview",
+  "tenants",
+  "models",
+  "health",
+  "policy",
+  "audit",
+] as const;
 
 export type SystemSection = (typeof systemSections)[number];
 

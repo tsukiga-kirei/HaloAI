@@ -156,14 +156,14 @@ export function AccountMenu({
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.SubContent
-                  className="halo-menu-sub is-account"
-                  align="end"
-                  sideOffset={8}
-                  collisionPadding={16}
-                  ref={(node) => {
-                    if (node) animateOverlayIn(node);
-                  }}
-                >
+                    className="halo-menu-sub is-account"
+                    align="end"
+                    sideOffset={8}
+                    collisionPadding={16}
+                    ref={(node) => {
+                      if (node) animateOverlayIn(node);
+                    }}
+                  >
                     {workspaces.map((workspace) => (
                       <DropdownMenu.Item
                         className="halo-menu-item"

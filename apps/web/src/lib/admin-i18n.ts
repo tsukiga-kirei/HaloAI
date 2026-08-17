@@ -308,7 +308,8 @@ const zhCN: AdminDictionary = {
   modelConversationDefault: "对话默认模型",
   modelLocalName: "本地私有模型",
   modelResearchName: "研究用模型",
-  workspaceModelsIntro: "这些模型由系统管理分配给本空间。不能在此接入新服务或填写密钥，只能配给本空间的 AI。",
+  workspaceModelsIntro:
+    "这些模型由系统管理分配给本空间。不能在此接入新服务或填写密钥，只能配给本空间的 AI。",
   workspaceIntegrationsTitle: "其他集成",
   assignToAgent: "分配给 AI",
   agentAssignedModel: "使用模型",
@@ -411,7 +412,8 @@ const enUS: AdminDictionary = {
   integrationModelDetail:
     "Allocated to this workspace by system administration. Assign it to an AI collaborator; do not enter a secret here.",
   integrationStorage: "File storage",
-  integrationStorageDetail: "Provided by the platform; this workspace cannot connect its own store.",
+  integrationStorageDetail:
+    "Provided by the platform; this workspace cannot connect its own store.",
   integrationMcp: "MCP tools",
   integrationMcpDetail: "Not connected; domain allowlists and approval policy are required first",
   connected: "Connected",

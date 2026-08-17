@@ -37,17 +37,17 @@ AI 主体禁止获取、复制、模拟或刷新人类登录会话。系统 Work
 
 ### 2.2 内置角色模板
 
-| 角色模板        | 默认用途                                                       |
-| --------------- | -------------------------------------------------------------- |
-| Workspace Owner | 工作空间生命周期、所有权、安全、成员、计费、导出和删除         |
+| 角色模板        | 默认用途                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| Workspace Owner | 工作空间生命周期、所有权、安全、成员、计费、导出和删除                                             |
 | Workspace Admin | 成员、项目、Agent 和已批准集成的管理；不能登记模型供应商、不能读取密钥明文、不能做破坏性所有权操作 |
-| Security Admin  | 策略、会话撤销、审计、保留期和集成审批                         |
-| Billing Admin   | 用量、预算和账单，不自动获得对话或文档正文访问权               |
-| Agent Manager   | Agent 创建、版本管理、从本租户已分配目录中选择模型、工具作用域配置 |
-| Member          | 在明确可访问的项目、房间和交付物中协作                         |
-| Guest           | 仅访问明确共享给该访客成员身份的资源                           |
-| Auditor         | 只读审计和合规导出；内容访问需要独立授权                       |
-| Agent Member    | 在明确委托范围内发送消息和操作交付物                           |
+| Security Admin  | 策略、会话撤销、审计、保留期和集成审批                                                             |
+| Billing Admin   | 用量、预算和账单，不自动获得对话或文档正文访问权                                                   |
+| Agent Manager   | Agent 创建、版本管理、从本租户已分配目录中选择模型、工具作用域配置                                 |
+| Member          | 在明确可访问的项目、房间和交付物中协作                                                             |
+| Guest           | 仅访问明确共享给该访客成员身份的资源                                                               |
+| Auditor         | 只读审计和合规导出；内容访问需要独立授权                                                           |
+| Agent Member    | 在明确委托范围内发送消息和操作交付物                                                               |
 
 内置角色是能力集合模板。自定义角色必须由 capability 集合构成，禁止使用页面路径或 UI 菜单定义。除非经过独立授权的管理流程，主体不得授予自己并不拥有的能力。
 
@@ -55,27 +55,27 @@ AI 主体禁止获取、复制、模拟或刷新人类登录会话。系统 Work
 
 ## 3. 资源与动作矩阵
 
-| 资源             | 动作                                                                             | 典型持有者                         | 必须检查的条件                                     |
-| ---------------- | -------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------- |
-| 工作空间         | `read`、`update`、`export`、`delete`                                             | Owner；部分 Admin 角色             | 成员身份有效；删除要求提升认证级别和二次确认       |
-| 成员身份         | `invite`、`read`、`update`、`remove`                                             | Owner、Workspace Admin             | 不能移除最后一个 Owner；不能突破调用者的委托上限   |
-| 角色和策略       | `create`、`read`、`update`、`delete`、`assign`                                   | Owner、Security Admin              | 禁止自我提权；审计策略版本与变更                   |
-| 项目和房间       | `create`、`read`、`update`、`archive`、`manage_members`                          | 经授权的工作空间成员               | 工作空间一致、项目作用域、房间 ACL 和数据分级      |
-| 消息和线程       | `read`、`create`、`edit_own`、`delete_own`、`moderate`                           | 房间参与者和受委托 Agent           | 读取和发送时均重新校验成员身份；编辑保留历史       |
-| 交付物和文档     | `create`、`read`、`update`、`comment`、`approve`、`publish`、`delete`、`restore` | 项目成员和受委托 Agent             | 交付物 ACL、当前版本、数据分级和审批策略           |
-| 交付物版本       | `read`、`compare`、`restore`                                                     | 交付物读者；恢复要求编辑权         | 恢复生成新版本，禁止覆盖历史                       |
-| 文件和附件       | `upload`、`read`、`download`、`delete`                                           | 房间或交付物参与者                 | 恶意软件扫描、类型/大小限制和短期签名下载          |
-| 知识和记忆       | `read`、`write`、`mount`、`delete`                                               | 明确授权的成员和 Agent             | 必须先做授权过滤，再排序或组装模型上下文           |
-| Agent 配置和版本 | `create`、`read`、`update`、`delete`、`invoke`                                   | Agent Manager；经授权调用者        | 配置权与调用权分离；运行绑定不可变版本；选用的模型必须已分配给该租户 |
-| 密钥和凭据绑定   | `bind`、`rotate`、`revoke`                                                       | 模型供应商密钥仅系统管理员；工作空间只能绑定已批准的连接器引用 | 永不返回明文；绑定范围小于管理主体的权限范围       |
-| 平台模型目录     | `create`、`read`、`update`、`allocate`、`revoke`                                 | 仅系统管理员                       | 未分配给该租户的模型禁止出现在空间选用列表，调用时服务端再拒绝 |
-| 工具和集成       | `install`、`configure`、`invoke`、`disable`                                      | Admin 管理；Agent 仅按范围调用     | 白名单、参数策略、风险等级、网络出口策略和审批状态 |
-| 运行和任务       | `create`、`read`、`cancel`、`retry`                                              | 发起人、Sponsor、项目管理员        | 预算、并发、幂等、委托和当前授权                   |
-| 审批             | `request`、`read`、`approve`、`reject`                                           | 指定审批人                         | 发起 Agent 不能审批；绑定参数和有效期仍须一致      |
-| 用量和预算       | `read`、`manage`、`export`                                                       | Owner、Billing Admin；个人范围只读 | 明确工作空间和报表作用域                           |
-| 通知             | `read`、`mark_read`、`delete`                                                    | 仅目标成员身份                     | 用户、工作空间和成员身份全部匹配                   |
-| 审计事件         | `read`、`export`                                                                 | Security Admin、Auditor            | 只读；按内容权限脱敏敏感字段                       |
-| 保留策略         | `read`、`update`、`legal_hold`                                                   | Owner、Security Admin              | 法务保留优先于普通过期和删除                       |
+| 资源             | 动作                                                                             | 典型持有者                                                     | 必须检查的条件                                                       |
+| ---------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 工作空间         | `read`、`update`、`export`、`delete`                                             | Owner；部分 Admin 角色                                         | 成员身份有效；删除要求提升认证级别和二次确认                         |
+| 成员身份         | `invite`、`read`、`update`、`remove`                                             | Owner、Workspace Admin                                         | 不能移除最后一个 Owner；不能突破调用者的委托上限                     |
+| 角色和策略       | `create`、`read`、`update`、`delete`、`assign`                                   | Owner、Security Admin                                          | 禁止自我提权；审计策略版本与变更                                     |
+| 项目和房间       | `create`、`read`、`update`、`archive`、`manage_members`                          | 经授权的工作空间成员                                           | 工作空间一致、项目作用域、房间 ACL 和数据分级                        |
+| 消息和线程       | `read`、`create`、`edit_own`、`delete_own`、`moderate`                           | 房间参与者和受委托 Agent                                       | 读取和发送时均重新校验成员身份；编辑保留历史                         |
+| 交付物和文档     | `create`、`read`、`update`、`comment`、`approve`、`publish`、`delete`、`restore` | 项目成员和受委托 Agent                                         | 交付物 ACL、当前版本、数据分级和审批策略                             |
+| 交付物版本       | `read`、`compare`、`restore`                                                     | 交付物读者；恢复要求编辑权                                     | 恢复生成新版本，禁止覆盖历史                                         |
+| 文件和附件       | `upload`、`read`、`download`、`delete`                                           | 房间或交付物参与者                                             | 恶意软件扫描、类型/大小限制和短期签名下载                            |
+| 知识和记忆       | `read`、`write`、`mount`、`delete`                                               | 明确授权的成员和 Agent                                         | 必须先做授权过滤，再排序或组装模型上下文                             |
+| Agent 配置和版本 | `create`、`read`、`update`、`delete`、`invoke`                                   | Agent Manager；经授权调用者                                    | 配置权与调用权分离；运行绑定不可变版本；选用的模型必须已分配给该租户 |
+| 密钥和凭据绑定   | `bind`、`rotate`、`revoke`                                                       | 模型供应商密钥仅系统管理员；工作空间只能绑定已批准的连接器引用 | 永不返回明文；绑定范围小于管理主体的权限范围                         |
+| 平台模型目录     | `create`、`read`、`update`、`allocate`、`revoke`                                 | 仅系统管理员                                                   | 未分配给该租户的模型禁止出现在空间选用列表，调用时服务端再拒绝       |
+| 工具和集成       | `install`、`configure`、`invoke`、`disable`                                      | Admin 管理；Agent 仅按范围调用                                 | 白名单、参数策略、风险等级、网络出口策略和审批状态                   |
+| 运行和任务       | `create`、`read`、`cancel`、`retry`                                              | 发起人、Sponsor、项目管理员                                    | 预算、并发、幂等、委托和当前授权                                     |
+| 审批             | `request`、`read`、`approve`、`reject`                                           | 指定审批人                                                     | 发起 Agent 不能审批；绑定参数和有效期仍须一致                        |
+| 用量和预算       | `read`、`manage`、`export`                                                       | Owner、Billing Admin；个人范围只读                             | 明确工作空间和报表作用域                                             |
+| 通知             | `read`、`mark_read`、`delete`                                                    | 仅目标成员身份                                                 | 用户、工作空间和成员身份全部匹配                                     |
+| 审计事件         | `read`、`export`                                                                 | Security Admin、Auditor                                        | 只读；按内容权限脱敏敏感字段                                         |
+| 保留策略         | `read`、`update`、`legal_hold`                                                   | Owner、Security Admin                                          | 法务保留优先于普通过期和删除                                         |
 
 ## 4. 条件与 AI 权限交集
 
