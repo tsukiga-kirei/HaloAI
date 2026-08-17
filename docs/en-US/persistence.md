@@ -28,6 +28,8 @@ RLS is defense in depth. Project membership, room membership, resource actions, 
 ## Migration rules
 
 - `packages/db/src/schema` is the typed schema source; reviewable SQL lives in `packages/db/drizzle`.
+- Schema versions are append-only Drizzle Kit migrations (`0000_foundation.sql` onward). `pnpm db:migrate` applies them to PostgreSQL and records them in `drizzle.__drizzle_migrations`. This is not Flyway/Liquibase, and it does not switch database instances at runtime.
+- Local virtual data uses a separate version table, `haloai_devdata_revisions`.
 - Migrations are append-only. A migration used by a shared environment is never rewritten.
 - Breaking changes follow expand, backfill, verify, and contract phases.
 - Applications never migrate on startup. Deployment and migration use separate connections and lifecycles.

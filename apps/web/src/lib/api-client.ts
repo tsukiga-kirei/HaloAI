@@ -1,9 +1,11 @@
-/** 本地开发自动沿用页面主机，避免 localhost 与 127.0.0.1 混用导致 SameSite Cookie 被浏览器拒绝。 */
+/**
+ * 浏览器请求走当前页面 Origin，由 Next rewrite 转到 API。
+ * 这样会话 Cookie 是第一方，不会因为 3000/3100 分端口，或 localhost 与 127.0.0.1 混用被拒。
+ * 服务端渲染仍直连 API 源站。
+ */
 export function getApiBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_BASE_URL) return process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (typeof window !== "undefined")
-    return `${window.location.protocol}//${window.location.hostname}:3100`;
-  return "http://localhost:3100";
+  if (typeof window !== "undefined") return "";
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3100";
 }
 
 export class ApiClientError extends Error {

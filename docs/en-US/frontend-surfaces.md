@@ -48,7 +48,7 @@ The current implementation provides complete navigable shells for collaboration,
 
 Workspace administration loads members and AI collaborators from the server snapshot. Sections without a ledger, audit log, or model catalog stay empty. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner, and never fill the page with sample numbers or sample events.
 
-System administration provides a navigable platform preview (tenants, models, health, policy, audit). Tenant and model directories stay empty until a platform API exists. Health probes only the API readiness endpoint and must not mark unconnected dependencies as available. It never shows tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right.
+System administration provides a navigable platform preview (tenants, models, health, policy, audit). Tenant and model directories stay empty until a platform API exists. Health probes only the API readiness endpoint and must not mark unconnected dependencies as available. It never shows tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right. Collaborator and workspace-admin portals show a workspace dropdown below email and password. System admin does not. The dropdown stays empty until email/password sign-in succeeds on this page, then lists workspaces from `GET /v1/session` and selects the first item. Unauthenticated clients must not enumerate workspaces. The account menu offers “Switch workspace” only when the same account belongs to more than one workspace.
 
 ### 4.1 Non-AI collaboration shell
 
@@ -72,3 +72,4 @@ The visual hierarchy continues to use HaloAI semantic tokens. Reference products
 - System administration denies workspace roles by default and exposes no tenant-content summary.
 - Overview, inbox, document directory, and activity are reachable through real collaboration navigation without triggering AI or external writes.
 - 1440×900 preserves the rooms, conversation, and document columns. Tablet and mobile use a single-view path instead of a compressed desktop layout.
+- The login page shows a workspace dropdown only for collaborator and workspace-admin portals; it stays empty before sign-in and fills from the session afterwards. System admin does not show it. The account menu offers workspace switching only when there is more than one workspace.

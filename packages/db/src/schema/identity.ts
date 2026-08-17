@@ -19,7 +19,7 @@ import { actorKind, actorStatus, membershipStatus, userStatus, workspaceStatus }
  * User 是跨工作空间登录身份，不属于任何租户，也不携带 workspace_id。
  * 此表故意不保存密码、会话、刷新令牌或认证密钥；认证材料由认证组件的专用表负责。
  * 默认启用 RLS 且不在这里授予公共策略，认证数据库角色必须由 migration 显式配置。
- * 列级中文注释由 drizzle/0003_column_comments.sql 写入 PostgreSQL。
+ * 列级中文注释由 drizzle 结构迁移写入 PostgreSQL，后续只追加不改写。
  */
 export const users = pgTable(
   "users",

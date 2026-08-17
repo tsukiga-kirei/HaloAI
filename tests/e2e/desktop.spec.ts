@@ -159,6 +159,12 @@ test.describe("桌面工作台", () => {
     await expect(page.getByRole("button", { name: "保存版本" })).toHaveCount(0);
   });
 
+  test("单工作区时个人设置不显示切换工作区", async ({ page }) => {
+    await page.getByRole("button", { name: "个人设置" }).click();
+    await expect(page.getByRole("menuitem", { name: "退出登录" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "切换工作区" })).toHaveCount(0);
+  });
+
   test("设置入口进入独立工作空间后台", async ({ page }) => {
     await page.getByRole("button", { name: "个人设置" }).click();
     await page.getByRole("menuitem", { name: "切换角色" }).click();

@@ -12,6 +12,8 @@ export interface AdminDictionary {
   lightTheme: string;
   darkTheme: string;
   switchRole: string;
+  switchWorkspace: string;
+  emptyWorkspaceList: string;
   switchRolePreview: string;
   collapseSidebar: string;
   expandSidebar: string;
@@ -184,6 +186,8 @@ const zhCN: AdminDictionary = {
   lightTheme: "浅色",
   darkTheme: "深色",
   switchRole: "切换角色",
+  switchWorkspace: "切换工作区",
+  emptyWorkspaceList: "还没有可切换的工作区",
   switchRolePreview: "角色切换将在认证接入后开放。",
   collapseSidebar: "收起侧栏",
   expandSidebar: "展开侧栏",
@@ -357,6 +361,8 @@ const enUS: AdminDictionary = {
   lightTheme: "Light",
   darkTheme: "Dark",
   switchRole: "Switch role",
+  switchWorkspace: "Switch workspace",
+  emptyWorkspaceList: "No workspaces to switch yet",
   switchRolePreview: "Role switching opens after authentication is connected.",
   collapseSidebar: "Collapse sidebar",
   expandSidebar: "Expand sidebar",

@@ -160,6 +160,12 @@
 .formCard :global(.halo-segmented) {
   margin-bottom: 10px;
 }
+.formCard :global(.halo-select-trigger) {
+  height: 44px;
+  border: 1px solid #c5cddc;
+  border-radius: 8px;
+  background: white;
+}
 .formCard :global(.halo-select-trigger[data-state="open"]),
 .formCard :global(.halo-select-trigger:focus-visible) {
   border-color: var(--portal);
@@ -210,6 +216,11 @@
   color: #333746;
   font-size: 13px;
   font-weight: 680;
+}
+.fieldHint {
+  color: #7a8090;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .inputWrap {
   display: grid;

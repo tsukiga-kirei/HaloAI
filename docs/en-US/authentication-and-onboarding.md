@@ -7,7 +7,7 @@ This specification defines human login identities, revocable browser sessions, f
 ## 2. Authentication boundary
 
 - A mature authentication component handles email and password. Passwords use a memory-hard hash and exist only on credential Accounts.
-- Browsers receive only `HttpOnly`, `SameSite=Lax` cookies. Session tokens never enter `localStorage`, URLs, logs, or error responses.
+- Browsers receive only `HttpOnly`, `SameSite=Lax` cookies. Session tokens never enter `localStorage`, URLs, logs, or error responses. The login page sends authentication and session requests through the web origin so browsers do not reject cookies when the API uses another port, or when `localhost` and `127.0.0.1` are mixed.
 - Sessions are stored in PostgreSQL, expire after seven days by default, refresh daily, and can be revoked immediately on sign-out or a security event.
 - Authentication origins and CORS use explicit allowlists. CSRF and origin checks must never be disabled.
 - The authentication database role accesses only User, Account, Session, and Verification tables and cannot read workspace content.
@@ -44,9 +44,12 @@ The transaction generates server-owned UUIDs before setting the PostgreSQL works
 
 The Alpha slice delivers email/password sign-up and sign-in, session lookup and sign-out, workspace creation and listing, invitation creation and acceptance, and built-in role changes. Local `DEMO_MODE=true` writes scrypt-hashed seed accounts for frontend/backend integration; the switch never skips cookie sessions or server authorization. Until email delivery is connected, development may display a one-time invitation link. Production must never return or log the raw token.
 
+The login page shows a workspace dropdown for collaborator and workspace-admin portals, below the email and password fields; system admin does not. Opening the login page does not reuse an existing cookie to fill workspaces, so a refresh with empty credentials cannot enter. After email/password sign-in succeeds on this page, it fills options from `GET /v1/session` and selects the first workspace, or the last remembered one if it still belongs to the account. Zero workspaces keep the empty state and continue to onboarding. A client-stored `workspaceId` is only a UI preference and is never authorization evidence. The account menu shows “Switch workspace” only when the account belongs to more than one workspace.
+
 ## 7. Acceptance
 
 - Unauthenticated requests cannot create, enumerate, or administer workspaces.
+- The login page shows a workspace dropdown only for collaborator and workspace-admin portals, below email and password. Options are read from the session only after sign-in succeeds on this page, and the first workspace is selected by default. Refreshing the login page must not skip credentials by reusing a cookie. System admin does not show it.
 - Empty email or password cannot enter the workspace. Local seed accounts must sign in through `/api/auth/sign-in/email` with hashed passwords stored in PostgreSQL.
 - Cookies use HttpOnly, SameSite, and environment-appropriate Secure attributes.
 - Cross-origin mutations are rejected.

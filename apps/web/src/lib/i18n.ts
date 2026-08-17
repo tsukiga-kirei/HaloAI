@@ -141,6 +141,7 @@ export interface Dictionary {
   documents: string;
   switchWorkspace: string;
   createWorkspace: string;
+  emptyWorkspaceList: string;
   signOut: string;
   personalSettings: string;
   lightTheme: string;
@@ -360,6 +361,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     documents: "文档",
     switchWorkspace: "切换工作区",
     createWorkspace: "新建工作区",
+    emptyWorkspaceList: "还没有可切换的工作区",
     signOut: "退出登录",
     personalSettings: "个人设置",
     lightTheme: "浅色",
@@ -598,6 +600,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     documents: "Documents",
     switchWorkspace: "Switch workspace",
     createWorkspace: "Create workspace",
+    emptyWorkspaceList: "No workspaces to switch yet",
     signOut: "Sign out",
     personalSettings: "Personal settings",
     lightTheme: "Light",

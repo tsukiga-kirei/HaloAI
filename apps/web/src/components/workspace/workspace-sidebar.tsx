@@ -229,6 +229,7 @@ export function WorkspaceSidebar({
             darkTheme: dictionary.darkTheme,
             switchRole: dictionary.switchRole,
             switchWorkspace: dictionary.switchWorkspace,
+            emptyWorkspaceList: dictionary.emptyWorkspaceList,
             roleMember: dictionary.roleMember,
             roleWorkspaceAdmin: dictionary.roleWorkspaceAdmin,
             roleSystemAdmin: dictionary.roleSystemAdmin,

@@ -18,9 +18,15 @@ export async function openChineseWorkspace(page: Page): Promise<void> {
     }
   });
   await page.goto("/login");
+  await expect(page.getByRole("combobox", { name: "选择工作区" })).toBeVisible();
+  await expect(page.getByText("工作区跟账号绑定，登录后才能列出你加入的团队。")).toBeVisible();
   await page.locator('input[name="email"]').fill(demoOwnerEmail);
   await page.locator('input[name="password"]').fill(demoOwnerPassword);
   await page.getByRole("button", { name: "以协作成员身份登录" }).click();
+  await expect(page.getByRole("combobox", { name: "选择工作区" })).toContainText("HaloAI Alpha", {
+    timeout: 30_000,
+  });
+  await page.getByRole("button", { name: "进入HaloAI Alpha" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "内测发布" })).toBeVisible({
     timeout: 30_000,
   });

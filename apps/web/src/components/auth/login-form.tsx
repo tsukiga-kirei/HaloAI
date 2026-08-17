@@ -1,6 +1,8 @@
 "use client";
 
+import type { SessionContext, WorkspaceSummary } from "@haloai/contracts";
 import {
+  Building2,
   Eye,
   EyeOff,
   Languages,
@@ -16,10 +18,11 @@ import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { HaloMark } from "@/components/workspace/primitives";
-import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
-import { getApiBaseUrl } from "@/lib/api-client";
+import { persistPortal, portalPath, WORKSPACE_STORAGE_KEY, type PortalKey } from "@/lib/portals";
+import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
+import { HaloSelect } from "@/components/ui/halo-select";
 import { authCopy, type AuthLocale } from "./auth-copy";
 import styles from "./auth-shell.module.css";
 
@@ -50,6 +53,13 @@ function looksLikeEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function preferredWorkspaceId(workspaces: readonly WorkspaceSummary[]): string | null {
+  const remembered = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+  return (
+    workspaces.find((workspace) => workspace.id === remembered)?.id ?? workspaces[0]?.id ?? null
+  );
+}
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -59,9 +69,16 @@ export function LoginForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<"email" | "password" | null>(null);
+  const [hasSession, setHasSession] = useState(false);
+  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const copy = authCopy[locale];
   const activePortal = portals.find((item) => item.key === portal) ?? fallbackPortal;
   const ActiveIcon = activePortal.icon;
+  const selectedWorkspace =
+    workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null;
+  // 系统管理不绑定具体工作区；协作成员和空间管理在账号密码下方选择工作区。
+  const needsWorkspace = portal !== "system_admin";
 
   useEffect(() => {
     const saved = window.localStorage.getItem("haloai.locale");
@@ -72,6 +89,18 @@ export function LoginForm() {
     setFieldError(null);
     setError(null);
   }, [portal]);
+
+  useEffect(() => {
+    if (workspaces.length === 0) {
+      setSelectedWorkspaceId(null);
+      return;
+    }
+    setSelectedWorkspaceId((current) =>
+      current !== null && workspaces.some((workspace) => workspace.id === current)
+        ? current
+        : preferredWorkspaceId(workspaces),
+    );
+  }, [workspaces]);
 
   function enterWorkspace(): void {
     persistPortal(portal);
@@ -84,8 +113,37 @@ export function LoginForm() {
     router.refresh();
   }
 
+  function applySession(session: SessionContext): void {
+    // 登录页不在刷新时复用 Cookie 会话；只有本页提交邮箱密码成功后才填工作区，并默认选中第一个。
+    setHasSession(true);
+    setWorkspaces(session.workspaces);
+    setSelectedWorkspaceId(preferredWorkspaceId(session.workspaces));
+  }
+
+  function continueAfterSession(
+    nextWorkspaces = workspaces,
+    nextSelectedId = selectedWorkspaceId,
+  ): void {
+    if (portal !== "system_admin") {
+      if (nextWorkspaces.length === 0) {
+        router.replace("/onboarding" as Route);
+        return;
+      }
+      if (nextSelectedId === null) return;
+      // 本地保存的 workspaceId 只是界面偏好，授权仍由服务端 Membership 强制执行。
+      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, nextSelectedId);
+    } else if (nextSelectedId) {
+      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, nextSelectedId);
+    }
+    enterWorkspace();
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+    if (hasSession) {
+      continueAfterSession();
+      return;
+    }
     setSubmitting(true);
     setError(null);
     setFieldError(null);
@@ -113,13 +171,29 @@ export function LoginForm() {
         setError(copy.invalid);
         return;
       }
-      enterWorkspace();
-    } catch {
-      setError(copy.generic);
+      const session = await apiFetch<SessionContext>("/v1/session");
+      applySession(session);
+      if (portal === "system_admin") {
+        continueAfterSession(session.workspaces, preferredWorkspaceId(session.workspaces));
+      }
+    } catch (caught) {
+      setError(
+        caught instanceof ApiClientError && caught.status === 401
+          ? copy.sessionUnreadable
+          : copy.generic,
+      );
     } finally {
       setSubmitting(false);
     }
   }
+
+  const submitLabel = submitting
+    ? copy.working
+    : hasSession && needsWorkspace
+      ? selectedWorkspace
+        ? copy.enterWorkspace.replace("{workspace}", selectedWorkspace.name)
+        : copy.createFirstWorkspace
+      : copy.submitAs.replace("{role}", copy[activePortal.label]);
 
   return (
     <main className={styles.authShell}>
@@ -223,20 +297,52 @@ export function LoginForm() {
                 </div>
               </FieldError>
             </label>
+            {needsWorkspace ? (
+              <div className={styles.field}>
+                <span>{copy.selectWorkspace}</span>
+                <HaloSelect
+                  value={selectedWorkspaceId ?? ""}
+                  onValueChange={(next) => setSelectedWorkspaceId(next)}
+                  ariaLabel={copy.selectWorkspace}
+                  placeholder={
+                    hasSession && workspaces.length === 0
+                      ? copy.emptyWorkspaceList
+                      : copy.workspacePending
+                  }
+                  prefix={<Building2 size={16} />}
+                  disabled={!hasSession || workspaces.length === 0}
+                  options={workspaces.map((workspace) => ({
+                    value: workspace.id,
+                    label: workspace.name,
+                  }))}
+                />
+                {!hasSession ? (
+                  <small className={styles.fieldHint}>{copy.workspacePendingHint}</small>
+                ) : null}
+              </div>
+            ) : null}
             {error ? (
               <p className={styles.error} role="alert">
                 {error}
               </p>
             ) : null}
-            <button type="submit" className={styles.submit} disabled={submitting}>
+            <button
+              type="submit"
+              className={styles.submit}
+              disabled={
+                submitting ||
+                (needsWorkspace &&
+                  hasSession &&
+                  workspaces.length > 0 &&
+                  selectedWorkspaceId === null)
+              }
+            >
               {submitting ? (
                 <LoaderCircle size={18} className={styles.loadingMark} />
               ) : (
                 <ActiveIcon size={18} />
               )}
-              {submitting
-                ? copy.working
-                : copy.submitAs.replace("{role}", copy[activePortal.label])}
+              {submitLabel}
             </button>
           </form>
         </div>

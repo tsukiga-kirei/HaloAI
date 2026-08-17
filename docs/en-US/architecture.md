@@ -54,7 +54,7 @@ Raw chat history is not automatically promoted to durable memory.
 
 ### Foundation
 
-Next.js hosts the interface and the current BFF routes. PostgreSQL is the source of truth for login sessions, rooms, and messages. Local setup requires the database. `DEMO_MODE` controls seed data, not authentication bypass. The collaboration path persists human messages only; Agent streaming is not connected yet.
+Next.js hosts the interface and the current BFF routes. Browser authentication and session requests stay on the web origin and are rewritten to the API, so session cookies are not rejected as third-party across ports. PostgreSQL is the source of truth for login sessions, rooms, and messages. Local setup requires the database. `DEMO_MODE` controls seed data, not authentication bypass. The collaboration path persists human messages only; Agent streaming is not connected yet.
 
 Models are connected at the platform: system administrators maintain the catalog and allocate models to tenants. A workspace cannot connect a provider itself.
 

@@ -2,14 +2,16 @@
 
 import type { LucideIcon } from "lucide-react";
 import { PanelLeft } from "lucide-react";
+import type { SessionContext, WorkspaceSummary } from "@haloai/contracts";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { HaloMark } from "@/components/workspace/primitives";
 import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
+import { apiFetch } from "@/lib/api-client";
 import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 
@@ -40,8 +42,28 @@ export function ManagementShell({
   const [narrowNav, setNarrowNav] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
   const router = useRouter();
+  const [session, setSession] = useState<SessionContext | null>(null);
+  const workspaces = session?.workspaces ?? [];
+  const rememberedWorkspaceId =
+    typeof window === "undefined" ? null : window.localStorage.getItem("haloai.workspaceId");
+  const activeWorkspace =
+    workspaces.find((workspace) => workspace.id === rememberedWorkspaceId) ?? workspaces[0];
+  const profileName = session?.user.name ?? "HaloAI";
+  const profileInitials =
+    profileName
+      .split(/\s+/u)
+      .map((part) => part.slice(0, 1))
+      .join("")
+      .slice(0, 2)
+      .toLocaleUpperCase() || "HA";
   // 窄屏管理页必须展开文字分区栏；折叠轨会把链接收成图标，移动验收与横向浏览都会失败。
   const sidebarCollapsed = narrowNav ? false : collapsed;
+
+  useEffect(() => {
+    apiFetch<SessionContext>("/v1/session")
+      .then(setSession)
+      .catch(() => setSession(null));
+  }, []);
 
   useLayoutEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -125,14 +147,15 @@ export function ManagementShell({
         <div className="sidebar-footer">
           <AccountMenu
             open={menuOpen}
-            name="Andy Yang"
-            detail={workspaceName ?? dictionary.roleOwner}
-            initials="AY"
+            name={profileName}
+            detail={activeWorkspace?.name ?? workspaceName ?? dictionary.roleOwner}
+            initials={profileInitials}
             locale={locale}
             theme={theme}
             portal={portalKey}
             collapsed={sidebarCollapsed}
-            workspaces={[]}
+            workspaces={workspaces}
+            activeWorkspaceId={activeWorkspace?.id}
             labels={{
               personalSettings: dictionary.personalSettings,
               language: dictionary.changeLanguage,
@@ -140,7 +163,8 @@ export function ManagementShell({
               lightTheme: dictionary.lightTheme,
               darkTheme: dictionary.darkTheme,
               switchRole: dictionary.switchRole,
-              switchWorkspace: dictionary.workspaceScope,
+              switchWorkspace: dictionary.switchWorkspace,
+              emptyWorkspaceList: dictionary.emptyWorkspaceList,
               roleMember: dictionary.roleMember,
               roleWorkspaceAdmin: dictionary.roleWorkspaceAdmin,
               roleSystemAdmin: dictionary.roleSystemAdmin,
@@ -150,6 +174,10 @@ export function ManagementShell({
             onOpenChange={setMenuOpen}
             onToggleLocale={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
             onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+            onWorkspaceChange={(workspace: WorkspaceSummary) => {
+              window.localStorage.setItem("haloai.workspaceId", workspace.id);
+              window.location.reload();
+            }}
             onSignOut={signOut}
           />
         </div>

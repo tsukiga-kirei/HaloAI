@@ -71,6 +71,7 @@ export function AccountMenu({
     darkTheme: string;
     switchRole: string;
     switchWorkspace: string;
+    emptyWorkspaceList: string;
     roleMember: string;
     roleWorkspaceAdmin: string;
     roleSystemAdmin: string;
@@ -147,6 +148,7 @@ export function AccountMenu({
               {labels.theme}
               <small>{theme === "light" ? labels.lightTheme : labels.darkTheme}</small>
             </DropdownMenu.Item>
+            {/* 单空间选择已在登录页完成；个人设置只在多个工作区时提供切换。 */}
             {workspaces.length > 1 ? (
               <DropdownMenu.Sub>
                 <DropdownMenu.SubTrigger className="halo-menu-item">

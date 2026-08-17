@@ -11,9 +11,12 @@ export interface HaloSelectOption {
   icon?: ReactNode;
 }
 
+const emptyValue = "__halo-select-empty__";
+
 /**
  * 统一下拉：Radix 负责定位与键盘操作，样式只使用 Halo token。
  * 禁止再用原生 select，避免系统蓝底选项破坏产品外观。
+ * 必须始终受控；空选择用内部哨兵值，避免 Radix 把空字符串当成非法 Item。
  */
 export function HaloSelect({
   value,
@@ -40,7 +43,7 @@ export function HaloSelect({
     <>
       {name ? <input type="hidden" name={name} value={value} /> : null}
       <Select.Root
-        {...(value.length > 0 ? { value } : {})}
+        value={value.length > 0 ? value : emptyValue}
         onValueChange={onValueChange}
         disabled={disabled}
       >

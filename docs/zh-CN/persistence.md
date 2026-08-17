@@ -28,6 +28,8 @@ RLS 只是纵深防御。项目成员、房间成员、资源动作与 AI 能力
 ## 迁移规则
 
 - `packages/db/src/schema` 是类型化 schema 真源，`packages/db/drizzle` 保存可审查 SQL。
+- Schema 版本使用 Drizzle Kit 追加编号迁移（`0000_foundation.sql` 起），由 `pnpm db:migrate` 应用到 PostgreSQL，并记录在 `drizzle.__drizzle_migrations`。这不是 Flyway/Liquibase，也不是运行时切换数据库实例。
+- 本地虚拟数据使用另一套版本表 `haloai_devdata_revisions`，与结构迁移分离。
 - 迁移只向前追加；已进入共享环境的迁移不得改写。
 - 使用 expand、backfill、verify、contract 顺序处理不兼容变化。
 - 应用启动不得自动执行迁移；部署与迁移使用不同连接和生命周期。
