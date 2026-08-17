@@ -242,6 +242,18 @@
   color: var(--danger);
 }
 
+/* 短视口表单不能让浮层盖住下一字段；inline 变体保留气泡语义但参与正常布局。 */
+.halo-field-error.is-inline {
+  position: relative;
+  top: auto;
+  left: auto;
+  z-index: 1;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
 .halo-dialog-overlay {
   position: fixed;
   z-index: 200;
@@ -496,4 +508,13 @@
   background: var(--surface-raised);
   border-color: var(--accent-border);
   color: var(--accent);
+}
+
+/* max-content 的绝对定位提示没有可靠的容器宽度，需要以自身宽度向左平移一半才是真正的顶部居中。 */
+[data-sonner-toaster].halo-central-toaster [data-sonner-toast] {
+  right: auto;
+  left: 0;
+  width: max-content;
+  max-width: min(420px, calc(100vw - 32px));
+  translate: -50% 0;
 }

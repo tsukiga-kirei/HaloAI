@@ -16,7 +16,8 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { notifyError } from "@/components/toast-host";
 import { HaloMark } from "@/components/workspace/primitives";
 import { persistPortal, portalPath, WORKSPACE_STORAGE_KEY, type PortalKey } from "@/lib/portals";
 import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
@@ -24,6 +25,7 @@ import { FieldError } from "@/components/ui/field-error";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
 import { HaloSelect } from "@/components/ui/halo-select";
 import { authCopy, type AuthLocale } from "./auth-copy";
+import { animateLoginEntrance, animatePortalDescription } from "@/lib/motion";
 import styles from "./auth-shell.module.css";
 
 const fallbackPortal = {
@@ -67,11 +69,12 @@ export function LoginForm() {
   const [portal, setPortal] = useState<PortalKey>("member");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<"email" | "password" | null>(null);
   const [hasSession, setHasSession] = useState(false);
   const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
+  const shellRef = useRef<HTMLElement>(null);
+  const portalDescriptionRef = useRef<HTMLParagraphElement>(null);
   const copy = authCopy[locale];
   const activePortal = portals.find((item) => item.key === portal) ?? fallbackPortal;
   const ActiveIcon = activePortal.icon;
@@ -80,6 +83,18 @@ export function LoginForm() {
   // 系统管理不绑定具体工作区；协作成员和空间管理在账号密码下方选择工作区。
   const needsWorkspace = portal !== "system_admin";
 
+  useLayoutEffect(() => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    return animateLoginEntrance(shell);
+  }, []);
+
+  useLayoutEffect(() => {
+    const description = portalDescriptionRef.current;
+    if (!description) return;
+    return animatePortalDescription(description);
+  }, [portal]);
+
   useEffect(() => {
     const saved = window.localStorage.getItem("haloai.locale");
     if (saved === "zh-CN" || saved === "en-US") setLocale(saved);
@@ -87,7 +102,6 @@ export function LoginForm() {
 
   useEffect(() => {
     setFieldError(null);
-    setError(null);
   }, [portal]);
 
   useEffect(() => {
@@ -145,7 +159,6 @@ export function LoginForm() {
       return;
     }
     setSubmitting(true);
-    setError(null);
     setFieldError(null);
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") ?? "").trim();
@@ -168,7 +181,7 @@ export function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
       if (!response.ok) {
-        setError(copy.invalid);
+        notifyError(copy.invalid, "login-error");
         return;
       }
       const session = await apiFetch<SessionContext>("/v1/session");
@@ -177,10 +190,11 @@ export function LoginForm() {
         continueAfterSession(session.workspaces, preferredWorkspaceId(session.workspaces));
       }
     } catch (caught) {
-      setError(
+      notifyError(
         caught instanceof ApiClientError && caught.status === 401
           ? copy.sessionUnreadable
           : copy.generic,
+        "login-error",
       );
     } finally {
       setSubmitting(false);
@@ -196,157 +210,157 @@ export function LoginForm() {
       : copy.submitAs.replace("{role}", copy[activePortal.label]);
 
   return (
-    <main className={styles.authShell}>
-      <section className={styles.storyPanel} aria-label={copy.eyebrow}>
-        <div className={styles.storyInner}>
-          <div className={styles.brand}>
-            <HaloMark size="brand" />
-            <strong>HaloAI</strong>
+    <main className={styles.authShell} ref={shellRef}>
+      <div className={styles.authFrame}>
+        <section className={styles.storyPanel} aria-label={copy.eyebrow}>
+          <div className={styles.storyInner}>
+            <div className={styles.brand} data-motion="login-brand">
+              <HaloMark size="brand" />
+              <strong>HaloAI</strong>
+            </div>
+            <div className={styles.storyCopy} data-motion="login-story">
+              <span className={styles.eyebrow}>{copy.eyebrow}</span>
+              <h1>{copy.title}</h1>
+              <p>{copy.description}</p>
+              <ul className={styles.benefits}>
+                {copy.benefits.map((benefit) => (
+                  <li key={benefit}>
+                    <span className={styles.benefitIcon}>
+                      <ShieldCheck size={16} />
+                    </span>
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <small className={styles.storyFooter}>HaloAI · Teams and AI, working as one</small>
           </div>
-          <div className={styles.storyCopy}>
-            <span className={styles.eyebrow}>{copy.eyebrow}</span>
-            <h1>{copy.title}</h1>
-            <p>{copy.description}</p>
-            <ul className={styles.benefits}>
-              {copy.benefits.map((benefit) => (
-                <li key={benefit}>
-                  <span className={styles.benefitIcon}>
-                    <ShieldCheck size={16} />
-                  </span>
-                  {benefit}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <small className={styles.storyFooter}>HaloAI · Teams and AI, working as one</small>
-        </div>
-      </section>
+        </section>
 
-      <section className={styles.formPanel}>
-        <button
-          type="button"
-          className={styles.languageButton}
-          onClick={() => {
-            const next = locale === "zh-CN" ? "en-US" : "zh-CN";
-            setLocale(next);
-            window.localStorage.setItem("haloai.locale", next);
-            document.documentElement.lang = next;
-          }}
-        >
-          <Languages size={16} /> {copy.language}
-        </button>
-        <div className={styles.formCard} data-portal={portal}>
-          <h2>{copy.welcome}</h2>
-          <p className={styles.formLead}>{copy.welcomeDetail}</p>
-          <HaloSegmented
-            fill
-            ariaLabel={copy.selectIdentity}
-            value={portal}
-            items={portals.map((item) => ({
-              value: item.key,
-              label: copy[item.label],
-              icon: item.icon,
-            }))}
-            onChange={(next) => {
-              setPortal(next);
+        <section className={styles.formPanel}>
+          <button
+            type="button"
+            className={styles.languageButton}
+            onClick={() => {
+              const next = locale === "zh-CN" ? "en-US" : "zh-CN";
+              setLocale(next);
+              window.localStorage.setItem("haloai.locale", next);
+              document.documentElement.lang = next;
             }}
-          />
-          <p className={styles.portalDesc}>
-            <span className={`${styles.portalDot} ${styles[`dot-${portal}`]}`} />
-            {copy[activePortal.description]}
-          </p>
-          <form className={styles.form} noValidate onSubmit={(event) => void submit(event)}>
-            <label className={styles.field}>
-              <span>{copy.email}</span>
-              <FieldError open={fieldError === "email"} message={copy.emailInvalid}>
-                <div className={styles.inputWrap}>
-                  <Mail size={16} />
-                  <input
-                    name="email"
-                    type="text"
-                    inputMode="email"
-                    autoComplete="email"
-                    maxLength={320}
-                    placeholder={copy.emailPlaceholder}
-                    onChange={() => setFieldError(null)}
+          >
+            <Languages size={16} /> {copy.language}
+          </button>
+          <div className={styles.formCard} data-portal={portal} data-motion="login-panel">
+            <h2>{copy.welcome}</h2>
+            <p className={styles.formLead}>{copy.welcomeDetail}</p>
+            <div data-motion="login-control">
+              <HaloSegmented
+                fill
+                ariaLabel={copy.selectIdentity}
+                value={portal}
+                items={portals.map((item) => ({
+                  value: item.key,
+                  label: copy[item.label],
+                  icon: item.icon,
+                }))}
+                onChange={(next) => {
+                  setPortal(next);
+                }}
+              />
+            </div>
+            <p className={styles.portalDesc} ref={portalDescriptionRef}>
+              <span className={`${styles.portalDot} ${styles[`dot-${portal}`]}`} />
+              {copy[activePortal.description]}
+            </p>
+            <form className={styles.form} noValidate onSubmit={(event) => void submit(event)}>
+              <label className={styles.field} data-motion="login-control">
+                <span>{copy.email}</span>
+                <FieldError inline open={fieldError === "email"} message={copy.emailInvalid}>
+                  <div className={styles.inputWrap}>
+                    <Mail size={16} />
+                    <input
+                      name="email"
+                      type="text"
+                      inputMode="email"
+                      autoComplete="email"
+                      maxLength={320}
+                      placeholder={copy.emailPlaceholder}
+                      onChange={() => setFieldError(null)}
+                    />
+                  </div>
+                </FieldError>
+              </label>
+              <label className={styles.field} data-motion="login-control">
+                <span>{copy.password}</span>
+                <FieldError inline open={fieldError === "password"} message={copy.passwordRequired}>
+                  <div className={styles.inputWrap}>
+                    <LockKeyhole size={16} />
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      maxLength={128}
+                      placeholder={copy.passwordPlaceholder}
+                      onChange={() => setFieldError(null)}
+                    />
+                    <button
+                      type="button"
+                      className={styles.passwordToggle}
+                      onClick={() => setShowPassword((current) => !current)}
+                      aria-label={showPassword ? copy.hidePassword : copy.showPassword}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </FieldError>
+              </label>
+              {needsWorkspace ? (
+                <div className={styles.field} data-motion="login-control">
+                  <span>{copy.selectWorkspace}</span>
+                  <HaloSelect
+                    value={selectedWorkspaceId ?? ""}
+                    onValueChange={(next) => setSelectedWorkspaceId(next)}
+                    ariaLabel={copy.selectWorkspace}
+                    placeholder={
+                      hasSession && workspaces.length === 0
+                        ? copy.emptyWorkspaceList
+                        : copy.workspacePending
+                    }
+                    prefix={<Building2 size={16} />}
+                    disabled={!hasSession || workspaces.length === 0}
+                    options={workspaces.map((workspace) => ({
+                      value: workspace.id,
+                      label: workspace.name,
+                    }))}
                   />
+                  {!hasSession ? (
+                    <small className={styles.fieldHint}>{copy.workspacePendingHint}</small>
+                  ) : null}
                 </div>
-              </FieldError>
-            </label>
-            <label className={styles.field}>
-              <span>{copy.password}</span>
-              <FieldError open={fieldError === "password"} message={copy.passwordRequired}>
-                <div className={styles.inputWrap}>
-                  <LockKeyhole size={16} />
-                  <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    maxLength={128}
-                    placeholder={copy.passwordPlaceholder}
-                    onChange={() => setFieldError(null)}
-                  />
-                  <button
-                    type="button"
-                    className={styles.passwordToggle}
-                    onClick={() => setShowPassword((current) => !current)}
-                    aria-label={showPassword ? copy.hidePassword : copy.showPassword}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </FieldError>
-            </label>
-            {needsWorkspace ? (
-              <div className={styles.field}>
-                <span>{copy.selectWorkspace}</span>
-                <HaloSelect
-                  value={selectedWorkspaceId ?? ""}
-                  onValueChange={(next) => setSelectedWorkspaceId(next)}
-                  ariaLabel={copy.selectWorkspace}
-                  placeholder={
-                    hasSession && workspaces.length === 0
-                      ? copy.emptyWorkspaceList
-                      : copy.workspacePending
-                  }
-                  prefix={<Building2 size={16} />}
-                  disabled={!hasSession || workspaces.length === 0}
-                  options={workspaces.map((workspace) => ({
-                    value: workspace.id,
-                    label: workspace.name,
-                  }))}
-                />
-                {!hasSession ? (
-                  <small className={styles.fieldHint}>{copy.workspacePendingHint}</small>
-                ) : null}
-              </div>
-            ) : null}
-            {error ? (
-              <p className={styles.error} role="alert">
-                {error}
-              </p>
-            ) : null}
-            <button
-              type="submit"
-              className={styles.submit}
-              disabled={
-                submitting ||
-                (needsWorkspace &&
-                  hasSession &&
-                  workspaces.length > 0 &&
-                  selectedWorkspaceId === null)
-              }
-            >
-              {submitting ? (
-                <LoaderCircle size={18} className={styles.loadingMark} />
-              ) : (
-                <ActiveIcon size={18} />
-              )}
-              {submitLabel}
-            </button>
-          </form>
-        </div>
-      </section>
+              ) : null}
+              <button
+                type="submit"
+                className={styles.submit}
+                data-motion="login-control"
+                disabled={
+                  submitting ||
+                  (needsWorkspace &&
+                    hasSession &&
+                    workspaces.length > 0 &&
+                    selectedWorkspaceId === null)
+                }
+              >
+                {submitting ? (
+                  <LoaderCircle size={18} className={styles.loadingMark} />
+                ) : (
+                  <ActiveIcon size={18} />
+                )}
+                {submitLabel}
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
