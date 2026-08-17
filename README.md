@@ -60,24 +60,24 @@ Create a workspace and project room
 
 HaloAI is currently in the **Foundation / specification and framework phase**. Existing code validates the TypeScript architecture, authorization policy, event streaming, and responsive workspace. Interfaces and package boundaries may change until the product, domain, security, and UX specifications are reviewed.
 
-| Area                                       | Status                  | Notes                                                                                                  |
-| ------------------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| Product, UX, security, architecture specs  | Draft 0.1 complete      | Full English/Chinese pairs with acceptance gates                                                       |
-| pnpm TypeScript workspace                  | Established             | Strict types and independent domain packages                                                           |
-| Actor / Role / AgentProfile                | Foundation implemented  | Identity, authority, persona, membership separated                                                     |
-| Authorization policy and tests             | Foundation implemented  | Fail-closed server policy with delegation intersection                                                 |
-| API and durable worker                     | Framework implemented   | Fastify boundary, resumable SSE, Graphile task boundary                                                |
-| Database schema                            | Foundation implemented  | Tenant-explicit collaboration, runtime and governance tables                                           |
-| Responsive workspace                       | Foundation implemented  | Room search/create/switching, isolated messages, SSE replies, document versions, themes, mobile layout |
-| Collaboration and workspace administration | Alpha shell implemented | Separate `/app` and `/admin/*` shells, server guards, bilingual copy, and mobile layouts               |
-| CRDT collaboration service                 | Foundation implemented  | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                          |
-| Provider-neutral model boundary            | Foundation implemented  | Streaming protocol and demo adapter; no live provider yet                                              |
-| Real authentication and persistence        | Alpha connected         | Secure cookie sessions, sign-in, workspace onboarding, invitations, and role protection are connected  |
-| Rich-text editor and durable CRDT storage  | Not started             | Web/PostgreSQL integration in Team Beta                                                                |
+| Area                                       | Status                  | Notes                                                                                                 |
+| ------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| Product, UX, security, architecture specs  | Draft 0.1 complete      | Full English/Chinese pairs with acceptance gates                                                      |
+| pnpm TypeScript workspace                  | Established             | Strict types and independent domain packages                                                          |
+| Actor / Role / AgentProfile                | Foundation implemented  | Identity, authority, persona, membership separated                                                    |
+| Authorization policy and tests             | Foundation implemented  | Fail-closed server policy with delegation intersection                                                |
+| API and durable worker                     | Framework implemented   | Fastify boundary, resumable SSE, Graphile task boundary                                               |
+| Database schema                            | Foundation implemented  | Tenant-explicit collaboration, runtime and governance tables                                          |
+| Responsive workspace                       | Foundation implemented  | Authenticated room search/create/switching, persisted messages, themes, mobile layout                 |
+| Collaboration and workspace administration | Alpha shell implemented | Separate `/app` and `/admin/*` shells, server guards, bilingual copy, and mobile layouts              |
+| CRDT collaboration service                 | Foundation implemented  | Yjs/Hocuspocus transport, ticket auth, revocation reconnect, persistence port                         |
+| Provider-neutral model boundary            | Foundation implemented  | Streaming protocol and demo adapter; no live provider yet                                             |
+| Real authentication and persistence        | Alpha connected         | Secure cookie sessions, sign-in, workspace onboarding, invitations, and role protection are connected |
+| Rich-text editor and durable CRDT storage  | Not started             | Web/PostgreSQL integration in Team Beta                                                               |
 
 > The current demo runtime calls no real model or external tool. It needs no API key and is not a claim of production readiness.
 
-The current UI is not a static mock. Real mode now connects sign-up and sign-in, revocable database sessions, first-workspace creation, workspace switching, email-bound invitations, invitation acceptance, member listing, and role changes. The application transaction and a deferred database constraint both protect the final Owner. Rooms, messages, and document content in `/app` still use browser demo state, with demo replies streamed through a server route over SSE; reloading resets that slice. Actions without a backend show an explicit phase notice instead of silently doing nothing or pretending to succeed.
+Real mode connects sign-up and sign-in, revocable database sessions, first-workspace creation, workspace switching, email-bound invitations, invitation acceptance, member listing, and role changes. The application transaction and a deferred database constraint both protect the final Owner. Local `DEMO_MODE=true` writes hashed seed accounts and collaboration fixtures into PostgreSQL; the web app no longer ships browser-side fake rooms, fake messages, or sample administration numbers. Sending a message persists through the API. Agent replies are not connected yet. Document bodies remain metadata-only until the editor lands.
 
 ## Technology direction
 
@@ -189,24 +189,26 @@ Policy currently lives in `packages/core`; locale messages and visual primitives
 - pnpm 9+
 - Git
 
-The default Web/API demo requires no Docker, PostgreSQL, or model key. The worker and persistence flow require PostgreSQL.
-
 ### Install and run
+
+The default local loop requires PostgreSQL. Install dependencies and copy environment values once; after that a single command starts the database, migrates/seeds, and opens Web plus API.
 
 ```bash
 git clone <your-repository-url>
 cd HaloAI
 pnpm install
-pnpm dev
+cp .env.example .env.local
+pnpm dev:local
 ```
 
-Open `http://localhost:3000`.
+Open `http://127.0.0.1:3000` and sign in with a local seed account such as `owner@haloai.dev`. The initial password is documented only in `packages/db/devdata/README.md`. Empty email or password can no longer enter the workspace.
 
-To exercise the durable worker and persistence boundary, start the local PostgreSQL service first:
+`pnpm db:migrate` applies table structure only. `pnpm db:seed` writes `packages/db/devdata` when `DEMO_MODE=true`. Production must keep that switch off.
+
+To also run the CRDT service and durable worker:
 
 ```bash
-pnpm infra:up
-pnpm dev:all
+pnpm dev:local:all
 ```
 
 `pnpm infra:down` stops the local service without deleting its named data volume.
@@ -217,19 +219,20 @@ pnpm dev:all
 cp .env.example .env.local
 ```
 
-| Variable                                             | Required           | Purpose                                                                             |
-| ---------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`           | Optional           | API binding and exact browser origin                                                |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`  | Optional           | CRDT endpoint and exact WebSocket origin                                            |
-| `DEMO_*`                                             | Collaboration demo | Fixed local ticket, actor, workspace, document, and access; forbidden in production |
-| `DATABASE_URL`                                       | Worker             | Server-only PostgreSQL application connection                                       |
-| `AUTH_DATABASE_URL`                                  | API                | Authentication-only role for users, accounts, sessions, and verifications           |
-| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`               | API                | Public auth origin and a server-only secret of at least 32 characters               |
-| `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_AUTH_MODE` | Web                | Browser API endpoint and `real` / `demo` runtime mode                               |
-| `DATABASE_ADMIN_URL`                                 | Migration          | Migration process only; forbidden in API, Web, and Worker request paths             |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`      | Integration tests  | PostgreSQL security tests in local development and CI                               |
-| `OPENAI_API_KEY`                                     | Optional           | Read by the server-side provider adapter when enabled                               |
-| `ANTHROPIC_API_KEY`                                  | Optional           | Read by the server-side provider adapter when enabled                               |
+| Variable                                            | Required            | Purpose                                                                                         |
+| --------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional            | API binding and exact browser origin                                                            |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional            | CRDT endpoint and exact WebSocket origin                                                        |
+| `DEMO_MODE`                                         | Local seed / collab | Loads `packages/db/devdata` and collab demo tickets; never skips login; forbidden in production |
+| `DEMO_TOKEN` / `DEMO_*`                             | Collaboration demo  | Fixed local ticket, actor, workspace, document, and access; requires `DEMO_MODE=true`           |
+| `DATABASE_URL`                                      | Worker              | Server-only PostgreSQL application connection                                                   |
+| `AUTH_DATABASE_URL`                                 | API                 | Authentication-only role for users, accounts, sessions, and verifications                       |
+| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`              | API                 | Public auth origin and a server-only secret of at least 32 characters                           |
+| `NEXT_PUBLIC_API_BASE_URL`                          | Web                 | Browser API origin; keep the same hostname as `API_WEB_ORIGIN`                                  |
+| `DATABASE_ADMIN_URL`                                | Migration           | Migration process only; forbidden in API, Web, and Worker request paths                         |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | Integration tests   | PostgreSQL security tests in local development and CI                                           |
+| `OPENAI_API_KEY`                                    | Optional            | Read by the server-side provider adapter when enabled                                           |
+| `ANTHROPIC_API_KEY`                                 | Optional            | Read by the server-side provider adapter when enabled                                           |
 
 Run `pnpm dev:all` only after PostgreSQL is available and `.env.local` exists; it starts the API, collaboration service, and durable worker together.
 
@@ -238,14 +241,18 @@ Never commit real workspace keys or put them in browsers, prompts, or ordinary l
 ## Commands
 
 ```bash
-pnpm dev          # Start the web development environment
+pnpm dev:local    # Start PostgreSQL, migrate/seed, then open Web and API
+pnpm dev:local:all # Same, plus the CRDT service and durable worker
+pnpm dev          # Start Web and API only (database must already be ready)
 pnpm dev:collab   # Start the CRDT service (complete demo config required)
-pnpm infra:up     # Start local PostgreSQL 18
-pnpm db:migrate   # Apply pending migrations with the separate migration connection
+pnpm infra:up     # Start local PostgreSQL 18 and wait until it is healthy
+pnpm db:migrate   # Apply schema migrations with the separate migration connection
+pnpm db:seed      # Load local virtual data when DEMO_MODE=true
+pnpm db:setup     # Migrate, then seed when DEMO_MODE=true
 pnpm db:test:integration # Verify RLS, idempotency, revocation, and tenant isolation
 pnpm typecheck    # Type-check every workspace package
 pnpm test         # Run domain and runtime tests
-pnpm test:e2e     # Verify desktop, mobile, theme, locale, and SSE flows
+pnpm test:e2e     # Verify desktop, mobile, theme, locale, and collaboration flows
 pnpm build        # Build every workspace package
 pnpm check        # Check docs, formatting, types, unit tests, and builds
 pnpm check:all    # Add browser end-to-end acceptance to the full check

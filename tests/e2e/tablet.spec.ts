@@ -27,7 +27,7 @@ test.describe("平板工作台", () => {
     await expect(document).toBeVisible();
     await expect(conversation).toBeHidden();
     await expect(
-      page.getByRole("heading", { level: 2, name: "HaloAI 内测发布提案" }),
+      page.getByText("当前文档仅保存名称、归属和状态，正文编辑将在后续需求明确后接入。"),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });

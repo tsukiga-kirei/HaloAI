@@ -66,4 +66,4 @@ RLS is defense in depth. Project membership, room membership, resource actions, 
 
 ## Current boundary
 
-This stage delivers the database client, migration path, tenant transaction wrapper, and project, room, and message repositories. Trusted session resolution, workspace provisioning, HTTP endpoints, and replacement of frontend demo state form the next internal-alpha vertical slice.
+This stage delivers the database client, migration path, tenant transaction wrapper, project/room/message repositories, and HTTP APIs for the collaboration snapshot and appending messages. Schema SQL stays in `packages/db/drizzle`. Local virtual data lives in `packages/db/devdata` and is applied only when `DEMO_MODE=true` via `pnpm db:seed`. The web app no longer ships fake rooms, fake messages, or sample administration numbers; sign-in must verify hashed passwords through the authentication component.

@@ -1,6 +1,7 @@
 import {
   AddProjectMemberInputSchema,
   AddRoomMemberInputSchema,
+  AppendRoomMessageInputSchema,
   CreateDocumentInputSchema,
   CreateProjectInputSchema,
   CreateRoomInputSchema,
@@ -14,7 +15,9 @@ import {
   type ProjectMemberView,
   type ProjectWithRole,
   type RoomWithParticipantCount,
+  type StoredActor,
   type StoredDocument,
+  type StoredMessage,
   type StoredProject,
   type StoredRoom,
   withWorkspaceTransaction,
@@ -79,6 +82,29 @@ function serializeProjectMember(member: ProjectMemberView) {
   };
 }
 
+function serializeParticipant(actor: StoredActor) {
+  return {
+    id: actor.id,
+    workspaceId: actor.workspaceId,
+    kind: actor.kind,
+    displayName: actor.displayName,
+    handle: actor.handle,
+    status: actor.status,
+  };
+}
+
+function serializeMessage(message: StoredMessage) {
+  return {
+    id: message.id,
+    workspaceId: message.workspaceId,
+    roomId: message.roomId,
+    authorActorId: message.authorActorId,
+    sequence: message.sequence,
+    parts: message.parts,
+    createdAt: message.createdAt.toISOString(),
+  };
+}
+
 function serializeDocument(
   document: DocumentView | (StoredDocument & { ownerDisplayName: string }),
 ) {
@@ -139,10 +165,16 @@ export async function registerCollaborationRoutes(
         const projects = await repository.listProjects();
         const rooms = await repository.listRooms();
         const documents = await repository.listDocuments();
+        const participants = await repository.listActors();
+        const messages = (
+          await Promise.all(rooms.map((room) => repository.listMessages(room.id, { limit: 100 })))
+        ).flatMap((page) => page.items);
         return {
           projects: projects.map(serializeProject),
           rooms: rooms.map(serializeRoom),
           documents: documents.map(serializeDocument),
+          participants: participants.map(serializeParticipant),
+          messages: messages.map(serializeMessage),
         };
       });
       reply.header("cache-control", "no-store");
@@ -243,6 +275,22 @@ export async function registerCollaborationRoutes(
         ),
       );
       return { document };
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string; roomId: string } }>(
+    "/v1/workspaces/:workspaceId/rooms/:roomId/messages",
+    async (request, reply) => {
+      const input = AppendRoomMessageInputSchema.parse(request.body);
+      const message = await execute(request, request.params.workspaceId, async (repository) => {
+        const result = await repository.appendMessage({
+          roomId: request.params.roomId,
+          clientMutationId: input.clientMutationId,
+          parts: [{ type: "text", data: { text: input.content } }],
+        });
+        return serializeMessage(result.message);
+      });
+      return reply.status(201).send({ message });
     },
   );
 }

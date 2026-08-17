@@ -3,7 +3,6 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { z } from "zod";
 import type {
   AuthenticatedUser,
   CreateDocumentInput,
@@ -11,6 +10,7 @@ import type {
   CreateRoomInput,
   DocumentSummary,
   ProjectSummary,
+  RoomMessageSummary,
   RoomSummary,
   WorkspaceCollaborationSnapshot,
   WorkspaceSummary,
@@ -20,31 +20,16 @@ import { clearClientPortalSession } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import { notify } from "@/components/toast-host";
 import { ConversationPanel } from "./workspace/conversation-panel";
-import { demoParticipants } from "./workspace/demo-data";
 import { DocumentPanel } from "./workspace/document-panel";
 import { DocumentDialog } from "./workspace/document-dialog";
 import { MemberDialog } from "./workspace/member-dialog";
 import { MobileNavigation } from "./workspace/navigation";
 import { RoomDialog } from "./workspace/room-dialog";
 import { ProjectDialog } from "./workspace/project-dialog";
-import type {
-  DisplayMessage,
-  DocumentTab,
-  MobileView,
-  Participant,
-  RoleKey,
-  WorkspaceSection,
-} from "./workspace/types";
+import type { DisplayMessage, DocumentTab, MobileView, WorkspaceSection } from "./workspace/types";
 import { WorkspaceHub } from "./workspace/workspace-hub";
 import { WorkspaceSidebar } from "./workspace/workspace-sidebar";
 import { useWorkspaceEntities } from "./workspace/use-workspace-entities";
-
-const streamEventSchema = z.object({
-  type: z.string().min(1),
-  sequence: z.number().int().positive().optional(),
-  delta: z.string().optional(),
-  code: z.string().optional(),
-});
 
 export function HaloWorkspace({
   identity,
@@ -56,6 +41,7 @@ export function HaloWorkspace({
   onCreateProject,
   onCreateRoom,
   onCreateDocument,
+  onAppendMessage,
 }: {
   identity?: AuthenticatedUser | undefined;
   workspaces?: readonly WorkspaceSummary[];
@@ -67,11 +53,15 @@ export function HaloWorkspace({
   onCreateRoom?: ((projectId: string, input: CreateRoomInput) => Promise<RoomSummary>) | undefined;
   onCreateDocument?:
     ((projectId: string, input: CreateDocumentInput) => Promise<DocumentSummary>) | undefined;
+  onAppendMessage?:
+    | ((
+        roomId: string,
+        input: { content: string; clientMutationId: string },
+      ) => Promise<RoomMessageSummary>)
+    | undefined;
 } = {}) {
   const router = useRouter();
-  const durableMode = collaboration !== undefined;
-  const canCreateProject =
-    !durableMode || activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin";
+  const canCreateProject = activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin";
   const {
     locale,
     setLocale,
@@ -83,34 +73,12 @@ export function HaloWorkspace({
     sidebarMotion,
   } = useShellPreferences();
   const [mobileView, setMobileView] = useState<MobileView>("chat");
-  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>(
-    durableMode ? "overview" : "room",
-  );
+  const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("room");
   const [documentTab, setDocumentTab] = useState<DocumentTab>("document");
-  const [participants, setParticipants] = useState<Participant[]>(() =>
-    durableMode
-      ? identity && activeWorkspace
-        ? [
-            {
-              id: activeWorkspace.actorId,
-              name: identity.name,
-              roleKey: "roleProductLead",
-              initials: identity.name.slice(0, 2).toLocaleUpperCase(),
-              color: "ink",
-              kind: "human",
-              online: true,
-            },
-          ]
-        : []
-      : demoParticipants,
-  );
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [memberDialogOpen, setMemberDialogOpen] = useState(false);
   const [newMemberKind, setNewMemberKind] = useState<"human" | "agent">("agent");
-  const [suggestionApplied, setSuggestionApplied] = useState(false);
-  const [documentDirty, setDocumentDirty] = useState(false);
-  const [documentVersion, setDocumentVersion] = useState(3);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
   const dictionary = useMemo(() => getDictionary(locale), [locale]);
   const {
@@ -118,6 +86,7 @@ export function HaloWorkspace({
     documentDialogOpen,
     documents,
     messagesByRoom,
+    participants,
     projectDialogOpen,
     projects,
     roomDialogOpen,
@@ -136,6 +105,7 @@ export function HaloWorkspace({
   } = useWorkspaceEntities({
     collaboration,
     dictionary,
+    locale,
     onCreateProject,
     onCreateRoom,
     onCreateDocument,
@@ -148,9 +118,7 @@ export function HaloWorkspace({
   });
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
   const activeMessages = messagesByRoom[activeRoomId] ?? [];
-  const roomTitle =
-    activeRoom?.name ??
-    (activeRoom?.nameKey === undefined ? dictionary.roomLaunch : dictionary[activeRoom.nameKey]);
+  const roomTitle = activeRoom?.name ?? "";
   const roomGoal = activeRoom?.goal ?? "";
   const peopleCount = participants.filter((participant) => participant.kind === "human").length;
   const agentCount = participants.length - peopleCount;
@@ -166,25 +134,6 @@ export function HaloWorkspace({
       block: "end",
     });
   }, [activeMessages]);
-
-  useEffect(() => {
-    if (collaboration !== undefined) setWorkspaceSection("overview");
-  }, [collaboration]);
-
-  useEffect(() => {
-    if (!durableMode || !identity || !activeWorkspace) return;
-    setParticipants([
-      {
-        id: activeWorkspace.actorId,
-        name: identity.name,
-        roleKey: "roleProductLead",
-        initials: identity.name.slice(0, 2).toLocaleUpperCase(),
-        color: "ink",
-        kind: "human",
-        online: true,
-      },
-    ]);
-  }, [activeWorkspace, durableMode, identity]);
 
   useEffect(() => {
     if (!memberDialogOpen && !roomDialogOpen && !projectDialogOpen && !documentDialogOpen) return;
@@ -204,8 +153,7 @@ export function HaloWorkspace({
   const toggleTheme = () => setTheme((current) => (current === "light" ? "dark" : "light"));
 
   /**
-   * Foundation Demo ???? SSE ????????? JSON?????????????
-   * ???????????? Last-Event-ID ???????????????????????
+   * 人类消息写入协作 API 后立即展示。Agent 运行尚未接入，禁止再请求本地演示模型。
    */
   function updateRoomMessages(
     roomId: string,
@@ -217,105 +165,53 @@ export function HaloWorkspace({
     }));
   }
 
-  async function streamAgentReply(message: string, roomId: string): Promise<void> {
-    const replyId = crypto.randomUUID();
-    const pendingReply: DisplayMessage = {
-      id: replyId,
-      authorId: "halo",
-      authorName: "Halo",
-      roleKey: "roleFacilitator",
-      body: "",
-      time: new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
-        new Date(),
-      ),
-      ai: true,
-      color: "halo",
-      initials: "H",
-      pending: true,
-    };
+  async function submitMessage(): Promise<void> {
+    const trimmed = input.trim();
+    if (trimmed.length === 0 || isStreaming) return;
+    if (!onAppendMessage) {
+      notify(dictionary.errorReply);
+      return;
+    }
 
-    updateRoomMessages(roomId, (current) => [...current, pendingReply]);
+    const roomId = activeRoomId;
+    const authorName = identity?.name ?? dictionary.messageYou;
+    const authorInitials =
+      authorName
+        .split(/\s+/u)
+        .map((part) => part.slice(0, 1))
+        .join("")
+        .slice(0, 2)
+        .toLocaleUpperCase() || "HA";
+    const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
+      new Date(),
+    );
+
     setIsStreaming(true);
-
     try {
-      const response = await fetch("/api/demo-agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, locale }),
+      const persisted = await onAppendMessage(roomId, {
+        content: trimmed,
+        clientMutationId: crypto.randomUUID(),
       });
-      if (!response.ok || response.body === null) throw new Error("STREAM_UNAVAILABLE");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let lastSequence = 0;
-
-      while (true) {
-        const result = await reader.read();
-        if (result.done) break;
-        buffer += decoder.decode(result.value, { stream: true });
-        const frames = buffer.split("\n\n");
-        buffer = frames.pop() ?? "";
-
-        for (const frame of frames) {
-          const dataLine = frame.split("\n").find((line) => line.startsWith("data: "));
-          if (dataLine === undefined) continue;
-          const event = streamEventSchema.parse(JSON.parse(dataLine.slice(6)));
-          if (event.sequence !== undefined) {
-            if (event.sequence <= lastSequence) continue;
-            if (event.sequence !== lastSequence + 1) throw new Error("EVENT_SEQUENCE_GAP");
-            lastSequence = event.sequence;
-          }
-          if (event.type === "message.delta" && event.delta !== undefined) {
-            updateRoomMessages(roomId, (current) =>
-              current.map((item) =>
-                item.id === replyId ? { ...item, body: `${item.body ?? ""}${event.delta}` } : item,
-              ),
-            );
-          }
-          if (event.type === "run.failed") throw new Error(event.code ?? "RUN_FAILED");
-        }
-      }
-
+      const userMessage: DisplayMessage = {
+        id: persisted.id,
+        authorId: persisted.authorActorId,
+        authorName,
+        roleKey: "roleProductLead",
+        body: trimmed,
+        time,
+        ai: false,
+        color: "ink",
+        initials: authorInitials,
+      };
       updateRoomMessages(roomId, (current) =>
-        current.map((item) => (item.id === replyId ? { ...item, pending: false } : item)),
+        current.some((item) => item.id === userMessage.id) ? current : [...current, userMessage],
       );
+      setInput("");
     } catch {
-      updateRoomMessages(roomId, (current) =>
-        current.map((item) =>
-          item.id === replyId ? { ...item, body: dictionary.errorReply, pending: false } : item,
-        ),
-      );
+      notify(dictionary.errorReply);
     } finally {
       setIsStreaming(false);
     }
-  }
-
-  async function submitMessage(): Promise<void> {
-    if (durableMode) {
-      notify(dictionary.durableDataBoundary);
-      return;
-    }
-    const trimmed = input.trim();
-    if (trimmed.length === 0 || isStreaming) return;
-
-    const userMessage: DisplayMessage = {
-      id: crypto.randomUUID(),
-      authorId: "you",
-      nameKey: "messageYou",
-      roleKey: "roleProductLead",
-      body: trimmed,
-      time: new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
-        new Date(),
-      ),
-      ai: false,
-      color: "ink",
-      initials: "AY",
-    };
-    const roomId = activeRoomId;
-    updateRoomMessages(roomId, (current) => [...current, userMessage]);
-    setInput("");
-    await streamAgentReply(trimmed, roomId);
   }
 
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>): void {
@@ -327,24 +223,8 @@ export function HaloWorkspace({
 
   function handleAddMember(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const name = String(form.get("name") ?? "").trim();
-    if (name.length === 0) return;
-    const roleKey: RoleKey = newMemberKind === "agent" ? "roleResearchAgent" : "roleProductLead";
-    setParticipants((current) => [
-      ...current,
-      {
-        id: crypto.randomUUID(),
-        name,
-        roleKey,
-        initials: name.slice(0, 2).toLocaleUpperCase(),
-        color: newMemberKind === "agent" ? "mint" : "amber",
-        kind: newMemberKind,
-        online: true,
-      },
-    ]);
     setMemberDialogOpen(false);
-    notify(dictionary.teammateAdded);
+    notify(dictionary.memberInvitePending);
   }
 
   function selectRoom(roomId: string): void {
@@ -390,10 +270,7 @@ export function HaloWorkspace({
         activeRoomId={activeRoomId}
         onRoomSelect={selectRoom}
         onCreateRoom={requestCreateRoom}
-        onOpenMemberDialog={() =>
-          durableMode ? notify(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
-        }
-        onNotify={notify}
+        onOpenMemberDialog={() => setMemberDialogOpen(true)}
         identity={identity}
         workspaces={workspaces}
         activeWorkspace={activeWorkspace}
@@ -434,32 +311,14 @@ export function HaloWorkspace({
             onSubmit={() => void submitMessage()}
             onOpenRooms={() => setMobileView("rooms")}
             onOpenDocument={() => setMobileView("document")}
-            onOpenMemberDialog={() =>
-              durableMode ? notify(dictionary.durableDataBoundary) : setMemberDialogOpen(true)
-            }
+            onOpenMemberDialog={() => setMemberDialogOpen(true)}
             onNotify={notify}
-            chatEnabled={!durableMode}
           />
           <DocumentPanel
             dictionary={dictionary}
             tab={documentTab}
-            version={documentVersion}
-            dirty={documentDirty}
-            suggestionApplied={suggestionApplied}
             onTabChange={setDocumentTab}
-            onDirtyChange={setDocumentDirty}
-            onSave={() => {
-              setDocumentDirty(false);
-              setDocumentVersion((current) => current + 1);
-              notify(dictionary.versionSaved);
-            }}
-            onApplySuggestion={() => {
-              setSuggestionApplied(true);
-              setDocumentDirty(true);
-            }}
             onCloseMobile={() => setMobileView("chat")}
-            onNotify={notify}
-            demoContent={!durableMode}
           />
         </>
       ) : (
@@ -469,7 +328,6 @@ export function HaloWorkspace({
           rooms={rooms}
           projects={projects}
           documents={documents}
-          durable={durableMode}
           canCreateProject={canCreateProject}
           canCreateArtifact={writableProjects.length > 0}
           onSectionChange={selectWorkspaceSection}

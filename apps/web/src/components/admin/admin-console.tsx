@@ -1,11 +1,12 @@
 "use client";
 
 import { Bot, Boxes, LayoutDashboard, ScrollText, ShieldCheck, UsersRound } from "lucide-react";
-import type { SessionContext } from "@haloai/contracts";
+import type { SessionContext, WorkspaceMember } from "@haloai/contracts";
+import { WorkspaceCollaborationSnapshotSchema } from "@haloai/contracts";
 import type { Route } from "next";
 import { useEffect, useState } from "react";
 import { ManagementShell } from "./management-shell";
-import { AdminSectionContent } from "./admin-section-content";
+import { AdminSectionContent, type AdminLiveStats } from "./admin-section-content";
 import { type AdminSection } from "@/lib/admin-sections";
 import { apiFetch } from "@/lib/api-client";
 import { notify } from "@/components/toast-host";
@@ -26,18 +27,56 @@ const navigation: ReadonlyArray<{
 
 export function AdminConsole({ section }: { section: AdminSection }) {
   const [session, setSession] = useState<SessionContext | null>(null);
-  const realMode = process.env.NEXT_PUBLIC_AUTH_MODE !== "demo";
+  const [live, setLive] = useState<AdminLiveStats | undefined>(undefined);
   const activeWorkspace =
     session?.workspaces.find(
       (workspace) => workspace.id === window.localStorage.getItem("haloai.workspaceId"),
     ) ?? session?.workspaces[0];
 
   useEffect(() => {
-    if (!realMode) return;
-    apiFetch<SessionContext>("/v1/session")
-      .then(setSession)
-      .catch(() => setSession(null));
-  }, [realMode]);
+    let cancelled = false;
+
+    async function load(): Promise<void> {
+      try {
+        const nextSession = await apiFetch<SessionContext>("/v1/session");
+        if (cancelled) return;
+        setSession(nextSession);
+        const remembered = window.localStorage.getItem("haloai.workspaceId");
+        const workspace =
+          nextSession.workspaces.find((item) => item.id === remembered) ??
+          nextSession.workspaces[0];
+        if (!workspace) {
+          setLive({ memberCount: 0, agents: [] });
+          return;
+        }
+
+        const [membersResult, snapshotResult] = await Promise.allSettled([
+          apiFetch<{ members: WorkspaceMember[] }>(`/v1/workspaces/${workspace.id}/members`),
+          apiFetch<unknown>(`/v1/workspaces/${workspace.id}/collaboration`),
+        ]);
+        if (cancelled) return;
+
+        const members = membersResult.status === "fulfilled" ? membersResult.value.members : [];
+        const agents =
+          snapshotResult.status === "fulfilled"
+            ? WorkspaceCollaborationSnapshotSchema.parse(snapshotResult.value).participants.filter(
+                (actor) => actor.kind === "agent",
+              )
+            : [];
+        setLive({ memberCount: members.length, agents });
+      } catch {
+        if (!cancelled) {
+          setSession(null);
+          setLive({ memberCount: 0, agents: [] });
+        }
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <ManagementShell
@@ -45,7 +84,7 @@ export function AdminConsole({ section }: { section: AdminSection }) {
       navLabelKey="navLabel"
       portalKey="workspace_admin"
       activeHref={`/admin/${section}`}
-      workspaceName={activeWorkspace?.name ?? "HaloAI Pilot"}
+      workspaceName={activeWorkspace?.name ?? "HaloAI"}
       items={navigation}
     >
       {(dictionary) => (
@@ -53,6 +92,7 @@ export function AdminConsole({ section }: { section: AdminSection }) {
           dictionary={dictionary}
           section={section}
           onNotify={() => notify(dictionary.localOnlyNotice)}
+          live={live}
         />
       )}
     </ManagementShell>

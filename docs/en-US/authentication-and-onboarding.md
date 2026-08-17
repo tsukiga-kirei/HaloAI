@@ -42,11 +42,12 @@ The transaction generates server-owned UUIDs before setting the PostgreSQL works
 
 ## 6. Current delivery boundary
 
-The Alpha slice delivers email/password sign-up and sign-in, session lookup and sign-out, workspace creation and listing, invitation creation and acceptance, and built-in role changes. Until email delivery is connected, development may display a one-time invitation link. Production must never return or log the raw token.
+The Alpha slice delivers email/password sign-up and sign-in, session lookup and sign-out, workspace creation and listing, invitation creation and acceptance, and built-in role changes. Local `DEMO_MODE=true` writes scrypt-hashed seed accounts for frontend/backend integration; the switch never skips cookie sessions or server authorization. Until email delivery is connected, development may display a one-time invitation link. Production must never return or log the raw token.
 
 ## 7. Acceptance
 
 - Unauthenticated requests cannot create, enumerate, or administer workspaces.
+- Empty email or password cannot enter the workspace. Local seed accounts must sign in through `/api/auth/sign-in/email` with hashed passwords stored in PostgreSQL.
 - Cookies use HttpOnly, SameSite, and environment-appropriate Secure attributes.
 - Cross-origin mutations are rejected.
 - A user can create a first workspace and becomes its only Owner.

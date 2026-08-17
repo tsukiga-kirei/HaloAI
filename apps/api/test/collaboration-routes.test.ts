@@ -59,6 +59,8 @@ describe("非 AI 协作路由", () => {
       ]),
       listRooms: vi.fn(async () => []),
       listDocuments: vi.fn(async () => []),
+      listActors: vi.fn(async () => []),
+      listMessages: vi.fn(async () => ({ items: [] })),
     } as unknown as CollaborationRepository;
     const execute: CollaborationRepositoryExecutor = async (
       _request,
@@ -81,6 +83,8 @@ describe("非 AI 协作路由", () => {
       projects: [{ id: projectId, currentActorRole: "lead" }],
       rooms: [],
       documents: [],
+      participants: [],
+      messages: [],
     });
   });
 

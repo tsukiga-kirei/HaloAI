@@ -16,8 +16,8 @@ const configSchema = z
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
-    WEB_ORIGIN: WebOriginSchema.default("http://localhost:3000"),
-    AUTH_BASE_URL: WebOriginSchema.default("http://localhost:3100"),
+    WEB_ORIGIN: WebOriginSchema.default("http://127.0.0.1:3000"),
+    AUTH_BASE_URL: WebOriginSchema.default("http://127.0.0.1:3100"),
     AUTH_SECRET: z.string().min(32).default("haloai-local-auth-secret-change-before-production"),
     DATABASE_URL: z
       .string()

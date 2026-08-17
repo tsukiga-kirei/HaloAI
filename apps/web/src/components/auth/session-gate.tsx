@@ -4,12 +4,15 @@ import {
   DocumentCreatedResponseSchema,
   ProjectCreatedResponseSchema,
   RoomCreatedResponseSchema,
+  RoomMessageCreatedResponseSchema,
   WorkspaceCollaborationSnapshotSchema,
+  type AppendRoomMessageInput,
   type CreateDocumentInput,
   type CreateProjectInput,
   type CreateRoomInput,
   type DocumentSummary,
   type ProjectSummary,
+  type RoomMessageSummary,
   type RoomSummary,
   type SessionContext,
   type WorkspaceCollaborationSnapshot,
@@ -24,8 +27,6 @@ import { HaloWorkspace } from "@/components/halo-workspace";
 import { clearClientPortalSession } from "@/lib/portals";
 import styles from "./auth-shell.module.css";
 
-const demoMode = process.env.NEXT_PUBLIC_AUTH_MODE === "demo";
-
 export function SessionGate() {
   const router = useRouter();
   const [session, setSession] = useState<SessionContext | null>(null);
@@ -34,7 +35,6 @@ export function SessionGate() {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (demoMode) return;
     let active = true;
     apiFetch<SessionContext>("/v1/session")
       .then((nextSession) => {
@@ -65,7 +65,7 @@ export function SessionGate() {
   }, [router]);
 
   useEffect(() => {
-    if (demoMode || activeWorkspace === null) return;
+    if (activeWorkspace === null) return;
     let active = true;
     setCollaboration(null);
     setFailed(false);
@@ -80,8 +80,6 @@ export function SessionGate() {
       active = false;
     };
   }, [activeWorkspace]);
-
-  if (demoMode) return <HaloWorkspace />;
 
   if (failed) {
     return (
@@ -157,6 +155,17 @@ export function SessionGate() {
     return DocumentCreatedResponseSchema.parse(payload).document;
   }
 
+  async function appendMessage(
+    roomId: string,
+    input: AppendRoomMessageInput,
+  ): Promise<RoomMessageSummary> {
+    const payload = await apiFetch<unknown>(
+      `/v1/workspaces/${activeWorkspaceId}/rooms/${roomId}/messages`,
+      { method: "POST", body: JSON.stringify(input) },
+    );
+    return RoomMessageCreatedResponseSchema.parse(payload).message;
+  }
+
   return (
     <HaloWorkspace
       identity={session.user}
@@ -166,6 +175,7 @@ export function SessionGate() {
       onCreateProject={createProject}
       onCreateRoom={createRoom}
       onCreateDocument={createDocument}
+      onAppendMessage={appendMessage}
       onWorkspaceChange={switchWorkspace}
       onSignOut={() => void signOut()}
     />

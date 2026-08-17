@@ -8,6 +8,7 @@ import {
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { ApiConfig } from "./config";
+import { webOriginAllowlist } from "./web-origins";
 
 /**
  * 认证组件只接收专用数据库连接。这里不启用 cookie 缓存，确保登出、封禁和会话撤销能立即生效；
@@ -19,7 +20,7 @@ export function createAuth(database: HaloDatabase, config: ApiConfig) {
     baseURL: config.AUTH_BASE_URL,
     basePath: "/api/auth",
     secret: config.AUTH_SECRET,
-    trustedOrigins: [config.WEB_ORIGIN],
+    trustedOrigins: webOriginAllowlist(config.WEB_ORIGIN),
     database: drizzleAdapter(database, {
       provider: "pg",
       schema: {

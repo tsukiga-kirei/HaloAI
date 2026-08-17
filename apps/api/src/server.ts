@@ -11,6 +11,7 @@ import { registerHealthRoutes } from "./routes/health";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerCollaborationRoutes } from "./routes/collaboration";
 import { registerWorkspaceRoutes } from "./routes/workspaces";
+import { webOriginAllowlist } from "./web-origins";
 
 export async function createServer(config: ApiConfig): Promise<FastifyInstance> {
   const applicationDatabase = createDatabaseClient({
@@ -36,7 +37,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     contentSecurityPolicy: false,
   });
   await app.register(cors, {
-    origin: config.WEB_ORIGIN,
+    origin: webOriginAllowlist(config.WEB_ORIGIN),
     credentials: true,
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   });

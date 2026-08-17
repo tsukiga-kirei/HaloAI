@@ -112,17 +112,59 @@ export const DocumentSummarySchema = z
   })
   .strict();
 
+export const CollaborationActorSchema = z
+  .object({
+    id: UuidSchema,
+    workspaceId: UuidSchema,
+    kind: z.enum(["human", "agent", "system"]),
+    displayName: z.string().min(1).max(120),
+    handle: z.string().min(1).max(128),
+    status: z.enum(["active", "suspended", "archived"]),
+  })
+  .strict();
+
+export const StoredMessagePartSchema = z
+  .object({
+    type: z.literal("text"),
+    data: z.object({ text: z.string().min(1).max(65_536) }).passthrough(),
+  })
+  .passthrough();
+
+export const RoomMessageSummarySchema = z
+  .object({
+    id: UuidSchema,
+    workspaceId: UuidSchema,
+    roomId: UuidSchema,
+    authorActorId: UuidSchema,
+    sequence: z.number().int().positive(),
+    parts: z.array(StoredMessagePartSchema).min(1).max(50),
+    createdAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const AppendRoomMessageInputSchema = z
+  .object({
+    content: z.string().trim().min(1).max(65_536),
+    clientMutationId: UuidSchema,
+  })
+  .strict();
+
 export const WorkspaceCollaborationSnapshotSchema = z
   .object({
     projects: z.array(ProjectSummarySchema).max(500),
     rooms: z.array(RoomSummarySchema).max(2_000),
     documents: z.array(DocumentSummarySchema).max(5_000),
+    participants: z.array(CollaborationActorSchema).max(256),
+    messages: z.array(RoomMessageSummarySchema).max(5_000),
   })
   .strict();
 
 export const ProjectCreatedResponseSchema = z.object({ project: ProjectSummarySchema }).strict();
 export const RoomCreatedResponseSchema = z.object({ room: RoomSummarySchema }).strict();
 export const DocumentCreatedResponseSchema = z.object({ document: DocumentSummarySchema }).strict();
+export const RoomMessageCreatedResponseSchema = z
+  .object({ message: RoomMessageSummarySchema })
+  .strict();
 
 export type ProjectRole = z.infer<typeof ProjectRoleSchema>;
 export type ProjectSummary = z.infer<typeof ProjectSummarySchema>;
@@ -136,3 +178,6 @@ export type DocumentSummary = z.infer<typeof DocumentSummarySchema>;
 export type CreateDocumentInput = z.infer<typeof CreateDocumentInputSchema>;
 export type UpdateDocumentInput = z.infer<typeof UpdateDocumentInputSchema>;
 export type WorkspaceCollaborationSnapshot = z.infer<typeof WorkspaceCollaborationSnapshotSchema>;
+export type CollaborationActor = z.infer<typeof CollaborationActorSchema>;
+export type RoomMessageSummary = z.infer<typeof RoomMessageSummarySchema>;
+export type AppendRoomMessageInput = z.infer<typeof AppendRoomMessageInputSchema>;

@@ -17,11 +17,18 @@ import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
 import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import { LiveMembers } from "./live-members";
+import type { CollaborationActor } from "@haloai/contracts";
+
+export interface AdminLiveStats {
+  memberCount: number;
+  agents: readonly CollaborationActor[];
+}
 
 interface AdminSectionContentProps {
   dictionary: AdminDictionary;
   section: AdminSection;
   onNotify: () => void;
+  live?: AdminLiveStats | undefined;
 }
 
 const sectionTitleKeys: Record<AdminSection, keyof AdminDictionary> = {
@@ -82,7 +89,9 @@ function StatusBadge({
 }
 
 function Overview({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary } = props;
+  const { dictionary, live } = props;
+  const memberCount = live?.memberCount ?? 0;
+  const agentCount = live?.agents.length ?? 0;
   return (
     <>
       <SectionHeading {...props} />
@@ -90,29 +99,29 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
         <HaloMetricCard
           icon={<UsersRound size={20} />}
           label={dictionary.activeMembers}
-          value="8"
+          value={String(memberCount)}
           detail={dictionary.availableNow}
           tone="violet"
         />
         <HaloMetricCard
           icon={<Bot size={20} />}
           label={dictionary.aiCollaborators}
-          value="3"
+          value={String(agentCount)}
           detail={dictionary.availableNow}
           tone="blue"
         />
         <HaloMetricCard
           icon={<Activity size={20} />}
           label={dictionary.monthlyRuns}
-          value="1,284"
-          detail={dictionary.comparedToLastMonth}
+          value="0"
+          detail={dictionary.metricUnavailable}
           tone="mint"
         />
         <HaloMetricCard
           icon={<CircleAlert size={20} />}
           label={dictionary.pendingApprovals}
-          value="2"
-          detail={dictionary.requiresReview}
+          value="0"
+          detail={dictionary.metricUnavailable}
           tone="amber"
         />
       </section>
@@ -124,14 +133,13 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
               <h2>{dictionary.governanceHealth}</h2>
               <p>{dictionary.governanceDescription}</p>
             </div>
-            <span className="admin-score-ring">92</span>
           </div>
           <div className="admin-governance-list">
             {[
-              [dictionary.identityStatus, dictionary.identityStatusDetail, "96%"],
-              [dictionary.aiPolicyStatus, dictionary.aiPolicyStatusDetail, "90%"],
-              [dictionary.retentionStatus, dictionary.retentionStatusDetail, "88%"],
-            ].map(([label, detail, score]) => (
+              [dictionary.identityStatus, dictionary.identityStatusDetail],
+              [dictionary.aiPolicyStatus, dictionary.aiPolicyStatusDetail],
+              [dictionary.retentionStatus, dictionary.retentionStatusDetail],
+            ].map(([label, detail]) => (
               <div className="admin-governance-item" key={label}>
                 <span className="admin-governance-check">
                   <Check size={15} />
@@ -140,7 +148,6 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
                   <strong>{label}</strong>
                   <small>{detail}</small>
                 </span>
-                <span>{score}</span>
               </div>
             ))}
           </div>
@@ -150,21 +157,7 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
           <div className="admin-panel-heading">
             <h2>{dictionary.recentActivity}</h2>
           </div>
-          <div className="admin-activity-list">
-            {[
-              ["LL", dictionary.activityMember, dictionary.timeMinutes, "coral"],
-              ["N", dictionary.activityAgent, dictionary.timeHours, "violet"],
-              ["S", dictionary.activityPolicy, dictionary.timeHours, "blue"],
-            ].map(([initials, label, time, tone]) => (
-              <div className="admin-activity-item" key={label}>
-                <span className={`admin-activity-avatar is-${tone}`}>{initials}</span>
-                <span>
-                  <strong>{label}</strong>
-                  <small>{time}</small>
-                </span>
-              </div>
-            ))}
-          </div>
+          <p className="document-empty-copy">{dictionary.emptyAdminActivity}</p>
         </section>
       </div>
     </>
@@ -172,127 +165,49 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
 }
 
 function Members({ props }: { props: AdminSectionContentProps }) {
-  if (process.env.NEXT_PUBLIC_AUTH_MODE !== "demo") {
-    return <LiveMembers dictionary={props.dictionary} />;
-  }
-  const { dictionary } = props;
-  const rows: ReadonlyArray<readonly [string, string, string, string, string]> = [
-    [
-      dictionary.memberMina,
-      dictionary.typePerson,
-      dictionary.roleWorkspaceOwner,
-      dictionary.statusActive,
-      "10:42",
-    ],
-    [
-      dictionary.memberAndy,
-      dictionary.typePerson,
-      dictionary.roleProductLead,
-      dictionary.statusActive,
-      "09:18",
-    ],
-    [
-      dictionary.memberNoah,
-      dictionary.typePerson,
-      dictionary.roleGuestReviewer,
-      dictionary.statusInvited,
-      "—",
-    ],
-  ];
-  return (
-    <>
-      <SectionHeading {...props} action="invite" />
-      <section className="admin-panel admin-table-panel">
-        <div className="admin-table" role="table" aria-label={dictionary.membersTitle}>
-          <div className="admin-table-row is-header" role="row">
-            {[
-              dictionary.tableName,
-              dictionary.tableType,
-              dictionary.tableRole,
-              dictionary.tableStatus,
-              dictionary.tableLastActive,
-            ].map((label) => (
-              <span role="columnheader" key={label}>
-                {label}
-              </span>
-            ))}
-          </div>
-          {rows.map(([name, type, role, status, active]) => (
-            <div className="admin-table-row" role="row" key={name}>
-              <span role="cell" className="admin-table-person">
-                <span>{name.slice(0, 2).toLocaleUpperCase()}</span>
-                <strong>{name}</strong>
-              </span>
-              <span role="cell" data-label={dictionary.tableType}>
-                {type}
-              </span>
-              <span role="cell" data-label={dictionary.tableRole}>
-                {role}
-              </span>
-              <span role="cell" data-label={dictionary.tableStatus}>
-                <StatusBadge tone={status === dictionary.statusActive ? "success" : "warning"}>
-                  {status}
-                </StatusBadge>
-              </span>
-              <span role="cell" data-label={dictionary.tableLastActive}>
-                {active}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </>
-  );
+  return <LiveMembers dictionary={props.dictionary} />;
 }
 
 function Agents({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary } = props;
-  const agents: ReadonlyArray<readonly [string, string, string, string, string]> = [
-    [dictionary.agentNova, dictionary.agentResearch, "4", "3", dictionary.modelConversationDefault],
-    [dictionary.agentMuse, dictionary.agentWriting, "3", "2", dictionary.modelConversationDefault],
-    [dictionary.agentHalo, dictionary.agentFacilitator, "5", "1", dictionary.modelLocalName],
-  ];
+  const { dictionary, live, onNotify } = props;
+  const agents = live?.agents ?? [];
   return (
     <>
       <SectionHeading {...props} action="agent" />
-      <section className="admin-card-grid">
-        {agents.map(([name, description, version, tools, model], index) => (
-          <article className="admin-agent-card" key={name}>
-            <div className={`admin-agent-orbit is-${index + 1}`}>
-              <span>{name.slice(0, 1)}</span>
-            </div>
-            <div className="admin-agent-copy">
-              <h2>{name}</h2>
-              <p>{description}</p>
-            </div>
-            <StatusBadge>{dictionary.publishedVersion.replace("{version}", version)}</StatusBadge>
-            <div className="admin-agent-meta">
-              <span>{dictionary.agentAssignedModel}</span>
-              <strong>{model}</strong>
-            </div>
-            <div className="admin-agent-meta">
-              <span>{dictionary.toolScope}</span>
-              <strong>{tools}</strong>
-            </div>
-            <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
-              {dictionary.configure}
-              <ArrowUpRight size={15} />
-            </button>
-          </article>
-        ))}
-      </section>
+      {agents.length === 0 ? (
+        <p className="document-empty-copy">{dictionary.emptyAgentDirectory}</p>
+      ) : (
+        <section className="admin-card-grid">
+          {agents.map((agent, index) => (
+            <article className="admin-agent-card" key={agent.id}>
+              <div className={`admin-agent-orbit is-${(index % 3) + 1}`}>
+                <span>{agent.displayName.slice(0, 1)}</span>
+              </div>
+              <div className="admin-agent-copy">
+                <h2>{agent.displayName}</h2>
+                <p>@{agent.handle}</p>
+              </div>
+              <StatusBadge>
+                {agent.status === "active" ? dictionary.statusActive : agent.status}
+              </StatusBadge>
+              <div className="admin-agent-meta">
+                <span>{dictionary.agentAssignedModel}</span>
+                <strong>{dictionary.notAssigned}</strong>
+              </div>
+              <button type="button" className="admin-secondary-button" onClick={onNotify}>
+                {dictionary.configure}
+                <ArrowUpRight size={15} />
+              </button>
+            </article>
+          ))}
+        </section>
+      )}
     </>
   );
 }
 
 function Integrations({ props }: { props: AdminSectionContentProps }) {
   const { dictionary } = props;
-  const allocated = [
-    {
-      name: dictionary.modelConversationDefault,
-      agents: [dictionary.agentNova, dictionary.agentMuse].join(dictionary.listSeparator),
-    },
-  ] as const;
   const extras = [
     {
       icon: <Database size={21} />,
@@ -308,32 +223,7 @@ function Integrations({ props }: { props: AdminSectionContentProps }) {
   return (
     <>
       <SectionHeading {...props} description={dictionary.workspaceModelsIntro} />
-      <section className="admin-panel admin-table-panel">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{dictionary.tableName}</th>
-              <th>{dictionary.tableStatus}</th>
-              <th>{dictionary.agentAssignedModel}</th>
-              <th>{dictionary.tableActions}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {allocated.map((row) => (
-              <tr key={row.name}>
-                <td>{row.name}</td>
-                <td>{dictionary.workspaceModelAllocated}</td>
-                <td>{row.agents}</td>
-                <td>
-                  <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
-                    {dictionary.assignToAgent}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <p className="document-empty-copy">{dictionary.emptyModelCatalog}</p>
       <div className="admin-section-stack">
         <h2 className="admin-subheading">{dictionary.workspaceIntegrationsTitle}</h2>
         <section className="admin-stack-list">
@@ -395,46 +285,10 @@ function Security({ props }: { props: AdminSectionContentProps }) {
 
 function Audit({ props }: { props: AdminSectionContentProps }) {
   const { dictionary } = props;
-  const rows = [
-    [dictionary.auditEventMember, dictionary.memberMina, "workspace", "2026-08-12 10:42"],
-    [dictionary.auditEventAgent, dictionary.agentNova, "agent:nova", "2026-08-12 09:18"],
-    [dictionary.auditEventPolicy, dictionary.auditSystem, "workspace", "2026-08-12 08:00"],
-  ];
   return (
     <>
       <SectionHeading {...props} action="export" />
-      <section className="admin-panel admin-table-panel">
-        <div className="admin-table is-audit" role="table" aria-label={dictionary.auditTitle}>
-          <div className="admin-table-row is-header" role="row">
-            {[
-              dictionary.auditEvent,
-              dictionary.auditActor,
-              dictionary.auditScope,
-              dictionary.auditTime,
-            ].map((label) => (
-              <span role="columnheader" key={label}>
-                {label}
-              </span>
-            ))}
-          </div>
-          {rows.map(([event, actor, scope, time]) => (
-            <div className="admin-table-row" role="row" key={event}>
-              <span role="cell">
-                <code>{event}</code>
-              </span>
-              <span role="cell" data-label={dictionary.auditActor}>
-                {actor}
-              </span>
-              <span role="cell" data-label={dictionary.auditScope}>
-                {scope}
-              </span>
-              <span role="cell" data-label={dictionary.auditTime}>
-                {time}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      <p className="document-empty-copy">{dictionary.emptyAuditLog}</p>
     </>
   );
 }

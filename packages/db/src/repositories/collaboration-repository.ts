@@ -16,6 +16,7 @@ import { assertUuid, type WorkspaceTransaction } from "../workspace-transaction"
 
 export type StoredProject = typeof projects.$inferSelect;
 export type StoredRoom = typeof rooms.$inferSelect;
+export type StoredActor = typeof actors.$inferSelect;
 export type StoredMessage = typeof messages.$inferSelect;
 export type StoredProjectMembership = typeof projectMemberships.$inferSelect;
 export type StoredRoomMembership = typeof roomMemberships.$inferSelect;
@@ -254,6 +255,15 @@ export class CollaborationRepository {
       status: "active",
     });
     return room;
+  }
+
+  async listActors(): Promise<StoredActor[]> {
+    await this.requireActiveWorkspaceMember();
+    return this.transaction
+      .select()
+      .from(actors)
+      .where(eq(actors.workspaceId, this.workspaceId))
+      .orderBy(asc(actors.createdAt));
   }
 
   async listProjects(): Promise<ProjectWithRole[]> {

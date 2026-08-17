@@ -111,7 +111,7 @@ export function OnboardingForm() {
                   maxLength={80}
                   required
                   autoFocus
-                  placeholder="例如：北辰产品团队"
+                  placeholder="例如：产品团队"
                 />
               </div>
             </label>
@@ -129,7 +129,7 @@ export function OnboardingForm() {
                   maxLength={63}
                   pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
                   required
-                  placeholder="beichen-team"
+                  placeholder="product-team"
                 />
               </div>
             </label>

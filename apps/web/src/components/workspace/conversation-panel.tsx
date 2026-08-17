@@ -1,7 +1,6 @@
 import {
   AtSign,
   CirclePlus,
-  FileText,
   Hash,
   Menu,
   PanelRight,
@@ -30,7 +29,6 @@ interface ConversationPanelProps extends WorkspaceViewProps {
   onOpenDocument: () => void;
   onOpenMemberDialog: () => void;
   onNotify: (message: string) => void;
-  chatEnabled: boolean;
 }
 
 export function ConversationPanel({
@@ -50,7 +48,6 @@ export function ConversationPanel({
   onOpenDocument,
   onOpenMemberDialog,
   onNotify,
-  chatEnabled,
 }: ConversationPanelProps) {
   return (
     <main className="conversation-panel">
@@ -70,11 +67,9 @@ export function ConversationPanel({
           <div>
             <div className="room-title-line">
               <h1>{roomTitle}</h1>
-              {chatEnabled ? (
-                <span className="room-mode">
-                  <AtSign size={12} /> {dictionary.mentionMode}
-                </span>
-              ) : null}
+              <span className="room-mode">
+                <AtSign size={12} /> {dictionary.mentionMode}
+              </span>
             </div>
             {roomGoal.length > 0 ? <p>{roomGoal}</p> : null}
           </div>
@@ -118,7 +113,7 @@ export function ConversationPanel({
         </div>
         {messages.length === 0 ? (
           <div className="conversation-empty">
-            <p>{chatEnabled ? dictionary.conversationEmpty : dictionary.chatPending}</p>
+            <p>{dictionary.conversationEmpty}</p>
           </div>
         ) : null}
         {messages.map((message) => {
@@ -149,13 +144,6 @@ export function ConversationPanel({
                     <p>{body}</p>
                   )}
                 </div>
-                {message.authorId === "muse" ? (
-                  <button type="button" className="artifact-link" onClick={onOpenDocument}>
-                    <FileText size={15} />
-                    <span>{dictionary.documentSubtitle}</span>
-                    <span className="artifact-version">v3</span>
-                  </button>
-                ) : null}
               </div>
             </article>
           );
@@ -167,10 +155,9 @@ export function ConversationPanel({
         <div className="composer">
           <textarea
             value={input}
-            disabled={!chatEnabled}
             onChange={(event) => onInputChange(event.target.value)}
             onKeyDown={onComposerKeyDown}
-            placeholder={chatEnabled ? dictionary.messagePlaceholder : dictionary.chatPending}
+            placeholder={dictionary.messagePlaceholder}
             rows={1}
             aria-label={dictionary.messagePlaceholder}
           />
@@ -182,7 +169,6 @@ export function ConversationPanel({
                 aria-label={dictionary.addAttachment}
                 title={dictionary.addAttachment}
                 onClick={() => onNotify(dictionary.attachmentPreview)}
-                disabled={!chatEnabled}
               >
                 <Paperclip size={18} />
               </button>
@@ -192,7 +178,6 @@ export function ConversationPanel({
                 aria-label={dictionary.mentionSomeone}
                 title={dictionary.mentionSomeone}
                 onClick={() => onInputChange(`${input}@halo `)}
-                disabled={!chatEnabled}
               >
                 <AtSign size={18} />
               </button>
@@ -200,7 +185,6 @@ export function ConversationPanel({
                 label={dictionary.moreActions}
                 message={dictionary.moreActionsPreview}
                 triggerClassName="composer-tool"
-                disabled={!chatEnabled}
                 icon={<CirclePlus size={18} />}
               />
               <span className="composer-hint">{dictionary.messageHint}</span>
@@ -209,7 +193,7 @@ export function ConversationPanel({
               type="button"
               className="send-button"
               onClick={onSubmit}
-              disabled={!chatEnabled || input.trim().length === 0 || isStreaming}
+              disabled={input.trim().length === 0 || isStreaming}
             >
               <span>{dictionary.send}</span>
               <Send size={16} />

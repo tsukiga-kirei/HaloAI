@@ -45,9 +45,9 @@ test.describe("桌面工作台", () => {
 
     await page.getByRole("button", { name: "收件箱" }).first().click();
     await page.getByRole("tab", { name: "待审批" }).click();
-    await expect(page.getByText("「品牌与官网」的首页文案等待人工审批。")).toBeVisible();
-    await page.getByRole("button", { name: "标记已读" }).click();
-    await expect(page.locator("[data-sonner-toast]")).toContainText("已在本地标记为已读");
+    await expect(
+      page.getByText("暂时没有待处理事项。提及、审批和邀请接入后会显示在这里。"),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "文档" }).first().click();
     await page.locator('input[placeholder="搜索文档"]').fill("访谈");
@@ -63,7 +63,7 @@ test.describe("桌面工作台", () => {
     await page.getByRole("menuitem", { name: "切换语言" }).click();
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en-US");
-    await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "内测发布" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send" })).toBeVisible();
 
     await page.getByRole("menuitem", { name: "Change language" }).click();
@@ -86,11 +86,17 @@ test.describe("桌面工作台", () => {
     await expect(root).toHaveAttribute("data-theme", "light");
   });
 
-  test("发送消息后通过 SSE 流式呈现 Demo 回复", async ({ page }) => {
+  test("发送消息后只持久化人类发言，不请求演示模型", async ({ page }) => {
     const requestText = "请把今天的讨论整理成可执行结论";
+    const demoAgentRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().endsWith("/api/demo-agent")) demoAgentRequests.push(request.url());
+    });
     const responsePromise = page.waitForResponse(
       (response) =>
-        response.url().endsWith("/api/demo-agent") && response.request().method() === "POST",
+        response.url().includes("/rooms/") &&
+        response.url().endsWith("/messages") &&
+        response.request().method() === "POST",
     );
 
     await page
@@ -101,18 +107,7 @@ test.describe("桌面工作台", () => {
     await expect(page.getByText(requestText, { exact: true })).toBeVisible();
     const response = await responsePromise;
     expect(response.ok()).toBe(true);
-    expect(response.headers()["content-type"]).toContain("text/event-stream");
-    expect(response.request().postDataJSON()).toMatchObject({
-      message: requestText,
-      locale: "zh-CN",
-    });
-
-    await expect(
-      page.getByText(
-        "我已把讨论整理为三个可执行部分：明确目标、补齐证据、由负责人确认最终版本。右侧文档中还有一条修改提案，只有在你审阅并采纳后才会进入正文。",
-        { exact: true },
-      ),
-    ).toBeVisible({ timeout: 15_000 });
+    expect(demoAgentRequests).toEqual([]);
     await expect(
       page.getByRole("textbox", { name: "发送消息，或用 @ 邀请一位 AI 参与…" }),
     ).toHaveValue("");
@@ -156,15 +151,12 @@ test.describe("桌面工作台", () => {
     await expect(page.locator("[data-sonner-toast]")).toContainText("新房间已创建");
   });
 
-  test("采纳 AI 建议后可保存并查看新文档版本", async ({ page }) => {
-    await page.getByRole("button", { name: "采纳建议" }).click();
-    const save = page.getByRole("button", { name: "保存版本" });
-    await expect(save).toBeEnabled();
-    await save.click();
-    await expect(page.locator("[data-sonner-toast]")).toContainText("文档新版本已保存");
-
-    await page.getByRole("tab", { name: "版本" }).click();
-    await expect(page.getByText("版本 v4", { exact: true })).toBeVisible();
+  test("文档面板只展示元数据空态，不提供假正文", async ({ page }) => {
+    await expect(page.getByRole("complementary", { name: "共享文档" })).toContainText(
+      "当前文档仅保存名称、归属和状态，正文编辑将在后续需求明确后接入。",
+    );
+    await expect(page.getByRole("button", { name: "采纳建议" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "保存版本" })).toHaveCount(0);
   });
 
   test("设置入口进入独立工作空间后台", async ({ page }) => {
@@ -196,7 +188,7 @@ test.describe("桌面工作台", () => {
     await page.getByRole("menuitem", { name: "Switch role" }).click();
     await page.getByRole("menuitemradio", { name: "Collaborator" }).click();
     await expect(page).toHaveURL(/\/app$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Pilot launch" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "内测发布" })).toBeVisible();
   });
 
   test("系统后台保持独立锁定且不展示租户内容", async ({ page }) => {

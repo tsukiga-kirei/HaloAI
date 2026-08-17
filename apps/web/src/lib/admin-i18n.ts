@@ -160,6 +160,16 @@ export interface AdminDictionary {
   tenantBeichen: string;
   tenantAurora: string;
   tenantPlanPilot: string;
+  emptyAdminActivity: string;
+  emptyAuditLog: string;
+  emptyAgentDirectory: string;
+  emptyModelCatalog: string;
+  emptyTenantDirectory: string;
+  emptyAllocation: string;
+  metricUnavailable: string;
+  notAssigned: string;
+  apiReady: string;
+  apiUnavailable: string;
 }
 
 const zhCN: AdminDictionary = {
@@ -209,11 +219,11 @@ const zhCN: AdminDictionary = {
   governanceHealth: "治理状态",
   governanceDescription: "关键边界都应能被团队理解，而不只是藏在技术配置中。",
   identityStatus: "成员身份",
-  identityStatusDetail: "8 位活跃成员，1 份待接受邀请",
+  identityStatusDetail: "成员身份与访问角色由服务端成员资格决定，不能在登录页自选。",
   aiPolicyStatus: "AI 发布策略",
-  aiPolicyStatusDetail: "3 个已发布版本，所有写入均需人工确认",
+  aiPolicyStatusDetail: "外部写入、公开发布和权限变更默认需要人工确认。",
   retentionStatus: "保留与删除",
-  retentionStatusDetail: "默认保留 180 天，法务保留未启用",
+  retentionStatusDetail: "删除与保留策略由服务端强制执行，不能只依赖界面开关。",
   recentActivity: "最近管理动态",
   activityMember: "林岚邀请了一位项目审阅者",
   activityAgent: "Nova 发布了版本 v4",
@@ -323,6 +333,16 @@ const zhCN: AdminDictionary = {
   tenantBeichen: "北辰产品组",
   tenantAurora: "Aurora Labs",
   tenantPlanPilot: "试点",
+  emptyAdminActivity: "暂时没有可展示的管理动态。",
+  emptyAuditLog: "暂时没有可展示的审计事件。",
+  emptyAgentDirectory: "这个工作空间还没有 AI 协作者。",
+  emptyModelCatalog: "平台尚未登记可用模型。",
+  emptyTenantDirectory: "平台尚未登记租户。",
+  emptyAllocation: "还没有把模型分配给租户。",
+  metricUnavailable: "运行账本接入后才会累计",
+  notAssigned: "未分配",
+  apiReady: "可用",
+  apiUnavailable: "不可用",
 };
 
 const enUS: AdminDictionary = {
@@ -373,11 +393,14 @@ const enUS: AdminDictionary = {
   governanceDescription:
     "Key boundaries should be understandable to the team, not hidden in technical configuration.",
   identityStatus: "Member identity",
-  identityStatusDetail: "8 active members and 1 pending invitation",
+  identityStatusDetail:
+    "Member identity and access roles come from server-side membership, not the sign-in form.",
   aiPolicyStatus: "AI publishing policy",
-  aiPolicyStatusDetail: "3 published versions; every write requires human confirmation",
+  aiPolicyStatusDetail:
+    "External writes, public publishing, and permission changes require human confirmation by default.",
   retentionStatus: "Retention and deletion",
-  retentionStatusDetail: "180-day default retention; legal hold is disabled",
+  retentionStatusDetail:
+    "Retention and deletion are enforced on the server, not by interface toggles alone.",
   recentActivity: "Recent administration activity",
   activityMember: "Mina invited a project reviewer",
   activityAgent: "Nova published version v4",
@@ -495,6 +518,16 @@ const enUS: AdminDictionary = {
   tenantBeichen: "Beichen Product",
   tenantAurora: "Aurora Labs",
   tenantPlanPilot: "Pilot",
+  emptyAdminActivity: "No administration activity to show yet.",
+  emptyAuditLog: "No audit events to show yet.",
+  emptyAgentDirectory: "This workspace has no AI collaborators yet.",
+  emptyModelCatalog: "No platform models are registered yet.",
+  emptyTenantDirectory: "No tenants are registered yet.",
+  emptyAllocation: "No models have been allocated to tenants.",
+  metricUnavailable: "Totals appear after the usage ledger is connected",
+  notAssigned: "Not assigned",
+  apiReady: "Ready",
+  apiUnavailable: "Unavailable",
 };
 
 export const adminDictionaries: Record<Locale, AdminDictionary> = {

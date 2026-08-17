@@ -3,7 +3,6 @@
 import {
   ArrowRight,
   AtSign,
-  Check,
   Clock3,
   FileCheck2,
   FileText,
@@ -29,7 +28,6 @@ export function WorkspaceHub({
   rooms,
   projects,
   documents,
-  durable,
   canCreateProject,
   canCreateArtifact,
   onSectionChange,
@@ -44,7 +42,6 @@ export function WorkspaceHub({
   rooms: readonly DemoRoom[];
   projects: readonly ProjectSummary[];
   documents: readonly DocumentSummary[];
-  durable: boolean;
   canCreateProject: boolean;
   canCreateArtifact: boolean;
   onSectionChange: (section: WorkspaceSection) => void;
@@ -94,19 +91,17 @@ export function WorkspaceHub({
           rooms={rooms}
           projects={projects}
           documents={documents}
-          durable={durable}
           onOpenRoom={onOpenRoom}
           onOpenDocument={onOpenDocument}
           onSectionChange={onSectionChange}
         />
       ) : null}
-      {section === "inbox" ? <InboxView dictionary={dictionary} onNotify={onNotify} /> : null}
+      {section === "inbox" ? <InboxView dictionary={dictionary} /> : null}
       {section === "documents" ? (
         <WorkspaceDocumentsView
           dictionary={dictionary}
           documents={documents}
           rooms={rooms}
-          durable={durable}
           onCreateDocument={onCreateDocument}
           canCreateDocument={canCreateArtifact}
           onOpenDocument={onOpenDocument}
@@ -123,7 +118,6 @@ function Overview({
   rooms,
   projects,
   documents,
-  durable,
   onOpenRoom,
   onOpenDocument,
   onSectionChange,
@@ -131,7 +125,6 @@ function Overview({
   rooms: readonly DemoRoom[];
   projects: readonly ProjectSummary[];
   documents: readonly DocumentSummary[];
-  durable: boolean;
   onOpenRoom: (roomId: string) => void;
   onOpenDocument: (roomId: string) => void;
   onSectionChange: (section: WorkspaceSection) => void;
@@ -150,10 +143,10 @@ function Overview({
       tone: "violet",
     },
     { label: dictionary.activeRooms, value: String(rooms.length), Icon: Hash, tone: "blue" },
-    { label: dictionary.pendingItems, value: "2", Icon: Clock3, tone: "amber" },
+    { label: dictionary.pendingItems, value: "0", Icon: Clock3, tone: "amber" },
     {
       label: dictionary.sharedDocuments,
-      value: String(durable ? documents.length : 3),
+      value: String(documents.length),
       Icon: FileText,
       tone: "mint",
     },
@@ -202,26 +195,7 @@ function Overview({
             </button>
           </div>
           <div className="compact-list">
-            <button type="button" onClick={() => onSectionChange("inbox")}>
-              <span className="compact-icon is-approval">
-                <FileCheck2 size={16} />
-              </span>
-              <span>
-                <strong>{dictionary.approvalItem}</strong>
-                <small>10:30</small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
-            <button type="button" onClick={() => onSectionChange("inbox")}>
-              <span className="compact-icon">
-                <UserRound size={16} />
-              </span>
-              <span>
-                <strong>{dictionary.mentionItem}</strong>
-                <small>09:24</small>
-              </span>
-              <ArrowRight size={16} />
-            </button>
+            <p className="compact-empty">{dictionary.emptyInbox}</p>
           </div>
         </section>
 
@@ -233,48 +207,23 @@ function Overview({
             </button>
           </div>
           <div className="compact-list document-compact-list">
-            {durable ? (
-              documents.slice(0, 2).map((document) => (
-                <button
-                  type="button"
-                  key={document.id}
-                  onClick={() => (document.roomId ? onOpenDocument(document.roomId) : undefined)}
-                >
-                  <span className="compact-icon">
-                    <FileText size={16} />
-                  </span>
-                  <span>
-                    <strong>{document.title}</strong>
-                    <small>{document.ownerDisplayName}</small>
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-              ))
-            ) : (
-              <>
-                <button type="button" onClick={() => onOpenDocument("launch")}>
-                  <span className="compact-icon">
-                    <FileText size={16} />
-                  </span>
-                  <span>
-                    <strong>{dictionary.documentProposal}</strong>
-                    <small>{dictionary.inReview}</small>
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-                <button type="button" onClick={() => onOpenDocument("research")}>
-                  <span className="compact-icon">
-                    <FileText size={16} />
-                  </span>
-                  <span>
-                    <strong>{dictionary.documentResearch}</strong>
-                    <small>{dictionary.draft}</small>
-                  </span>
-                  <ArrowRight size={16} />
-                </button>
-              </>
-            )}
-            {durable && documents.length === 0 ? (
+            {documents.slice(0, 2).map((document) => (
+              <button
+                type="button"
+                key={document.id}
+                onClick={() => (document.roomId ? onOpenDocument(document.roomId) : undefined)}
+              >
+                <span className="compact-icon">
+                  <FileText size={16} />
+                </span>
+                <span>
+                  <strong>{document.title}</strong>
+                  <small>{document.ownerDisplayName}</small>
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            ))}
+            {documents.length === 0 ? (
               <p className="compact-empty">{dictionary.noDocuments}</p>
             ) : null}
           </div>
@@ -284,38 +233,8 @@ function Overview({
   );
 }
 
-function InboxView({
-  dictionary,
-  onNotify,
-}: WorkspaceViewProps & { onNotify: (message: string) => void }) {
+function InboxView({ dictionary }: WorkspaceViewProps) {
   const [filter, setFilter] = useState<InboxFilter>("all");
-  const [readIds, setReadIds] = useState<readonly string[]>([]);
-  const items = [
-    {
-      id: "mention",
-      type: "mentions" as const,
-      label: dictionary.mentionItem,
-      meta: `09:24 · ${dictionary.mentions}`,
-    },
-    {
-      id: "approval",
-      type: "approvals" as const,
-      label: dictionary.approvalItem,
-      meta: `08:42 · ${dictionary.approvals}`,
-    },
-    {
-      id: "invitation",
-      type: "invitations" as const,
-      label: dictionary.invitationItem,
-      meta: `${dictionary.updatedYesterday} · ${dictionary.invitations}`,
-    },
-  ];
-  const visibleItems = filter === "all" ? items : items.filter((item) => item.type === filter);
-  const typeLabel = {
-    mentions: dictionary.mentions,
-    approvals: dictionary.approvals,
-    invitations: dictionary.invitations,
-  } as const;
   return (
     <div className="workspace-hub-body">
       <HaloSegmented
@@ -329,83 +248,15 @@ function InboxView({
           { value: "invitations", label: dictionary.invitations, icon: UserRound },
         ]}
       />
-      <div className="data-table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{dictionary.columnContent}</th>
-              <th>{dictionary.columnType}</th>
-              <th>{dictionary.columnTime}</th>
-              <th>{dictionary.columnAction}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleItems.map((item) => {
-              const isRead = readIds.includes(item.id);
-              return (
-                <tr key={item.id} className={isRead ? "is-read" : ""}>
-                  <td>
-                    <strong className={isRead ? "" : "is-unread"}>{item.label}</strong>
-                  </td>
-                  <td>
-                    <span className={`halo-badge is-${item.type}`}>{typeLabel[item.type]}</span>
-                  </td>
-                  <td>{item.meta.split(" · ")[0]}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="table-action is-ghost"
-                      disabled={isRead}
-                      onClick={() => {
-                        setReadIds((current) => [...current, item.id]);
-                        onNotify(dictionary.markedRead);
-                      }}
-                    >
-                      <Check size={14} />
-                      {isRead ? dictionary.markedRead : dictionary.markAsRead}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <p className="document-empty-copy">{dictionary.emptyInbox}</p>
     </div>
   );
 }
 
 function ActivityView({ dictionary }: WorkspaceViewProps) {
-  const events: Array<{ label: string; time: string; Icon: LucideIcon }> = [
-    { label: dictionary.activityItemOne, time: "10:12", Icon: FileText },
-    { label: dictionary.activityItemTwo, time: "09:48", Icon: FileCheck2 },
-    { label: dictionary.activityItemThree, time: dictionary.updatedYesterday, Icon: Hash },
-  ];
   return (
     <div className="workspace-hub-body activity-view">
-      <div className="data-table-wrap">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>{dictionary.columnContent}</th>
-              <th>{dictionary.columnTime}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map(({ label, time, Icon }) => (
-              <tr key={label}>
-                <td>
-                  <span className="table-title">
-                    <Icon size={16} />
-                    {label}
-                  </span>
-                </td>
-                <td>{time}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <p className="document-empty-copy">{dictionary.emptyActivity}</p>
     </div>
   );
 }

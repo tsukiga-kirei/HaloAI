@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, FileText, Plus, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { DocumentSummary } from "@haloai/contracts";
 import { HaloSelect } from "@/components/ui/halo-select";
 import type { DemoRoom, WorkspaceViewProps } from "./types";
@@ -12,7 +12,6 @@ export function WorkspaceDocumentsView({
   dictionary,
   documents,
   rooms,
-  durable,
   onCreateDocument,
   onOpenDocument,
   onNotify,
@@ -20,7 +19,6 @@ export function WorkspaceDocumentsView({
 }: WorkspaceViewProps & {
   documents: readonly DocumentSummary[];
   rooms: readonly DemoRoom[];
-  durable: boolean;
   onCreateDocument: () => void;
   onOpenDocument: (roomId: string) => void;
   onNotify: (message: string) => void;
@@ -28,36 +26,7 @@ export function WorkspaceDocumentsView({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<DocumentFilter>("all");
-  const demoDocuments = useMemo(
-    () => [
-      {
-        id: "proposal",
-        title: dictionary.documentProposal,
-        room: dictionary.roomLaunch,
-        owner: dictionary.messageLead,
-        status: "active" as const,
-        roomId: "launch",
-      },
-      {
-        id: "research",
-        title: dictionary.documentResearch,
-        room: dictionary.roomResearch,
-        owner: dictionary.documentResearchOwner,
-        status: "active" as const,
-        roomId: "research",
-      },
-      {
-        id: "brand",
-        title: dictionary.documentBrand,
-        room: dictionary.roomWebsite,
-        owner: "Andy",
-        status: "archived" as const,
-        roomId: "website",
-      },
-    ],
-    [dictionary],
-  );
-  const storedRows = documents.map((document) => ({
+  const rows = documents.map((document) => ({
     id: document.id,
     title: document.title,
     room: rooms.find((room) => room.id === document.roomId)?.name ?? dictionary.noRoom,
@@ -65,7 +34,6 @@ export function WorkspaceDocumentsView({
     status: document.status,
     roomId: document.roomId,
   }));
-  const rows = durable ? storedRows : [...demoDocuments, ...storedRows];
   const visibleRows = rows.filter(
     (row) =>
       row.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()) &&

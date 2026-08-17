@@ -66,4 +66,4 @@ RLS 只是纵深防御。项目成员、房间成员、资源动作与 AI 能力
 
 ## 当前边界
 
-本阶段完成数据库客户端、迁移、租户事务以及项目、房间、消息 repository。真实会话解析、工作空间创建、HTTP API 与前端数据替换属于下一条内部 Alpha 纵向链路。
+本阶段完成数据库客户端、迁移、租户事务、项目/房间/消息 repository，以及协作快照与发消息 HTTP API。本地虚拟数据与表结构分离：`packages/db/drizzle` 只保存结构迁移，`packages/db/devdata` 只在 `DEMO_MODE=true` 时由 `pnpm db:seed` 写入。前端不再内置假房间、假消息或后台示例数字；登录必须走认证组件校验哈希后的密码。

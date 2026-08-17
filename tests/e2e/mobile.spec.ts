@@ -39,13 +39,13 @@ test.describe("手机工作台", () => {
     await expect(conversation).toBeHidden();
     await expect(rooms).toBeHidden();
     await expect(
-      page.getByRole("heading", { level: 2, name: "HaloAI 内测发布提案" }),
+      page.getByText("当前文档仅保存名称、归属和状态，正文编辑将在后续需求明确后接入。"),
     ).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     // Next.js 开发浮层盖住底栏「工作台」；DOM click 仍走到同一入口，不依赖命中检测。
     await navigation.getByRole("button", { name: "工作台", exact: true }).evaluate((button) => {
-      button.click();
+      (button as HTMLButtonElement).click();
     });
     await expect(hub).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "团队工作总览" })).toBeVisible();

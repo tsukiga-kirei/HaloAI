@@ -11,7 +11,6 @@ import {
   Settings2,
   Shield,
   ShieldCheck,
-  UserRound,
 } from "lucide-react";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,7 +20,6 @@ import { persistPortal, portalPath, type PortalKey } from "@/lib/portals";
 import { getApiBaseUrl } from "@/lib/api-client";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
-import { HaloSelect } from "@/components/ui/halo-select";
 import { authCopy, type AuthLocale } from "./auth-copy";
 import styles from "./auth-shell.module.css";
 
@@ -47,8 +45,6 @@ const portals = [
   },
 ];
 
-type LoginRole = "member" | "guest" | "admin" | "owner";
-
 function looksLikeEmail(value: string): boolean {
   // 登录页禁止浏览器原生气泡，邮箱格式只在提交时由产品浮层提示。
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -59,26 +55,13 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<AuthLocale>("zh-CN");
   const [portal, setPortal] = useState<PortalKey>("member");
-  const [loginRole, setLoginRole] = useState<LoginRole>("member");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<"email" | "password" | null>(null);
   const copy = authCopy[locale];
-  const demoMode = process.env.NEXT_PUBLIC_AUTH_MODE === "demo";
   const activePortal = portals.find((item) => item.key === portal) ?? fallbackPortal;
   const ActiveIcon = activePortal.icon;
-  const needsRole = portal !== "system_admin";
-  const roleOptions =
-    portal === "workspace_admin"
-      ? [
-          { value: "admin", label: copy.roleAdminOption },
-          { value: "owner", label: copy.roleOwnerOption },
-        ]
-      : [
-          { value: "member", label: copy.roleMemberOption },
-          { value: "guest", label: copy.roleGuestOption },
-        ];
 
   useEffect(() => {
     const saved = window.localStorage.getItem("haloai.locale");
@@ -86,14 +69,12 @@ export function LoginForm() {
   }, []);
 
   useEffect(() => {
-    setLoginRole(portal === "workspace_admin" ? "admin" : "member");
     setFieldError(null);
     setError(null);
   }, [portal]);
 
   function enterWorkspace(): void {
     persistPortal(portal);
-    window.localStorage.setItem("haloai.loginRole", loginRole);
     const requestedNext = searchParams.get("next");
     const safeNext =
       requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
@@ -111,23 +92,13 @@ export function LoginForm() {
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
-    if (email.length > 0 && !looksLikeEmail(email)) {
+    if (email.length === 0 || !looksLikeEmail(email)) {
       setFieldError("email");
       setSubmitting(false);
       return;
     }
-    if (!demoMode && email.length === 0) {
-      setFieldError("email");
-      setSubmitting(false);
-      return;
-    }
-    if (!demoMode && password.length < 10) {
+    if (password.length < 10) {
       setFieldError("password");
-      setSubmitting(false);
-      return;
-    }
-    if (demoMode) {
-      enterWorkspace();
       setSubmitting(false);
       return;
     }
@@ -204,7 +175,6 @@ export function LoginForm() {
             }))}
             onChange={(next) => {
               setPortal(next);
-              setLoginRole(next === "workspace_admin" ? "admin" : "member");
             }}
           />
           <p className={styles.portalDesc}>
@@ -212,18 +182,6 @@ export function LoginForm() {
             {copy[activePortal.description]}
           </p>
           <form className={styles.form} noValidate onSubmit={(event) => void submit(event)}>
-            {needsRole ? (
-              <label className={styles.field}>
-                <span>{copy.selectRole}</span>
-                <HaloSelect
-                  value={loginRole}
-                  onValueChange={(next) => setLoginRole(next as LoginRole)}
-                  ariaLabel={copy.selectRole}
-                  prefix={<UserRound size={16} />}
-                  options={roleOptions}
-                />
-              </label>
-            ) : null}
             <label className={styles.field}>
               <span>{copy.email}</span>
               <FieldError open={fieldError === "email"} message={copy.emailInvalid}>

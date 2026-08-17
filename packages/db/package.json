@@ -17,6 +17,8 @@
     "test:integration": "vitest run --root ../.. packages/db/src/repositories/collaboration-repository.integration.test.ts",
     "generate": "drizzle-kit generate --config drizzle.config.ts",
     "migrate": "tsx --env-file-if-exists=../../.env.local src/migrate.ts",
+    "seed": "tsx --env-file-if-exists=../../.env.local src/seed.ts",
+    "setup": "pnpm migrate && pnpm seed",
     "check": "pnpm typecheck && pnpm test"
   },
   "dependencies": {

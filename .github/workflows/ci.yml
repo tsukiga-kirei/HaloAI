@@ -78,7 +78,18 @@ jobs:
       - name: 安装 Chromium 与系统依赖
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: 启动 PostgreSQL
+        run: docker compose up -d --wait postgres
+
+      - name: 写入表结构与本地虚拟数据
+        env:
+          DATABASE_ADMIN_URL: postgresql://haloai_admin:haloai_admin_local@localhost:5432/haloai
+          DEMO_MODE: "true"
+        run: pnpm db:setup
+
       - name: 运行浏览器验收
+        env:
+          DEMO_MODE: "true"
         run: pnpm test:e2e
 
       - name: 上传失败截图和追踪

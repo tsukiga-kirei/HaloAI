@@ -5,7 +5,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccountMenu } from "@/components/account-menu";
-import { Avatar, HaloMark, RoomGlyph, SidebarSection } from "./primitives";
+import { HaloMark, RoomGlyph, SidebarSection } from "./primitives";
 import type { PortalKey } from "@/lib/portals";
 import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
 
@@ -16,7 +16,6 @@ export function WorkspaceSidebar({
   onRoomSelect,
   onCreateRoom,
   onOpenMemberDialog,
-  onNotify,
   identity,
   workspaces,
   activeWorkspace,
@@ -37,7 +36,6 @@ export function WorkspaceSidebar({
   onRoomSelect: (roomId: string) => void;
   onCreateRoom: () => void;
   onOpenMemberDialog: () => void;
-  onNotify: (message: string) => void;
   identity?: AuthenticatedUser | undefined;
   workspaces: readonly WorkspaceSummary[];
   activeWorkspace?: WorkspaceSummary | undefined;
@@ -65,14 +63,7 @@ export function WorkspaceSidebar({
       }),
     [dictionary, normalizedQuery, rooms],
   );
-  const directMessages = [
-    { id: "mina", label: dictionary.dmMina, initials: "ML", color: "coral", ai: false },
-    { id: "halo", label: dictionary.dmHalo, initials: "H", color: "halo", ai: true },
-  ].filter(
-    (item) =>
-      normalizedQuery.length === 0 || item.label.toLocaleLowerCase().includes(normalizedQuery),
-  );
-  const profileName = identity?.name ?? "Andy";
+  const profileName = identity?.name ?? "HaloAI";
   const profileInitials =
     profileName
       .split(/\s+/u)
@@ -169,7 +160,6 @@ export function WorkspaceSidebar({
           >
             <Icon size={18} />
             <span className="sidebar-label">{label}</span>
-            {section !== "inbox" ? null : <span className="nav-count">4</span>}
           </button>
         ))}
       </nav>
@@ -210,20 +200,11 @@ export function WorkspaceSidebar({
           actionLabel={dictionary.invite}
           onAction={onOpenMemberDialog}
         >
-          {directMessages.map((item) => (
-            <button
-              type="button"
-              className="dm-item"
-              key={item.id}
-              onClick={() => onNotify(dictionary.directMessagePreview)}
-            >
-              <Avatar initials={item.initials} color={item.color} ai={item.ai} size="small" />
-              <span className="sidebar-label">{item.label}</span>
-              <i className="presence-dot" aria-label={dictionary.online} />
-            </button>
-          ))}
+          {normalizedQuery.length === 0 ? (
+            <p className="sidebar-empty">{dictionary.noDirectMessages}</p>
+          ) : null}
         </SidebarSection>
-        {visibleRooms.length === 0 && directMessages.length === 0 ? (
+        {visibleRooms.length === 0 ? (
           <p className="sidebar-empty">{dictionary.noSearchResults}</p>
         ) : null}
       </div>

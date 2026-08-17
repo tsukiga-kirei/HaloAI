@@ -44,20 +44,20 @@ System administration’s page design includes a Models section: catalog, tenant
 
 ## 4. Current Alpha boundary
 
-The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. Local development receives a controlled server-side Owner preview identity for design and browser acceptance. Production builds deny administration by default until real authentication is connected.
+The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. The collaboration surface requires email/password sign-in and an HttpOnly session. `DEMO_MODE=true` only loads local PostgreSQL seed data; it never skips authentication. Local development may still inject a controlled server-side Owner preview identity for administration shells. Production builds deny unauthenticated administration.
 
-Administration currently renders verifiable sample state. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner.
+Workspace administration loads members and AI collaborators from the server snapshot. Sections without a ledger, audit log, or model catalog stay empty. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner, and never fill the page with sample numbers or sample events.
 
-System administration provides a navigable platform preview (tenants, models, health, policy, audit). It shows platform-level names and status only, never tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right.
+System administration provides a navigable platform preview (tenants, models, health, policy, audit). Tenant and model directories stay empty until a platform API exists. Health probes only the API readiness endpoint and must not mark unconnected dependencies as available. It never shows tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right.
 
 ### 4.1 Non-AI collaboration shell
 
 Before chat orchestration, model providers, and Agent Runs are connected, collaboration first completes independently testable team workflows:
 
-- Workspace overview collects recent rooms, action items, and shared documents with explicit owners and states.
-- Inbox switches between mentions, approvals, and invitations. Without an API, it may only mark items read locally and must not claim durable success.
-- The document directory supports search, status filters, and a path back to the document panel in its room. The toolbar search field fills remaining width; filters and create sit together on the right.
-- Activity shows attributable people, timestamps, and objects without exposing or implying hidden AI reasoning.
+- Workspace overview collects recent rooms and shared document metadata. Action items stay empty until an inbox API exists.
+- Inbox switches between mentions, approvals, and invitations. Without an API it shows an empty state and does not write fake read receipts.
+- The document directory supports search, status filters, and a path back to the document panel in its room. The toolbar search field fills remaining width; filters and create sit together on the right. Directory rows come from the server snapshot, not frontend fixtures.
+- Activity shows attributable people, timestamps, and objects. It stays empty until an activity API exists.
 - These surfaces must not trigger model calls, tool calls, or external writes. Phase boundaries appear only in empty states or toasts after a user action, never as a persistent banner.
 
 The visual hierarchy continues to use HaloAI semantic tokens. Reference products inform information architecture, spacing, and interaction density only; their branding, color systems, and AI permission models are not copied.

@@ -118,11 +118,15 @@ export interface Dictionary {
   noRoom: string;
   documentCreated: string;
   noDocuments: string;
+  emptyInbox: string;
+  emptyActivity: string;
   durableDataBoundary: string;
   metadataOnlyNotice: string;
   chatPending: string;
   chatNotEnabled: string;
   noSearchResults: string;
+  noDirectMessages: string;
+  memberInvitePending: string;
   versionSaved: string;
   versionLabel: string;
   activityDescription: string;
@@ -220,7 +224,7 @@ export interface Dictionary {
 export const dictionaries: Record<Locale, Dictionary> = {
   "zh-CN": {
     brandTagline: "团队与 AI 并肩，让想法成为成果",
-    workspace: "北辰产品组",
+    workspace: "工作空间",
     searchPlaceholder: "搜索消息、文档或成员",
     inbox: "收件箱",
     projectRooms: "项目房间",
@@ -301,7 +305,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     theme: "切换主题",
     language: "切换语言",
     demoNotice: "当前为本地演示运行时，接入模型后仍沿用相同事件协议。",
-    errorReply: "演示运行时暂时没有响应，请稍后再试。",
+    errorReply: "消息未能保存，请稍后再试。",
     teammateAdded: "新协作者已加入这个房间",
     createRoomTitle: "新建项目房间",
     createRoomSubtitle: "房间保存独立的成员、消息、文档与 AI 授权上下文。",
@@ -333,11 +337,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
     noRoom: "暂不关联房间",
     documentCreated: "文档记录已保存",
     noDocuments: "还没有文档记录，可以先建立一份项目交付物。",
-    durableDataBoundary: "项目、房间和文档元数据已安全持久化；聊天与 AI 对接仍保持关闭。",
+    emptyInbox: "暂时没有待处理事项。提及、审批和邀请接入后会显示在这里。",
+    emptyActivity: "暂时没有可展示的工作空间动态。",
+    durableDataBoundary: "成员邀请与权限变更走工作空间后台，不会只在当前浏览器里添加。",
     metadataOnlyNotice: "当前文档仅保存名称、归属和状态，正文编辑将在后续需求明确后接入。",
     chatPending: "聊天与 AI 对接将在需求明确后启用；当前房间仅用于组织项目和交付物。",
     chatNotEnabled: "聊天暂未启用",
     noSearchResults: "没有匹配的房间或成员",
+    noDirectMessages: "还没有私信。邀请成员后会出现在这里。",
+    memberInvitePending: "成员邀请走工作空间后台，当前不会只在浏览器里添加协作者。",
     versionSaved: "文档新版本已保存",
     versionLabel: "版本 v{version}",
     activityDescription: "AI 建议已生成、负责人已审阅，最近的编辑会在这里形成责任记录。",
@@ -436,7 +444,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   },
   "en-US": {
     brandTagline: "Teams and AI, turning ideas into outcomes",
-    workspace: "Northstar Product",
+    workspace: "Workspace",
     searchPlaceholder: "Search messages, docs, or people",
     inbox: "Inbox",
     projectRooms: "Project rooms",
@@ -521,7 +529,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     theme: "Change theme",
     language: "Change language",
     demoNotice: "This is the local demo runtime. Real model providers use the same event contract.",
-    errorReply: "The demo runtime did not respond. Please try again.",
+    errorReply: "The message could not be saved. Please try again.",
     teammateAdded: "A new collaborator joined this room",
     createRoomTitle: "Create project room",
     createRoomSubtitle:
@@ -556,14 +564,19 @@ export const dictionaries: Record<Locale, Dictionary> = {
     noRoom: "No room yet",
     documentCreated: "Document record saved",
     noDocuments: "No document records yet. Create the first project artifact.",
+    emptyInbox: "No items yet. Mentions, approvals, and invitations will appear here.",
+    emptyActivity: "No workspace activity to show yet.",
     durableDataBoundary:
-      "Projects, rooms, and document metadata are durably stored; chat and AI remain disabled.",
+      "Member invitations and permission changes go through workspace admin, not a browser-only list.",
     metadataOnlyNotice:
       "Only the title, ownership, and status are stored now. Content editing comes after requirements are defined.",
     chatPending:
       "Chat and AI will open after requirements are defined; this room currently organizes projects and artifacts only.",
     chatNotEnabled: "Chat not enabled",
     noSearchResults: "No matching rooms or people",
+    noDirectMessages: "No direct messages yet. Invited members will appear here.",
+    memberInvitePending:
+      "Member invitations go through workspace admin and are not added only in this browser.",
     versionSaved: "A new document version was saved",
     versionLabel: "Version v{version}",
     activityDescription:

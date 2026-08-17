@@ -11,10 +11,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { Route } from "next";
+import { useEffect, useState } from "react";
 import { ManagementShell } from "./management-shell";
 import { SystemModelsSection } from "./system-models-section";
 import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import { notify } from "@/components/toast-host";
+import { getApiBaseUrl } from "@/lib/api-client";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import { type SystemSection } from "@/lib/system-sections";
 
@@ -36,10 +38,32 @@ function titleFrom(section: SystemSection, dictionary: AdminDictionary): string 
   return dictionary.systemOverviewTitle;
 }
 
+function healthLabel(apiReady: boolean | null, dictionary: AdminDictionary): string {
+  if (apiReady === null) return "…";
+  return apiReady ? dictionary.apiReady : dictionary.apiUnavailable;
+}
+
 /**
- * 系统管理预览不展示租户房间或文档内容，只展示平台级目录与健康状态。
+ * 系统管理不展示租户房间或文档内容。没有平台目录 API 时保持空态，
+ * 健康检查只探测 API 就绪接口，不得把未接入的依赖显示为可用。
  */
 export function SystemConsole({ section }: { section: SystemSection }) {
+  const [apiReady, setApiReady] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${getApiBaseUrl()}/health/ready`, { credentials: "include" })
+      .then((response) => {
+        if (!cancelled) setApiReady(response.ok);
+      })
+      .catch(() => {
+        if (!cancelled) setApiReady(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <ManagementShell
       titleKey="systemConsoleTitle"
@@ -75,21 +99,21 @@ export function SystemConsole({ section }: { section: SystemSection }) {
               <HaloMetricCard
                 icon={<Building2 size={20} />}
                 label={dictionary.navTenants}
-                value="3"
-                detail={dictionary.tenantPlanPilot}
+                value="0"
+                detail={dictionary.metricUnavailable}
                 tone="violet"
               />
               <HaloMetricCard
                 icon={<Cpu size={20} />}
                 label={dictionary.navModels}
-                value="3"
-                detail={dictionary.systemModelsCatalog}
+                value="0"
+                detail={dictionary.metricUnavailable}
                 tone="blue"
               />
               <HaloMetricCard
                 icon={<Activity size={20} />}
                 label={dictionary.navHealth}
-                value={dictionary.statusActive}
+                value={healthLabel(apiReady, dictionary)}
                 detail={dictionary.availableNow}
                 tone="mint"
               />
@@ -97,35 +121,13 @@ export function SystemConsole({ section }: { section: SystemSection }) {
                 icon={<CircleAlert size={20} />}
                 label={dictionary.pendingApprovals}
                 value="0"
-                detail={dictionary.requiresReview}
+                detail={dictionary.metricUnavailable}
                 tone="amber"
               />
             </section>
           ) : null}
           {section === "tenants" || section === "overview" ? (
-            <section className="admin-panel admin-table-panel">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{dictionary.tenantName}</th>
-                    <th>{dictionary.tenantStatus}</th>
-                    <th>{dictionary.tenantPlan}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{dictionary.tenantBeichen}</td>
-                    <td>{dictionary.statusActive}</td>
-                    <td>{dictionary.tenantPlanPilot}</td>
-                  </tr>
-                  <tr>
-                    <td>{dictionary.tenantAurora}</td>
-                    <td>{dictionary.statusActive}</td>
-                    <td>{dictionary.tenantPlanPilot}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
+            <p className="document-empty-copy">{dictionary.emptyTenantDirectory}</p>
           ) : null}
           {section === "models" ? <SystemModelsSection dictionary={dictionary} /> : null}
           {section === "health" ? (
@@ -140,19 +142,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
                 <tbody>
                   <tr>
                     <td>API</td>
-                    <td>{dictionary.statusActive}</td>
-                  </tr>
-                  <tr>
-                    <td>PostgreSQL</td>
-                    <td>{dictionary.statusActive}</td>
-                  </tr>
-                  <tr>
-                    <td>{dictionary.navModels}</td>
-                    <td>{dictionary.statusActive}</td>
-                  </tr>
-                  <tr>
-                    <td>Worker</td>
-                    <td>{dictionary.statusActive}</td>
+                    <td>{healthLabel(apiReady, dictionary)}</td>
                   </tr>
                 </tbody>
               </table>
@@ -171,26 +161,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
             </section>
           ) : null}
           {section === "audit" ? (
-            <section className="admin-panel admin-table-panel">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{dictionary.auditEvent}</th>
-                    <th>{dictionary.auditActor}</th>
-                    <th>{dictionary.auditTime}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <code>platform.health.checked</code>
-                    </td>
-                    <td>{dictionary.auditSystem}</td>
-                    <td>2026-08-17 09:12</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
+            <p className="document-empty-copy">{dictionary.emptyAuditLog}</p>
           ) : null}
         </>
       )}

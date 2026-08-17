@@ -14,9 +14,6 @@ export default async function SystemSectionPage({
     notFound();
   }
 
-  if (process.env.NEXT_PUBLIC_AUTH_MODE === "real") {
-    return <SystemConsole section={section} />;
-  }
   const access = getSystemAdminAccess();
   if (!access.allowed) return <RestrictedSurface kind="system" />;
   return <SystemConsole section={section} />;

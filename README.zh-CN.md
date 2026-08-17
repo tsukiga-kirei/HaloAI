@@ -60,24 +60,24 @@ HaloAI 是一个以项目房间为中心的协作工具。真实人员和具名�
 
 HaloAI 目前处于 **Foundation / 规格与框架阶段**。现有代码用于验证纯 TypeScript、权限策略、流式事件和响应式工作台是否能形成一条完整链路；在产品、领域、安全和 UX 规格评审完成前，接口与目录仍可能调整。
 
-| 范围                         | 状态              | 说明                                                               |
-| ---------------------------- | ----------------- | ------------------------------------------------------------------ |
-| 产品、UX、安全和架构规格     | Draft 0.1 完成    | 完整中英文对照与可执行验收门槛                                     |
-| pnpm TypeScript 工作区       | 已建立            | 严格类型检查和独立领域包                                           |
-| Actor / Role / AgentProfile  | Foundation 已实现 | 身份、权限、人设和房间成员关系分离                                 |
-| 权限策略与测试               | Foundation 已实现 | 默认拒绝策略与委托权限交集                                         |
-| API 与耐久 Worker            | 框架已实现        | Fastify 边界、可恢复 SSE 和 Graphile 任务边界                      |
-| 数据库 schema                | Foundation 已实现 | 显式租户协作、运行时与治理数据表                                   |
-| 响应式工作台                 | Foundation 已实现 | 房间搜索/创建/切换、独立消息、流式回复、文档版本、主题和移动端布局 |
-| 前台与工作空间后台           | Alpha 骨架已实现  | `/app` 与 `/admin/*` 独立外壳、服务端权限守卫、双语与移动端布局    |
-| CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口                |
-| 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                           |
-| 真实认证与数据库             | Alpha 已接入      | 安全 Cookie 会话、注册登录、工作区创建/切换、邀请、角色保护已接入  |
-| 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL                             |
+| 范围                         | 状态              | 说明                                                              |
+| ---------------------------- | ----------------- | ----------------------------------------------------------------- |
+| 产品、UX、安全和架构规格     | Draft 0.1 完成    | 完整中英文对照与可执行验收门槛                                    |
+| pnpm TypeScript 工作区       | 已建立            | 严格类型检查和独立领域包                                          |
+| Actor / Role / AgentProfile  | Foundation 已实现 | 身份、权限、人设和房间成员关系分离                                |
+| 权限策略与测试               | Foundation 已实现 | 默认拒绝策略与委托权限交集                                        |
+| API 与耐久 Worker            | 框架已实现        | Fastify 边界、可恢复 SSE 和 Graphile 任务边界                     |
+| 数据库 schema                | Foundation 已实现 | 显式租户协作、运行时与治理数据表                                  |
+| 响应式工作台                 | Foundation 已实现 | 认证后的房间搜索/创建/切换、持久化消息、主题和移动端布局          |
+| 前台与工作空间后台           | Alpha 骨架已实现  | `/app` 与 `/admin/*` 独立外壳、服务端权限守卫、双语与移动端布局   |
+| CRDT 协作服务                | Foundation 已实现 | Yjs/Hocuspocus 传输、票据授权、撤权重连与持久化端口               |
+| 供应商无关模型边界           | Foundation 已实现 | 流式协议和演示适配器；尚未连接真实供应商                          |
+| 真实认证与数据库             | Alpha 已接入      | 安全 Cookie 会话、注册登录、工作区创建/切换、邀请、角色保护已接入 |
+| 富文本编辑器与耐久 CRDT 存储 | 未开始            | 进入团队 Beta 后接入 Web 与 PostgreSQL                            |
 
 > 当前演示运行时不会调用真实模型或外部工具，因此不需要 API Key，也不代表已经达到生产安全等级。
 
-当前页面不是纯静态稿。真实模式已经接入注册登录、可撤销数据库会话、首次工作区创建、工作区切换、邮箱绑定邀请、邀请接受、成员列表与角色变更；最后一位所有者同时受应用事务和数据库延迟约束保护。`/app` 的房间、消息和文档正文仍使用浏览器演示状态，演示回复由服务端路由通过 SSE 流式返回，刷新页面会重置这部分内容。尚未接后端的操作会显示阶段说明，不会静默执行或伪装成功。
+当前页面不是纯静态稿。真实模式已经接入注册登录、可撤销数据库会话、首次工作区创建、工作区切换、邮箱绑定邀请、邀请接受、成员列表与角色变更；最后一位所有者同时受应用事务和数据库延迟约束保护。本地 `DEMO_MODE=true` 会把带哈希的演示账号和协作夹具写入 PostgreSQL，Web 不再内置浏览器端假房间、假消息或后台示例数字。发送消息经 API 持久化；Agent 回复尚未接入。文档正文仍只保存元数据，等编辑器接入后再开放。
 
 ## 技术路线
 
@@ -192,24 +192,26 @@ HaloAI/
 - pnpm 9 或更高版本
 - Git
 
-默认 Web/API 演示不要求 Docker、PostgreSQL 或模型密钥；启动 Worker 与持久化链路时需要 PostgreSQL。
-
 ### 安装与运行
+
+默认本地联调需要 PostgreSQL。首次先安装依赖并复制环境变量；之后一条命令即可启动数据库、迁移/种子，并打开 Web 与 API。
 
 ```bash
 git clone <your-repository-url>
 cd HaloAI
 pnpm install
-pnpm dev
+cp .env.example .env.local
+pnpm dev:local
 ```
 
-打开 `http://localhost:3000`。
+打开 `http://127.0.0.1:3000`，使用本地种子账号登录，例如 `owner@haloai.dev`。初始密码只写在 `packages/db/devdata/README.md`。空邮箱或空密码不能再进入工作区。
 
-如需验证耐久 Worker 与持久化边界，先启动本地 PostgreSQL：
+`pnpm db:migrate` 只执行表结构。`pnpm db:seed` 在 `DEMO_MODE=true` 时写入 `packages/db/devdata`。生产环境必须关闭该开关。
+
+如需同时启动 CRDT 服务和耐久 Worker：
 
 ```bash
-pnpm infra:up
-pnpm dev:all
+pnpm dev:local:all
 ```
 
 `pnpm infra:down` 会停止本地服务，但不会删除命名数据卷。
@@ -220,19 +222,20 @@ pnpm dev:all
 cp .env.example .env.local
 ```
 
-| 变量                                                 | 是否必填     | 说明                                                           |
-| ---------------------------------------------------- | ------------ | -------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`           | 可选         | API 监听地址与精确允许的浏览器来源                             |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`  | 可选         | CRDT 服务入口与精确 WebSocket Origin                           |
-| `DEMO_*`                                             | 协作演示必填 | 固定本地 ticket、Actor、工作空间、文档和访问级别；生产环境禁止 |
-| `DATABASE_URL`                                       | Worker 必填  | PostgreSQL 应用连接，仅服务端使用                              |
-| `AUTH_DATABASE_URL`                                  | API 必填     | 认证专用数据库角色，只访问用户、账户、会话与验证表             |
-| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`               | API 必填     | 认证服务公开 Origin 与至少 32 字符的服务端密钥                 |
-| `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_AUTH_MODE` | Web 可选     | 浏览器 API 入口与 `real` / `demo` 运行模式                     |
-| `DATABASE_ADMIN_URL`                                 | 迁移必填     | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径           |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`      | 集成测试     | 仅本地与 CI 的 PostgreSQL 安全测试                             |
-| `OPENAI_API_KEY`                                     | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
-| `ANTHROPIC_API_KEY`                                  | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                     |
+| 变量                                                | 是否必填        | 说明                                                                     |
+| --------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选            | API 监听地址与精确允许的浏览器来源                                       |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选            | CRDT 服务入口与精确 WebSocket Origin                                     |
+| `DEMO_MODE`                                         | 本地种子 / 协作 | 加载 `packages/db/devdata` 与协作演示 ticket；不能跳过登录；生产环境禁止 |
+| `DEMO_TOKEN` / `DEMO_*`                             | 协作演示必填    | 固定本地 ticket、Actor、工作空间、文档和访问级别；需要 `DEMO_MODE=true`  |
+| `DATABASE_URL`                                      | Worker 必填     | PostgreSQL 应用连接，仅服务端使用                                        |
+| `AUTH_DATABASE_URL`                                 | API 必填        | 认证专用数据库角色，只访问用户、账户、会话与验证表                       |
+| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`              | API 必填        | 认证服务公开 Origin 与至少 32 字符的服务端密钥                           |
+| `NEXT_PUBLIC_API_BASE_URL`                          | Web 可选        | 浏览器 API 入口；主机名需与 `API_WEB_ORIGIN` 一致                        |
+| `DATABASE_ADMIN_URL`                                | 迁移必填        | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径                     |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | 集成测试        | 仅本地与 CI 的 PostgreSQL 安全测试                                       |
+| `OPENAI_API_KEY`                                    | 可选            | 对应供应商适配器启用后由服务端密钥代理读取                               |
+| `ANTHROPIC_API_KEY`                                 | 可选            | 对应供应商适配器启用后由服务端密钥代理读取                               |
 
 只有 PostgreSQL 已可用且已复制 `.env.local` 时才运行 `pnpm dev:all`；该命令会同时启动 API、协作服务和耐久 Worker。
 
@@ -241,14 +244,18 @@ cp .env.example .env.local
 ## 常用命令
 
 ```bash
-pnpm dev          # 启动 Web 开发环境
+pnpm dev:local    # 启动 PostgreSQL、迁移/种子，再打开 Web 与 API
+pnpm dev:local:all # 同上，并同时启动 CRDT 服务和耐久 Worker
+pnpm dev          # 仅启动 Web 与 API（数据库需已就绪）
 pnpm dev:collab   # 启动 CRDT 协作服务（需要完整 Demo 配置）
-pnpm infra:up     # 启动本地 PostgreSQL 18
-pnpm db:migrate   # 使用独立迁移连接执行待处理迁移
+pnpm infra:up     # 启动本地 PostgreSQL 18，并等待健康检查通过
+pnpm db:migrate   # 使用独立迁移连接执行表结构迁移
+pnpm db:seed      # 在 DEMO_MODE=true 时写入本地虚拟数据
+pnpm db:setup     # 先迁移，再按 DEMO_MODE 写入虚拟数据
 pnpm db:test:integration # 验证 RLS、幂等、撤权与租户隔离
 pnpm typecheck    # 检查所有 TypeScript 包
 pnpm test         # 运行领域与运行时测试
-pnpm test:e2e     # 验收桌面端、移动端、主题、语言和 SSE
+pnpm test:e2e     # 验收桌面端、移动端、主题、语言和协作路径
 pnpm build        # 构建所有工作区包
 pnpm check        # 检查文档、格式、类型、单元测试和构建
 pnpm check:all    # 在 check 基础上追加浏览器端到端验收
