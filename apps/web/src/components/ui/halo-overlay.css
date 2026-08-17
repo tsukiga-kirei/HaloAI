@@ -74,7 +74,9 @@
 .halo-menu-content,
 .halo-menu-sub {
   z-index: 400;
-  min-width: var(--radix-select-trigger-width, 196px);
+  /* Radix Select 会按触发器宽度内联覆盖；菜单另有 min-width: 228px。 */
+  --radix-select-trigger-width: 196px;
+  min-width: var(--radix-select-trigger-width);
   padding: 4px;
   overflow: visible;
   border: 1px solid var(--border);
@@ -312,7 +314,9 @@
 .halo-segmented.is-fill {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(var(--segment-count, 3), minmax(0, 1fr));
+  /* React 按选项数内联覆盖；默认 3 列供静态分析与无 style 时使用。 */
+  --segment-count: 3;
+  grid-template-columns: repeat(var(--segment-count), minmax(0, 1fr));
 }
 .halo-segmented-thumb {
   position: absolute;
