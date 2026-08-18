@@ -12,7 +12,7 @@ PostgreSQL is the source of truth for workspaces, memberships, rooms, messages, 
 | Application connection    | API, worker, and collaboration storage | Business reads and writes constrained by RLS    | Table ownership, `BYPASSRLS`, role creation, databases, or DDL |
 | Authentication connection | Future authentication component        | Users, sessions, and account linking            | Business content or human sessions for AI actors               |
 
-Fixed development passwords may exist only in the local container bootstrap. Production uses independent secrets, least-privilege roles, and rotation.
+Database passwords live in `.env.local` (or the production secret store). Compose injects them into the container, and `deploy/postgres/init` creates the login roles on first empty-volume start. Production uses the same variable names with independent strong secrets; never commit real passwords. An existing data volume does not re-run init.
 
 ## Tenant transactions
 

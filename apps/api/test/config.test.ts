@@ -16,7 +16,25 @@ describe("API 环境配置", () => {
       HOST: "127.0.0.2",
       PORT: 3101,
       WEB_ORIGIN: "https://halo.example",
+      AUTH_BASE_URL: "http://127.0.0.2:3101",
     });
+  });
+
+  it("未写 AUTH_BASE_URL 时由 API 监听地址推导公开源站", () => {
+    expect(readConfig({ NODE_ENV: "test", API_PORT: "3108" }).AUTH_BASE_URL).toBe(
+      "http://127.0.0.1:3108",
+    );
+  });
+
+  it("显式 AUTH_BASE_URL 优先于监听地址", () => {
+    expect(
+      readConfig({
+        NODE_ENV: "test",
+        API_HOST: "127.0.0.2",
+        API_PORT: "3101",
+        AUTH_BASE_URL: "https://api.halo.example",
+      }).AUTH_BASE_URL,
+    ).toBe("https://api.halo.example");
   });
 
   it("拒绝带路径的来源，防止部署者误把 URL 当成 Origin", () => {

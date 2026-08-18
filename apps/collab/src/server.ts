@@ -23,7 +23,7 @@ import {
   type AuthorizedDocumentConnection,
   type CollaborationConnectionContext,
 } from "./authorization";
-import type { CollaborationConfig } from "./config";
+import { hasCollaborationDemoIdentity, type CollaborationConfig } from "./config";
 import { formatDocumentName, parseDocumentName } from "./document-name";
 import { DocumentDurabilityGuard } from "./durability-guard";
 import { storeDocumentWithRetry } from "./persistence-retry";
@@ -71,7 +71,7 @@ function requirePersistence(
   }
   if (
     candidate.persistenceKind === "demo-memory" &&
-    (!config.DEMO_MODE || config.NODE_ENV === "production")
+    (config.NODE_ENV === "production" || !hasCollaborationDemoIdentity(config))
   ) {
     throw new Error("demo-persistence-forbidden");
   }

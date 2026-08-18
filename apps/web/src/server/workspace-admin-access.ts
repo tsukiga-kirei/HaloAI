@@ -22,8 +22,9 @@ interface ResolveAccessInput {
 }
 
 /**
- * Alpha 尚未接入真实会话，因此只在开发或测试环境创建服务端预览身份。
- * 生产环境必须默认拒绝，避免把客户端路由、查询参数或本地存储误当成授权事实。
+ * Alpha 后台分区仍用开发环境预览 Owner，因为服务端尚未按会话 Membership 做分区授权。
+ * 不再提供环境变量切换预览角色。生产环境必须默认拒绝，避免把客户端路由、查询参数
+ * 或本地存储误当成授权事实。
  */
 export function resolveWorkspaceAdminAccess(input: ResolveAccessInput): WorkspaceAdminAccess {
   if (input.environment === "production") {
@@ -62,18 +63,8 @@ export function getWorkspaceAdminAccess(section: AdminSection): WorkspaceAdminAc
       : process.env.NODE_ENV === "test"
         ? "test"
         : "development";
-  const configuredRole = process.env.HALOAI_ADMIN_PREVIEW_ROLE;
-  const previewRole =
-    configuredRole === "owner" ||
-    configuredRole === "admin" ||
-    configuredRole === "member" ||
-    configuredRole === "guest"
-      ? configuredRole
-      : undefined;
-
   return resolveWorkspaceAdminAccess({
     section,
     environment,
-    ...(previewRole === undefined ? {} : { previewRole }),
   });
 }

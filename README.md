@@ -213,6 +213,8 @@ pnpm dev:local:all
 
 `pnpm infra:down` stops the local service without deleting its named data volume.
 
+Local listen addresses are already the process defaults: Web at `http://127.0.0.1:3000`, API at `http://127.0.0.1:3100`. Do not copy them into `.env.local`. The browser stays on the page origin; Next rewrites `/api/auth`, `/v1`, and `/health` to the API. Open `http://127.0.0.1:3000`, not `localhost`.
+
 ### Environment
 
 ```bash
@@ -221,14 +223,16 @@ cp .env.example .env.local
 
 | Variable                                            | Required            | Purpose                                                                                         |
 | --------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional            | API binding and exact browser origin                                                            |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional            | CRDT endpoint and exact WebSocket origin                                                        |
-| `DEMO_MODE`                                         | Local seed / collab | Loads `packages/db/devdata` and collab demo tickets; never skips login; forbidden in production |
-| `DEMO_TOKEN` / `DEMO_*`                             | Collaboration demo  | Fixed local ticket, actor, workspace, document, and access; requires `DEMO_MODE=true`           |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional            | Override API bind address and the exact browser origin; omit locally                            |
+| `AUTH_BASE_URL`                                     | Optional            | Public API origin when it differs from the bind address; derived from `API_HOST`/`API_PORT`     |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional            | CRDT bind address and WebSocket origin; omit unless you start the collab process                |
+| `DEMO_MODE`                                         | Local seed          | Loads `packages/db/devdata`; never skips login; forbidden in production                         |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | Local compose       | Database and admin user created by the image; password must match `DATABASE_ADMIN_URL`          |
+| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`           | Local compose       | Application login role created on first empty volume; must match `DATABASE_URL`                 |
+| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`         | Local compose       | Auth login role created on first empty volume; must match `AUTH_DATABASE_URL`                   |
 | `DATABASE_URL`                                      | Worker              | Server-only PostgreSQL application connection                                                   |
 | `AUTH_DATABASE_URL`                                 | API                 | Authentication-only role for users, accounts, sessions, and verifications                       |
-| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`              | API                 | Public auth origin and a server-only secret of at least 32 characters                           |
-| `NEXT_PUBLIC_API_BASE_URL`                          | Web                 | Browser API origin; keep the same hostname as `API_WEB_ORIGIN`                                  |
+| `BETTER_AUTH_SECRET`                                | API                 | Server-only secret of at least 32 characters                                                    |
 | `DATABASE_ADMIN_URL`                                | Migration           | Migration process only; forbidden in API, Web, and Worker request paths                         |
 | `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | Integration tests   | PostgreSQL security tests in local development and CI                                           |
 | `OPENAI_API_KEY`                                    | Optional            | Read by the server-side provider adapter when enabled                                           |
@@ -244,7 +248,7 @@ Never commit real workspace keys or put them in browsers, prompts, or ordinary l
 pnpm dev:local    # Start PostgreSQL, migrate/seed, then open Web and API
 pnpm dev:local:all # Same, plus the CRDT service and durable worker
 pnpm dev          # Start Web and API only (database must already be ready)
-pnpm dev:collab   # Start the CRDT service (complete demo config required)
+pnpm dev:collab   # Start the CRDT service (not required for login, rooms, or seed)
 pnpm infra:up     # Start local PostgreSQL 18 and wait until it is healthy
 pnpm db:migrate   # Apply schema migrations with the separate migration connection
 pnpm db:seed      # Load local virtual data when DEMO_MODE=true

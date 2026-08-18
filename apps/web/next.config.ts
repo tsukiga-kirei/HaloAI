@@ -1,6 +1,53 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import type { NextConfig } from "next";
+import { resolveApiOrigin } from "./src/lib/api-origin";
 
-const apiOrigin = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3100";
+const apiOriginEnvKeys = new Set([
+  "API_HOST",
+  "API_PORT",
+  "AUTH_BASE_URL",
+  "NEXT_PUBLIC_API_BASE_URL",
+]);
+
+/**
+ * Next 默认只读 apps/web/.env*。仓库约定配置在根目录 .env.local。
+ * 这里只吸入 API 源站相关键，避免把数据库口令装进 Web 进程。
+ */
+function loadApiOriginEnv(): void {
+  const rootEnv = path.resolve(process.cwd(), "../../.env.local");
+  const packageEnv = path.resolve(process.cwd(), ".env.local");
+  const file = existsSync(rootEnv) ? rootEnv : packageEnv;
+  if (!existsSync(file)) {
+    return;
+  }
+
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0 || trimmed.startsWith("#")) {
+      continue;
+    }
+    const separator = trimmed.indexOf("=");
+    if (separator <= 0) {
+      continue;
+    }
+    const key = trimmed.slice(0, separator).trim();
+    if (!apiOriginEnvKeys.has(key) || process.env[key]) {
+      continue;
+    }
+    let value = trimmed.slice(separator + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[key] = value;
+  }
+}
+
+loadApiOriginEnv();
+const apiOrigin = resolveApiOrigin();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

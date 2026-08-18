@@ -216,6 +216,8 @@ pnpm dev:local:all
 
 `pnpm infra:down` 会停止本地服务，但不会删除命名数据卷。
 
+本地监听地址已是进程默认值：Web 为 `http://127.0.0.1:3000`，API 为 `http://127.0.0.1:3100`，不必再抄进 `.env.local`。浏览器只打当前页面；Web 把 `/api/auth`、`/v1`、`/health` 转到 API。请打开 `http://127.0.0.1:3000`，不要用 `localhost`。
+
 ### 环境变量
 
 ```bash
@@ -224,14 +226,16 @@ cp .env.example .env.local
 
 | 变量                                                | 是否必填        | 说明                                                                     |
 | --------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选            | API 监听地址与精确允许的浏览器来源                                       |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选            | CRDT 服务入口与精确 WebSocket Origin                                     |
-| `DEMO_MODE`                                         | 本地种子 / 协作 | 加载 `packages/db/devdata` 与协作演示 ticket；不能跳过登录；生产环境禁止 |
-| `DEMO_TOKEN` / `DEMO_*`                             | 协作演示必填    | 固定本地 ticket、Actor、工作空间、文档和访问级别；需要 `DEMO_MODE=true`  |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选            | 覆盖 API 监听地址与精确允许的浏览器来源；本地可省略                      |
+| `AUTH_BASE_URL`                                     | 可选            | 公开 API 源站与监听地址不同时再写；本地由 `API_HOST`/`API_PORT` 推导     |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选            | CRDT 监听地址与 WebSocket Origin；不启动协作进程时可省略                 |
+| `DEMO_MODE`                                         | 本地种子        | 加载 `packages/db/devdata`；不能跳过登录；生产环境禁止                   |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | 本地 compose | 官方镜像创建的库和管理员；密码须与 `DATABASE_ADMIN_URL` 一致 |
+| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`           | 本地 compose    | 空库首次启动时创建应用登录角色；须与 `DATABASE_URL` 一致                 |
+| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`         | 本地 compose    | 空库首次启动时创建认证登录角色；须与 `AUTH_DATABASE_URL` 一致            |
 | `DATABASE_URL`                                      | Worker 必填     | PostgreSQL 应用连接，仅服务端使用                                        |
 | `AUTH_DATABASE_URL`                                 | API 必填        | 认证专用数据库角色，只访问用户、账户、会话与验证表                       |
-| `AUTH_BASE_URL` / `BETTER_AUTH_SECRET`              | API 必填        | 认证服务公开 Origin 与至少 32 字符的服务端密钥                           |
-| `NEXT_PUBLIC_API_BASE_URL`                          | Web 可选        | 浏览器 API 入口；主机名需与 `API_WEB_ORIGIN` 一致                        |
+| `BETTER_AUTH_SECRET`                                | API 必填        | 至少 32 字符的服务端密钥                                                 |
 | `DATABASE_ADMIN_URL`                                | 迁移必填        | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径                     |
 | `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | 集成测试        | 仅本地与 CI 的 PostgreSQL 安全测试                                       |
 | `OPENAI_API_KEY`                                    | 可选            | 对应供应商适配器启用后由服务端密钥代理读取                               |
@@ -247,7 +251,7 @@ cp .env.example .env.local
 pnpm dev:local    # 启动 PostgreSQL、迁移/种子，再打开 Web 与 API
 pnpm dev:local:all # 同上，并同时启动 CRDT 服务和耐久 Worker
 pnpm dev          # 仅启动 Web 与 API（数据库需已就绪）
-pnpm dev:collab   # 启动 CRDT 协作服务（需要完整 Demo 配置）
+pnpm dev:collab   # 启动 CRDT 协作服务（登录、房间和种子都不需要）
 pnpm infra:up     # 启动本地 PostgreSQL 18，并等待健康检查通过
 pnpm db:migrate   # 使用独立迁移连接执行表结构迁移
 pnpm db:seed      # 在 DEMO_MODE=true 时写入本地虚拟数据

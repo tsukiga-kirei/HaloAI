@@ -44,7 +44,7 @@ System administration’s page design includes a Models section: catalog, tenant
 
 ## 4. Current Alpha boundary
 
-The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. The collaboration surface requires email/password sign-in and an HttpOnly session. `DEMO_MODE=true` only loads local PostgreSQL seed data; it never skips authentication. Local development may still inject a controlled server-side Owner preview identity for administration shells. Production builds deny unauthenticated administration.
+The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. The collaboration surface requires email/password sign-in and an HttpOnly session. `DEMO_MODE=true` only loads local PostgreSQL seed data; it never skips authentication and does not enable collaboration demo tickets. Local development still authorizes administration shells with a hardcoded Owner preview principal until session membership is enforced. Production builds deny unauthenticated administration.
 
 Workspace administration loads members and AI collaborators from the server snapshot. Sections without a ledger, audit log, or model catalog stay empty. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner, and never fill the page with sample numbers or sample events.
 

@@ -1,11 +1,13 @@
+import { resolveApiOrigin } from "./api-origin";
+
 /**
  * 浏览器请求走当前页面 Origin，由 Next rewrite 转到 API。
  * 这样会话 Cookie 是第一方，不会因为 3000/3100 分端口，或 localhost 与 127.0.0.1 混用被拒。
- * 服务端渲染仍直连 API 源站。
+ * 服务端渲染仍直连 API 源站，地址由监听配置推导，不必再写 NEXT_PUBLIC_API_BASE_URL。
  */
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") return "";
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3100";
+  return resolveApiOrigin();
 }
 
 export class ApiClientError extends Error {

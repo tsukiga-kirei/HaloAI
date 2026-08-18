@@ -15,7 +15,6 @@ const sharedEnv = {
   AUTH_DATABASE_URL:
     process.env.AUTH_DATABASE_URL ??
     "postgresql://haloai_auth:haloai_auth_local@localhost:5432/haloai",
-  NEXT_PUBLIC_API_BASE_URL: apiOrigin,
 };
 
 export default defineConfig({

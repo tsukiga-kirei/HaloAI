@@ -5,10 +5,13 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: haloai
-      POSTGRES_USER: haloai_admin
-      # 仅用于本机开发；生产部署必须由密钥管理系统提供独立高强度凭据。
-      POSTGRES_PASSWORD: haloai_admin_local
+      POSTGRES_DB: ${POSTGRES_DB:-haloai}
+      POSTGRES_USER: ${POSTGRES_USER:-haloai_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-haloai_admin_local}
+      HALOAI_APP_USER: ${HALOAI_APP_USER:-haloai_app}
+      HALOAI_APP_PASSWORD: ${HALOAI_APP_PASSWORD:-haloai_app_local}
+      HALOAI_AUTH_USER: ${HALOAI_AUTH_USER:-haloai_auth}
+      HALOAI_AUTH_PASSWORD: ${HALOAI_AUTH_PASSWORD:-haloai_auth_local}
     ports:
       - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -16,7 +19,7 @@ services:
       - haloai_postgres_v18:/var/lib/postgresql
       - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U haloai_admin -d haloai"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 2s
       timeout: 3s
       retries: 20

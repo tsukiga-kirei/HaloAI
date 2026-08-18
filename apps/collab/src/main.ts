@@ -1,7 +1,11 @@
 import pino from "pino";
 import { DemoDocumentAuthorization } from "./adapters/demo-authorization";
 import { InMemoryDemoDocumentPersistence } from "./adapters/in-memory-demo-persistence";
-import { readCollaborationConfig, type CollaborationConfig } from "./config";
+import {
+  hasCollaborationDemoIdentity,
+  readCollaborationConfig,
+  type CollaborationConfig,
+} from "./config";
 import { createCollaborationService } from "./server";
 
 function errorName(error: unknown): string {
@@ -9,18 +13,11 @@ function errorName(error: unknown): string {
 }
 
 function createDemoAuthorization(config: CollaborationConfig) {
-  if (
-    !config.DEMO_MODE ||
-    config.DEMO_TOKEN === undefined ||
-    config.DEMO_ACTOR_ID === undefined ||
-    config.DEMO_WORKSPACE_ID === undefined ||
-    config.DEMO_DOCUMENT_ID === undefined ||
-    config.DEMO_ACCESS === undefined
-  ) {
+  if (!hasCollaborationDemoIdentity(config)) {
     /**
-     * 当前可执行入口只为 Foundation Demo 组合。生产部署必须从自己的组合根调用
-     * createCollaborationService，并注入真实授权端口与 persistenceKind=persistent 的实现；
-     * 这里绝不在缺失端口时回落到“允许全部”或临时内存。
+     * 当前可执行入口只接受完整的本地演示 ticket。日常登录与种子不依赖本进程；
+     * 生产部署必须从自己的组合根调用 createCollaborationService，并注入真实授权端口
+     * 与 persistenceKind=persistent 的实现。缺失端口时绝不回落到“允许全部”。
      */
     throw new Error("collaboration-production-ports-unconfigured");
   }

@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 启动 PostgreSQL
-        run: docker compose up -d --wait postgres
+        run: pnpm infra:up
 
       - name: 执行数据库迁移
         env:
@@ -79,7 +79,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: 启动 PostgreSQL
-        run: docker compose up -d --wait postgres
+        run: pnpm infra:up
 
       - name: 写入表结构与本地虚拟数据
         env:

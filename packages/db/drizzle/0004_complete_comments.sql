@@ -9,7 +9,6 @@ COMMENT ON TABLE "agent_versions" IS 'AI 人设的不可变版本快照，发布
 COMMENT ON TABLE "context_manifest_items" IS '进入模型上下文的单条授权条目，不含完整正文';
 COMMENT ON TABLE "context_manifests" IS '一次运行进入模型上下文的授权清单摘要';
 COMMENT ON TABLE "document_versions" IS '文档的不可变命名检查点，恢复必须新建版本';
-COMMENT ON TABLE "haloai_devdata_revisions" IS '本地虚拟数据已应用版本，生产环境不得使用';
 COMMENT ON TABLE "mentions" IS '消息中的结构化提及关系，禁止事后从文本猜测';
 COMMENT ON TABLE "message_revisions" IS '消息修订历史，仅追加，不覆盖原始消息';
 COMMENT ON TABLE "message_tombstones" IS '消息删除事实，不复制被隐藏正文';
@@ -267,8 +266,6 @@ COMMENT ON COLUMN "documents"."archived_at" IS '归档时间';
 COMMENT ON COLUMN "documents"."deleted_at" IS '删除时间';
 COMMENT ON COLUMN "documents"."created_at" IS '创建时间';
 COMMENT ON COLUMN "documents"."updated_at" IS '最后更新时间';
-COMMENT ON COLUMN "haloai_devdata_revisions"."id" IS '已应用的虚拟数据文件名';
-COMMENT ON COLUMN "haloai_devdata_revisions"."applied_at" IS '写入时间';
 COMMENT ON COLUMN "human_actors"."created_at" IS '创建时间';
 COMMENT ON COLUMN "mentions"."id" IS '主键';
 COMMENT ON COLUMN "mentions"."workspace_id" IS '所属工作空间';

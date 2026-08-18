@@ -45,6 +45,21 @@ const configSchema = z
 export type ApiConfig = z.infer<typeof configSchema>;
 
 /**
+ * 本地不必再单独写 AUTH_BASE_URL。公开源站跟监听地址走；绑 0.0.0.0 时仍用回环地址，
+ * 因为 0.0.0.0 不能当浏览器 Origin。生产若前面有反代，再显式覆盖 AUTH_BASE_URL。
+ */
+function deriveAuthBaseUrl(environment: NodeJS.ProcessEnv): string {
+  if (environment.AUTH_BASE_URL) {
+    return environment.AUTH_BASE_URL;
+  }
+
+  const bindHost = environment.API_HOST ?? "127.0.0.1";
+  const publicHost = bindHost === "0.0.0.0" || bindHost === "::" ? "127.0.0.1" : bindHost;
+  const port = environment.API_PORT ?? "3100";
+  return `http://${publicHost}:${port}`;
+}
+
+/**
  * 环境变量只在进程边界解析一次。业务代码拿到的是已校验配置，不能在各模块中直接读取
  * `process.env`，否则测试无法可靠覆盖默认值，部署时也容易出现“字符串看似存在但格式错误”。
  */
@@ -59,7 +74,7 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): ApiCon
     PORT: environment.API_PORT,
     LOG_LEVEL: environment.LOG_LEVEL,
     WEB_ORIGIN: environment.API_WEB_ORIGIN,
-    AUTH_BASE_URL: environment.AUTH_BASE_URL,
+    AUTH_BASE_URL: deriveAuthBaseUrl(environment),
     AUTH_SECRET: environment.BETTER_AUTH_SECRET,
     DATABASE_URL: environment.DATABASE_URL,
     AUTH_DATABASE_URL: environment.AUTH_DATABASE_URL,

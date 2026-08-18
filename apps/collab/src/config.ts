@@ -21,7 +21,7 @@ const collaborationConfigSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     HOST: z.string().min(1).default("127.0.0.1"),
     PORT: z.coerce.number().int().min(1).max(65_535).default(3200),
-    WEB_ORIGIN: WebOriginSchema.default("http://localhost:3000"),
+    WEB_ORIGIN: WebOriginSchema.default("http://127.0.0.1:3000"),
     LOG_LEVEL: LogLevelSchema.default("info"),
     STORE_DEBOUNCE_MS: z.coerce.number().int().min(100).max(60_000).default(1_000),
     STORE_MAX_DEBOUNCE_MS: z.coerce.number().int().min(100).max(300_000).default(5_000),
@@ -70,8 +70,8 @@ const collaborationConfigSchema = z
     }
 
     /**
-     * Demo 模式会使用进程内静态 ticket 与内存文档，进程退出即丢失，且不具备真实撤权来源。
-     * 它只能用于 Foundation 本地串通 UI；生产环境必须在组合根注入真实授权与耐久存储端口。
+     * DEMO_MODE 只属于本地种子数据，不能拿来打开协作演示 ticket。
+     * 生产环境即使误拷了本地 .env，也必须拒绝该开关与任何 DEMO_*。
      */
     if (config.NODE_ENV === "production" && config.DEMO_MODE) {
       context.addIssue({
@@ -88,23 +88,47 @@ const collaborationConfigSchema = z
       config.DEMO_DOCUMENT_ID,
       config.DEMO_ACCESS,
     ];
-    if (config.DEMO_MODE && demoValues.some((value) => value === undefined)) {
+    const definedDemoValues = demoValues.filter((value) => value !== undefined);
+    if (definedDemoValues.length > 0 && definedDemoValues.length < demoValues.length) {
       context.addIssue({
         code: "custom",
-        path: ["DEMO_MODE"],
-        message: "DEMO_MODE requires the complete demo identity and token scope",
+        path: ["DEMO_TOKEN"],
+        message: "collaboration demo identity must be complete or entirely absent",
       });
     }
-    if (!config.DEMO_MODE && demoValues.some((value) => value !== undefined)) {
+    if (config.NODE_ENV === "production" && definedDemoValues.length > 0) {
       context.addIssue({
         code: "custom",
-        path: ["DEMO_MODE"],
-        message: "demo-only values require DEMO_MODE=true",
+        path: ["DEMO_TOKEN"],
+        message: "collaboration demo identity is forbidden in production",
       });
     }
   });
 
 export type CollaborationConfig = z.infer<typeof collaborationConfigSchema>;
+
+export type CollaborationDemoIdentity = {
+  DEMO_TOKEN: string;
+  DEMO_ACTOR_ID: NonNullable<CollaborationConfig["DEMO_ACTOR_ID"]>;
+  DEMO_WORKSPACE_ID: NonNullable<CollaborationConfig["DEMO_WORKSPACE_ID"]>;
+  DEMO_DOCUMENT_ID: NonNullable<CollaborationConfig["DEMO_DOCUMENT_ID"]>;
+  DEMO_ACCESS: NonNullable<CollaborationConfig["DEMO_ACCESS"]>;
+};
+
+/**
+ * 协作演示 ticket 与 DEMO_MODE 无关：种子可以单独打开，固定 ticket 必须整组出现。
+ */
+export function hasCollaborationDemoIdentity(
+  config: CollaborationConfig,
+): config is CollaborationConfig & CollaborationDemoIdentity {
+  return (
+    config.DEMO_TOKEN !== undefined &&
+    config.DEMO_ACTOR_ID !== undefined &&
+    config.DEMO_WORKSPACE_ID !== undefined &&
+    config.DEMO_DOCUMENT_ID !== undefined &&
+    config.DEMO_ACCESS !== undefined
+  );
+}
 
 /**
  * 环境变量只在进程边界解析一次。特别是 token 与存储模式不得在业务钩子里临时读取，
