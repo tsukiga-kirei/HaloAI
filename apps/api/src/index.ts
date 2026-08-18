@@ -1,5 +1,6 @@
 import { readConfig } from "./config";
 import { createServer } from "./server";
+import { safeErrorFields } from "@haloai/logger";
 
 const config = readConfig();
 const app = await createServer(config);
@@ -20,6 +21,6 @@ process.once("SIGTERM", () => void shutdown("SIGTERM"));
 try {
   await app.listen({ host: config.HOST, port: config.PORT });
 } catch (error) {
-  app.log.fatal({ error }, "API 启动失败");
+  app.log.fatal(safeErrorFields(error), "API 启动失败");
   process.exit(1);
 }

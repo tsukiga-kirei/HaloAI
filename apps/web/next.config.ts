@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 import { resolveApiOrigin } from "./src/lib/api-origin";
 
 const apiOriginEnvKeys = new Set([
+  "INTERNAL_API_ORIGIN",
   "API_HOST",
   "API_PORT",
   "AUTH_BASE_URL",
@@ -50,6 +51,8 @@ loadApiOriginEnv();
 const apiOrigin = resolveApiOrigin();
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
   reactStrictMode: true,
   transpilePackages: ["@haloai/core", "@haloai/contracts", "@haloai/agent-runtime"],
   poweredByHeader: false,

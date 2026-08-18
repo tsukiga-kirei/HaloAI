@@ -87,21 +87,21 @@ PostgreSQL、SQL migration、CSS、Markdown、容器配置和浏览器编译产�
 
 ### 目标技术栈
 
-| 层级      | 技术                                        | 用途与选择理由                                      | 阶段                           |
-| --------- | ------------------------------------------- | --------------------------------------------------- | ------------------------------ |
-| 运行环境  | Node.js 22+、TypeScript strict、ESM         | 统一服务端与前端类型，开启严格不变量检查            | 已建立                         |
-| 工作区    | pnpm workspace、Turborepo                   | 管理应用、领域包、缓存和并行验证                    | 已建立                         |
-| Web / PWA | Next.js App Router、React                   | 聊天与文档界面、服务端渲染、路由、PWA 外壳          | Foundation                     |
-| API       | Fastify、Zod                                | 独立 REST/SSE 服务、输入输出契约和统一授权 hook     | 框架已建                       |
-| 身份认证  | Better Auth                                 | 人类登录和数据库会话；工作区邀请由领域服务负责      | Alpha 已接入                   |
-| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                | 首个迁移与协作 repository 已建 |
-| 后台任务  | Graphile Worker、Transactional Outbox       | 复用 PostgreSQL，提供重试、恢复、调度和幂等         | 框架已建                       |
-| AI 网关   | Vercel AI SDK Core + 内部 `ModelGateway`    | 多供应商、流式输出、结构化响应；领域模型不绑定 SDK  | 内部边界已建，真实适配器计划中 |
-| 文档编辑  | Tiptap、Yjs、Hocuspocus                     | 富文本体验、CRDT 并发合并、在线状态和自托管同步     | 协作服务已建，编辑器计划中     |
-| 实时通信  | REST mutation、SSE、WebSocket               | 写操作可审计；AI/运行事件可恢复；文档使用 CRDT 通道 | SSE 与 CRDT 服务基础已建       |
-| 国际化    | next-intl、ICU Message、Intl                | 类型化消息、复数/时间/数字格式和服务端路由          | 演示字典已类型化，路由待接入   |
-| 测试      | Vitest、Playwright、axe-core                | 领域规则、多人浏览器上下文、视觉回归和无障碍        | 单元与端到端框架已建           |
-| 可观测性  | OpenTelemetry、结构化审计事件               | 串联人员、Agent、模型、工具、审批和结果             | 计划中                         |
+| 层级      | 技术                                        | 用途与选择理由                                      | 阶段                              |
+| --------- | ------------------------------------------- | --------------------------------------------------- | --------------------------------- |
+| 运行环境  | Node.js 22+、TypeScript strict、ESM         | 统一服务端与前端类型，开启严格不变量检查            | 已建立                            |
+| 工作区    | pnpm workspace、Turborepo                   | 管理应用、领域包、缓存和并行验证                    | 已建立                            |
+| Web / PWA | Next.js App Router、React                   | 聊天与文档界面、服务端渲染、路由、PWA 外壳          | Foundation                        |
+| API       | Fastify、Zod                                | 独立 REST/SSE 服务、输入输出契约和统一授权 hook     | 框架已建                          |
+| 身份认证  | Better Auth                                 | 人类登录和数据库会话；工作区邀请由领域服务负责      | Alpha 已接入                      |
+| 数据库    | PostgreSQL、Drizzle ORM、Row-Level Security | 关系化协作数据、租户隔离、审计和事务                | 首个迁移与协作 repository 已建    |
+| 后台任务  | Graphile Worker、Transactional Outbox       | 复用 PostgreSQL，提供重试、恢复、调度和幂等         | 框架已建                          |
+| AI 网关   | Vercel AI SDK Core + 内部 `ModelGateway`    | 多供应商、流式输出、结构化响应；领域模型不绑定 SDK  | 内部边界已建，真实适配器计划中    |
+| 文档编辑  | Tiptap、Yjs、Hocuspocus                     | 富文本体验、CRDT 并发合并、在线状态和自托管同步     | 协作服务已建，编辑器计划中        |
+| 实时通信  | REST mutation、SSE、WebSocket               | 写操作可审计；AI/运行事件可恢复；文档使用 CRDT 通道 | SSE 与 CRDT 服务基础已建          |
+| 国际化    | next-intl、ICU Message、Intl                | 类型化消息、复数/时间/数字格式和服务端路由          | 演示字典已类型化，路由待接入      |
+| 测试      | Vitest、Playwright、axe-core                | 领域规则、多人浏览器上下文、视觉回归和无障碍        | 单元与端到端框架已建              |
+| 可观测性  | Pino 结构化诊断日志、Docker 日志轮转        | 本地排障与容器运行观察；审计事件保持独立            | 诊断日志已建，OTel/审计写入计划中 |
 
 ### 为什么 MVP 不立即引入更多基础设施
 
@@ -216,6 +216,8 @@ pnpm dev:local:all
 
 `pnpm infra:down` 会停止本地服务，但不会删除命名数据卷。
 
+开发命令会把 Web/Turborepo 组合输出追加到 `logs/dev.log`；API、Collab 和 Worker 在 `LOG_DIR=./logs` 时还会分别写入结构化 JSONL 文件。`logs/` 只用于本地排障并已被 Git 忽略。
+
 本地监听地址已是进程默认值：Web 为 `http://127.0.0.1:3000`，API 为 `http://127.0.0.1:3100`，不必再抄进 `.env.local`。浏览器只打当前页面；Web 把 `/api/auth`、`/v1`、`/health` 转到 API。请打开 `http://127.0.0.1:3000`，不要用 `localhost`。
 
 ### 环境变量
@@ -224,22 +226,25 @@ pnpm dev:local:all
 cp .env.example .env.local
 ```
 
-| 变量                                                | 是否必填        | 说明                                                                     |
-| --------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | 可选            | 覆盖 API 监听地址与精确允许的浏览器来源；本地可省略                      |
-| `AUTH_BASE_URL`                                     | 可选            | 公开 API 源站与监听地址不同时再写；本地由 `API_HOST`/`API_PORT` 推导     |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | 可选            | CRDT 监听地址与 WebSocket Origin；不启动协作进程时可省略                 |
-| `DEMO_MODE`                                         | 本地种子        | 加载 `packages/db/devdata`；不能跳过登录；生产环境禁止                   |
-| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | 本地 compose | 官方镜像创建的库和管理员；密码须与 `DATABASE_ADMIN_URL` 一致 |
-| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`           | 本地 compose    | 空库首次启动时创建应用登录角色；须与 `DATABASE_URL` 一致                 |
-| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`         | 本地 compose    | 空库首次启动时创建认证登录角色；须与 `AUTH_DATABASE_URL` 一致            |
-| `DATABASE_URL`                                      | Worker 必填     | PostgreSQL 应用连接，仅服务端使用                                        |
-| `AUTH_DATABASE_URL`                                 | API 必填        | 认证专用数据库角色，只访问用户、账户、会话与验证表                       |
-| `BETTER_AUTH_SECRET`                                | API 必填        | 至少 32 字符的服务端密钥                                                 |
-| `DATABASE_ADMIN_URL`                                | 迁移必填        | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径                     |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | 集成测试        | 仅本地与 CI 的 PostgreSQL 安全测试                                       |
-| `OPENAI_API_KEY`                                    | 可选            | 对应供应商适配器启用后由服务端密钥代理读取                               |
-| `ANTHROPIC_API_KEY`                                 | 可选            | 对应供应商适配器启用后由服务端密钥代理读取                               |
+| 变量                                                                    | 是否必填     | 说明                                                                 |
+| ----------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------- |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`                              | 可选         | 覆盖 API 监听地址与精确允许的浏览器来源；本地可省略                  |
+| `AUTH_BASE_URL`                                                         | 可选         | 公开 API 源站与监听地址不同时再写；本地由 `API_HOST`/`API_PORT` 推导 |
+| `INTERNAL_API_ORIGIN`                                                   | 生产 Web     | Web 容器访问 API 的内部地址；不得替代公开认证 Origin                 |
+| `GATEWAY_HTTP_PORT` / `GATEWAY_HTTPS_PORT`                              | 生产 compose | Gateway 发布到宿主机的 HTTP/HTTPS 端口；默认 80/443                  |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`                     | 可选         | CRDT 监听地址与 WebSocket Origin；不启动协作进程时可省略             |
+| `DEMO_MODE`                                                             | 本地种子     | 加载 `packages/db/devdata`；不能跳过登录；生产环境禁止               |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | 本地 compose | 官方镜像创建的库和管理员；密码须与 `DATABASE_ADMIN_URL` 一致         |
+| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`                               | 本地 compose | 空库首次启动时创建应用登录角色；须与 `DATABASE_URL` 一致             |
+| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`                             | 本地 compose | 空库首次启动时创建认证登录角色；须与 `AUTH_DATABASE_URL` 一致        |
+| `DATABASE_URL`                                                          | Worker 必填  | PostgreSQL 应用连接，仅服务端使用                                    |
+| `AUTH_DATABASE_URL`                                                     | API 必填     | 认证专用数据库角色，只访问用户、账户、会话与验证表                   |
+| `BETTER_AUTH_SECRET`                                                    | API 必填     | 至少 32 字符的服务端密钥                                             |
+| `LOG_LEVEL` / `LOG_DIR`                                                 | 可选         | 日志级别与本地文件目录；生产容器不设置 `LOG_DIR`                     |
+| `DATABASE_ADMIN_URL`                                                    | 迁移必填     | 仅迁移进程使用；不得进入 API、Web 或 Worker 请求路径                 |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`                         | 集成测试     | 仅本地与 CI 的 PostgreSQL 安全测试                                   |
+| `OPENAI_API_KEY`                                                        | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                           |
+| `ANTHROPIC_API_KEY`                                                     | 可选         | 对应供应商适配器启用后由服务端密钥代理读取                           |
 
 只有 PostgreSQL 已可用且已复制 `.env.local` 时才运行 `pnpm dev:all`；该命令会同时启动 API、协作服务和耐久 Worker。
 
@@ -253,6 +258,7 @@ pnpm dev:local:all # 同上，并同时启动 CRDT 服务和耐久 Worker
 pnpm dev          # 仅启动 Web 与 API（数据库需已就绪）
 pnpm dev:collab   # 启动 CRDT 协作服务（登录、房间和种子都不需要）
 pnpm infra:up     # 启动本地 PostgreSQL 18，并等待健康检查通过
+pnpm infra:logs   # 跟随本地 PostgreSQL 容器日志
 pnpm db:migrate   # 使用独立迁移连接执行表结构迁移
 pnpm db:seed      # 在 DEMO_MODE=true 时写入本地虚拟数据
 pnpm db:setup     # 先迁移，再按 DEMO_MODE 写入虚拟数据
@@ -264,6 +270,20 @@ pnpm build        # 构建所有工作区包
 pnpm check        # 检查文档、格式、类型、单元测试和构建
 pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 ```
+
+### 生产 Compose
+
+生产部署使用独立的 `compose.prod.yaml`，默认启动 TLS Gateway、Web、API、Worker、一次性迁移任务和 PostgreSQL。先在部署主机准备密钥文件，再校验、构建和启动：
+
+```bash
+cp .env.production.example .env.production
+# 替换全部 change_me 值与示例域名
+pnpm prod:config
+pnpm prod:build
+pnpm prod:up
+```
+
+生产容器只写 stdout/stderr，并使用有界 Docker 日志轮转。Collab 镜像会一并构建，但真实持久化与短期 ticket 授权端口接入前不进入默认启动集合。完整边界见[部署与诊断日志](docs/zh-CN/deployment-and-logging.md)。
 
 Turborepo 会把可复用的任务结果写入 `.turbo/`。它是自动生成的本地缓存目录，已被 Git 忽略，不属于项目源码；需要释放空间或排查缓存问题时可以安全删除，下次运行命令会自动重新生成。
 
@@ -291,24 +311,25 @@ Turborepo 会把可复用的任务结果写入 `.turbo/`。它是自动生成的
 
 ## 文档
 
-| 中文                                                  | English                                                            | 内容                                |
-| ----------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
-| [文档索引](docs/zh-CN/README.md)                      | [Documentation](docs/en-US/README.md)                              | 文档导航与维护规则                  |
-| [产品概要](docs/zh-CN/product-brief.md)               | [Product brief](docs/en-US/product-brief.md)                       | 用户、首个任务和产品原则            |
-| [产品需求](docs/zh-CN/product-requirements.md)        | [Product requirements](docs/en-US/product-requirements.md)         | 功能、指标与 MVP 验收               |
-| [用户体验与视觉](docs/zh-CN/ux-and-visual.md)         | [UX and visual](docs/en-US/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
-| [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md) | [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | 前台、后台路由、视觉与授权边界      |
-| [领域模型](docs/zh-CN/domain-model.md)                | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
-| [系统架构](docs/zh-CN/architecture.md)                | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
-| [技术决策](docs/zh-CN/technical-decisions.md)         | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
-| [持久化与租户事务](docs/zh-CN/persistence.md)         | [Persistence](docs/en-US/persistence.md)                           | 数据库角色、迁移、RLS 与 Repository |
-| [实时协作](docs/zh-CN/realtime-collaboration.md)      | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
-| [Agent 运行时](docs/zh-CN/agent-runtime.md)           | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
-| [安全基线](docs/zh-CN/security.md)                    | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |
-| [权限与安全](docs/zh-CN/permissions-and-security.md)  | [Permissions and security](docs/en-US/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
-| [国际化](docs/zh-CN/internationalization.md)          | [Internationalization](docs/en-US/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
-| [质量与测试](docs/zh-CN/quality-and-testing.md)       | [Quality and testing](docs/en-US/quality-and-testing.md)           | 测试分层与发布门禁                  |
-| [交付路线](docs/zh-CN/roadmap.md)                     | [Roadmap](docs/en-US/roadmap.md)                                   | Foundation 到企业部署阶段           |
+| 中文                                                   | English                                                            | 内容                                |
+| ------------------------------------------------------ | ------------------------------------------------------------------ | ----------------------------------- |
+| [文档索引](docs/zh-CN/README.md)                       | [Documentation](docs/en-US/README.md)                              | 文档导航与维护规则                  |
+| [产品概要](docs/zh-CN/product-brief.md)                | [Product brief](docs/en-US/product-brief.md)                       | 用户、首个任务和产品原则            |
+| [产品需求](docs/zh-CN/product-requirements.md)         | [Product requirements](docs/en-US/product-requirements.md)         | 功能、指标与 MVP 验收               |
+| [用户体验与视觉](docs/zh-CN/ux-and-visual.md)          | [UX and visual](docs/en-US/ux-and-visual.md)                       | 响应式行为与量化美观标准            |
+| [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md)  | [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | 前台、后台路由、视觉与授权边界      |
+| [领域模型](docs/zh-CN/domain-model.md)                 | [Domain model](docs/en-US/domain-model.md)                         | Actor、资源、不变量与生命周期       |
+| [系统架构](docs/zh-CN/architecture.md)                 | [Architecture](docs/en-US/architecture.md)                         | 领域边界和演进路径                  |
+| [技术决策](docs/zh-CN/technical-decisions.md)          | [Technical decisions](docs/en-US/technical-decisions.md)           | 技术选型与替换触发条件              |
+| [持久化与租户事务](docs/zh-CN/persistence.md)          | [Persistence](docs/en-US/persistence.md)                           | 数据库角色、迁移、RLS 与 Repository |
+| [部署与诊断日志](docs/zh-CN/deployment-and-logging.md) | [Deployment and logging](docs/en-US/deployment-and-logging.md)     | 开发/生产 Compose、镜像与日志       |
+| [实时协作](docs/zh-CN/realtime-collaboration.md)       | [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | SSE 恢复、CRDT、Presence 与离线行为 |
+| [Agent 运行时](docs/zh-CN/agent-runtime.md)            | [Agent runtime](docs/en-US/agent-runtime.md)                       | 状态机、工具、预算与恢复            |
+| [安全基线](docs/zh-CN/security.md)                     | [Security](docs/en-US/security.md)                                 | 权限、提示词注入和上线门槛          |
+| [权限与安全](docs/zh-CN/permissions-and-security.md)   | [Permissions and security](docs/en-US/permissions-and-security.md) | 权限矩阵、租户隔离与攻击测试        |
+| [国际化](docs/zh-CN/internationalization.md)           | [Internationalization](docs/en-US/internationalization.md)         | Locale、ICU、内容语言与 CI 规则     |
+| [质量与测试](docs/zh-CN/quality-and-testing.md)        | [Quality and testing](docs/en-US/quality-and-testing.md)           | 测试分层与发布门禁                  |
+| [交付路线](docs/zh-CN/roadmap.md)                      | [Roadmap](docs/en-US/roadmap.md)                                   | Foundation 到企业部署阶段           |
 
 ## 开发约束
 

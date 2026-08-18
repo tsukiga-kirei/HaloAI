@@ -23,6 +23,7 @@ const collaborationConfigSchema = z
     PORT: z.coerce.number().int().min(1).max(65_535).default(3200),
     WEB_ORIGIN: WebOriginSchema.default("http://127.0.0.1:3000"),
     LOG_LEVEL: LogLevelSchema.default("info"),
+    LOG_DIR: z.string().trim().min(1).optional(),
     STORE_DEBOUNCE_MS: z.coerce.number().int().min(100).max(60_000).default(1_000),
     STORE_MAX_DEBOUNCE_MS: z.coerce.number().int().min(100).max(300_000).default(5_000),
     STORE_RETRY_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(3),

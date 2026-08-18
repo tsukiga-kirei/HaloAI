@@ -5,7 +5,14 @@
 export function resolveApiOrigin(
   environment: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env,
 ): string {
-  const explicit = environment.AUTH_BASE_URL ?? environment.NEXT_PUBLIC_API_BASE_URL;
+  /**
+   * 生产 Web 容器通过 Compose 服务名访问 API，但 Better Auth 的公开地址必须保持 HTTPS 域名。
+   * 两者不能复用同一变量，否则服务端请求会绕到公网或把内部主机名暴露成认证 Origin。
+   */
+  const explicit =
+    environment.INTERNAL_API_ORIGIN ??
+    environment.AUTH_BASE_URL ??
+    environment.NEXT_PUBLIC_API_BASE_URL;
   if (explicit) {
     return explicit.replace(/\/$/u, "");
   }

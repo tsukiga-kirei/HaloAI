@@ -1,0 +1,205 @@
+name: haloai-prod
+
+x-app-build: &app-build
+  context: .
+  dockerfile: deploy/docker/Dockerfile
+  args:
+    INTERNAL_API_ORIGIN: http://api:3100
+
+x-service-defaults: &service-defaults
+  init: true
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+  logging: &service-logging
+    driver: local
+    options:
+      max-size: ${DOCKER_LOG_MAX_SIZE:-20m}
+      max-file: ${DOCKER_LOG_MAX_FILE:-10}
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      HALOAI_APP_USER: ${HALOAI_APP_USER:?HALOAI_APP_USER is required}
+      HALOAI_APP_PASSWORD: ${HALOAI_APP_PASSWORD:?HALOAI_APP_PASSWORD is required}
+      HALOAI_AUTH_USER: ${HALOAI_AUTH_USER:?HALOAI_AUTH_USER is required}
+      HALOAI_AUTH_PASSWORD: ${HALOAI_AUTH_PASSWORD:?HALOAI_AUTH_PASSWORD is required}
+    volumes:
+      - haloai_postgres_v18:/var/lib/postgresql
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    stop_grace_period: 30s
+    logging: *service-logging
+
+  migrate:
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/migrate:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: migrate
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:?DATABASE_ADMIN_URL is required}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    logging: *service-logging
+
+  api:
+    <<: *service-defaults
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/api:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: api
+    environment:
+      NODE_ENV: production
+      API_HOST: 0.0.0.0
+      API_PORT: 3100
+      API_WEB_ORIGIN: https://${HALOAI_DOMAIN:?HALOAI_DOMAIN is required}
+      AUTH_BASE_URL: https://${HALOAI_DOMAIN:?HALOAI_DOMAIN is required}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL:?AUTH_DATABASE_URL is required}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      EXPOSE_DEVELOPMENT_INVITE_TOKENS: "false"
+    expose:
+      - "3100"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3100/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  worker-migrate:
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/worker:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: worker
+    command: ["node", "dist/migrate.js"]
+    restart: "no"
+    environment:
+      DATABASE_ADMIN_URL: ${DATABASE_ADMIN_URL:?DATABASE_ADMIN_URL is required}
+      HALOAI_APP_USER: ${HALOAI_APP_USER:?HALOAI_APP_USER is required}
+      GRAPHILE_WORKER_SCHEMA: graphile_worker
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    security_opt:
+      - no-new-privileges:true
+    logging: *service-logging
+
+  worker:
+    <<: *service-defaults
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/worker:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: worker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-4}
+    depends_on:
+      worker-migrate:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+    stop_grace_period: 30s
+
+  web:
+    <<: *service-defaults
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/web:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: web
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      INTERNAL_API_ORIGIN: http://api:3100
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/login').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      HALOAI_DOMAIN: ${HALOAI_DOMAIN:?HALOAI_DOMAIN is required}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL is required}
+    ports:
+      - "${GATEWAY_HTTP_PORT:-80}:80"
+      - "${GATEWAY_HTTPS_PORT:-443}:443"
+      - "${GATEWAY_HTTPS_PORT:-443}:443/udp"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - haloai_caddy_data:/data
+      - haloai_caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    logging: *service-logging
+
+  collab:
+    <<: *service-defaults
+    profiles: ["collaboration"]
+    image: ${HALOAI_IMAGE_PREFIX:-haloai}/collab:${HALOAI_IMAGE_TAG:-latest}
+    build:
+      <<: *app-build
+      target: collab
+    environment:
+      NODE_ENV: production
+      COLLAB_HOST: 0.0.0.0
+      COLLAB_PORT: 3200
+      COLLAB_WEB_ORIGIN: https://${HALOAI_DOMAIN:?HALOAI_DOMAIN is required}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      DEMO_MODE: "false"
+    expose:
+      - "3200"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  haloai_postgres_v18:
+  haloai_caddy_data:
+  haloai_caddy_config:

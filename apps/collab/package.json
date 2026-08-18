@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@haloai/contracts": "workspace:*",
+    "@haloai/logger": "workspace:*",
     "@hocuspocus/server": "^4.5.0",
     "pino": "^10.3.1",
     "y-protocols": "^1.0.6",

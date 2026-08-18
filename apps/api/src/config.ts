@@ -16,6 +16,7 @@ const configSchema = z
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
+    LOG_DIR: z.string().trim().min(1).optional(),
     WEB_ORIGIN: WebOriginSchema.default("http://127.0.0.1:3000"),
     AUTH_BASE_URL: WebOriginSchema.default("http://127.0.0.1:3100"),
     AUTH_SECRET: z.string().min(32).default("haloai-local-auth-secret-change-before-production"),
@@ -73,6 +74,7 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): ApiCon
     HOST: environment.API_HOST,
     PORT: environment.API_PORT,
     LOG_LEVEL: environment.LOG_LEVEL,
+    LOG_DIR: environment.LOG_DIR,
     WEB_ORIGIN: environment.API_WEB_ORIGIN,
     AUTH_BASE_URL: deriveAuthBaseUrl(environment),
     AUTH_SECRET: environment.BETTER_AUTH_SECRET,

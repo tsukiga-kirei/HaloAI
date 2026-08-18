@@ -1,4 +1,4 @@
-import pino from "pino";
+import { createServiceLogger, safeErrorFields, type ServiceLogger } from "@haloai/logger";
 import { DemoDocumentAuthorization } from "./adapters/demo-authorization";
 import { InMemoryDemoDocumentPersistence } from "./adapters/in-memory-demo-persistence";
 import {
@@ -7,10 +7,6 @@ import {
   type CollaborationConfig,
 } from "./config";
 import { createCollaborationService } from "./server";
-
-function errorName(error: unknown): string {
-  return error instanceof Error ? "startup_error" : "unknown_failure";
-}
 
 function createDemoAuthorization(config: CollaborationConfig) {
   if (!hasCollaborationDemoIdentity(config)) {
@@ -31,9 +27,14 @@ function createDemoAuthorization(config: CollaborationConfig) {
   });
 }
 
-async function main(): Promise<void> {
+async function main(): Promise<ServiceLogger> {
   const config = readCollaborationConfig();
-  const logger = pino({ level: config.LOG_LEVEL });
+  const logger = createServiceLogger({
+    service: "collab",
+    environment: config.NODE_ENV,
+    level: config.LOG_LEVEL,
+    logDirectory: config.LOG_DIR,
+  });
   const authorization = createDemoAuthorization(config);
   const service = createCollaborationService(
     config,
@@ -54,7 +55,7 @@ async function main(): Promise<void> {
     try {
       await service.close();
     } catch (error) {
-      logger.fatal({ errorName: errorName(error) }, "协作服务关闭失败");
+      logger.fatal(safeErrorFields(error), "协作服务关闭失败");
       process.exitCode = 1;
     }
   }
@@ -62,14 +63,24 @@ async function main(): Promise<void> {
   process.once("SIGINT", () => void shutdown("SIGINT"));
   process.once("SIGTERM", () => void shutdown("SIGTERM"));
   await service.listen();
+  return logger;
 }
 
+let startupLogger: ServiceLogger | undefined;
 try {
-  await main();
+  startupLogger = await main();
 } catch (error) {
   /**
    * 启动异常只记录类别，不序列化环境配置、ticket 或适配器错误对象，避免普通日志泄露凭据。
    */
-  pino().fatal({ errorName: errorName(error) }, "协作服务启动失败");
+  const logger =
+    startupLogger ??
+    createServiceLogger({
+      service: "collab",
+      environment: process.env.NODE_ENV === "production" ? "production" : "development",
+      level: "info",
+      logDirectory: process.env.LOG_DIR,
+    });
+  logger.fatal(safeErrorFields(error), "协作服务启动失败");
   process.exitCode = 1;
 }

@@ -11,7 +11,7 @@
     "./repositories": "./src/repositories/index.ts"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup src/migrate.ts --format esm --platform node --target node22 --out-dir dist --clean --sourcemap",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --root ../.. packages/db/src --exclude '**/*.integration.test.ts'",
     "test:integration": "vitest run --root ../.. packages/db/src/repositories/collaboration-repository.integration.test.ts",
@@ -28,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "drizzle-kit": "^0.31.10",
+    "tsup": "^8.5.1",
     "tsx": "^4.23.11",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

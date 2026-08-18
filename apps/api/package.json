@@ -16,6 +16,7 @@
     "@haloai/contracts": "workspace:*",
     "@haloai/core": "workspace:*",
     "@haloai/db": "workspace:^",
+    "@haloai/logger": "workspace:*",
     "better-auth": "1.6.27",
     "fastify": "^5.11.3",
     "pino": "^10.3.1",

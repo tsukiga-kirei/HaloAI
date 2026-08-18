@@ -25,14 +25,15 @@ Every English document in `docs/en-US/` has a same-named counterpart in `docs/zh
 
 ## Domain and architecture
 
-| Document                                              | Owns                                                                                             |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [Domain model](domain-model.md)                       | Bounded contexts, entities, invariants, attribution, lifecycle and relational outline            |
-| [Architecture](architecture.md)                       | System boundaries, request paths, deployment shape and evolution                                 |
-| [Technical decisions](technical-decisions.md)         | Adopted technologies, rejected complexity, replacement triggers and failure boundaries           |
-| [Persistence and tenant transactions](persistence.md) | Database roles, migrations, RLS context, repositories, and acceptance                            |
-| [Realtime collaboration](realtime-collaboration.md)   | REST/SSE/WebSocket responsibilities, replay, presence, CRDT persistence and offline behavior     |
-| [Agent runtime](agent-runtime.md)                     | Versions, routing, durable state machine, events, memory, budgets, tools, approvals and recovery |
+| Document                                                       | Owns                                                                                             |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [Domain model](domain-model.md)                                | Bounded contexts, entities, invariants, attribution, lifecycle and relational outline            |
+| [Architecture](architecture.md)                                | System boundaries, request paths, deployment shape and evolution                                 |
+| [Technical decisions](technical-decisions.md)                  | Adopted technologies, rejected complexity, replacement triggers and failure boundaries           |
+| [Persistence and tenant transactions](persistence.md)          | Database roles, migrations, RLS context, repositories, and acceptance                            |
+| [Realtime collaboration](realtime-collaboration.md)            | REST/SSE/WebSocket responsibilities, replay, presence, CRDT persistence and offline behavior     |
+| [Agent runtime](agent-runtime.md)                              | Versions, routing, durable state machine, events, memory, budgets, tools, approvals and recovery |
+| [Deployment and diagnostic logging](deployment-and-logging.md) | Dev/prod Compose, images, log storage, rotation, and startup safety                              |
 
 ## Security, governance, and delivery
 

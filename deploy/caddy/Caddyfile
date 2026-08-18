@@ -1,0 +1,16 @@
+{
+	email {$ACME_EMAIL}
+	log {
+		output stdout
+		format json
+	}
+}
+
+{$HALOAI_DOMAIN} {
+	encode zstd gzip
+	log {
+		output stdout
+		format json
+	}
+	reverse_proxy web:3000
+}

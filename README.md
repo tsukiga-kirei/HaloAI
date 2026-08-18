@@ -101,7 +101,7 @@ PostgreSQL, SQL migrations, CSS, Markdown, container configuration, and compiled
 | Realtime             | REST mutations, SSE, WebSocket              | Auditable writes, recoverable events, CRDT channel                    | SSE and CRDT service foundations built           |
 | Internationalization | next-intl, ICU Message, Intl                | Typed copy, plurals, dates, route locale                              | Typed demo dictionaries; routing planned         |
 | Testing              | Vitest, Playwright, axe-core                | Domain rules, multi-context E2E, visual and a11y                      | Unit and E2E foundations                         |
-| Observability        | OpenTelemetry, structured audit events      | Trace people, agents, models, tools, approvals                        | Planned                                          |
+| Observability        | Pino diagnostic logs, Docker log rotation   | Local troubleshooting and container runtime observation               | Diagnostics built; OTel/audit writers planned    |
 
 The first usable release stays a modular monolith around one PostgreSQL instance. Redis, Temporal, a dedicated vector database, Kubernetes, and native mobile clients are intentionally deferred until identity, document, and agent authority are stable.
 
@@ -213,6 +213,8 @@ pnpm dev:local:all
 
 `pnpm infra:down` stops the local service without deleting its named data volume.
 
+Development commands append combined Web/Turborepo output to `logs/dev.log`. With `LOG_DIR=./logs`, API, Collab, and Worker also write separate structured JSONL files. `logs/` is local troubleshooting data and is ignored by Git.
+
 Local listen addresses are already the process defaults: Web at `http://127.0.0.1:3000`, API at `http://127.0.0.1:3100`. Do not copy them into `.env.local`. The browser stays on the page origin; Next rewrites `/api/auth`, `/v1`, and `/health` to the API. Open `http://127.0.0.1:3000`, not `localhost`.
 
 ### Environment
@@ -221,22 +223,25 @@ Local listen addresses are already the process defaults: Web at `http://127.0.0.
 cp .env.example .env.local
 ```
 
-| Variable                                            | Required            | Purpose                                                                                         |
-| --------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------- |
-| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`          | Optional            | Override API bind address and the exact browser origin; omit locally                            |
-| `AUTH_BASE_URL`                                     | Optional            | Public API origin when it differs from the bind address; derived from `API_HOST`/`API_PORT`     |
-| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN` | Optional            | CRDT bind address and WebSocket origin; omit unless you start the collab process                |
-| `DEMO_MODE`                                         | Local seed          | Loads `packages/db/devdata`; never skips login; forbidden in production                         |
-| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | Local compose       | Database and admin user created by the image; password must match `DATABASE_ADMIN_URL`          |
-| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`           | Local compose       | Application login role created on first empty volume; must match `DATABASE_URL`                 |
-| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`         | Local compose       | Auth login role created on first empty volume; must match `AUTH_DATABASE_URL`                   |
-| `DATABASE_URL`                                      | Worker              | Server-only PostgreSQL application connection                                                   |
-| `AUTH_DATABASE_URL`                                 | API                 | Authentication-only role for users, accounts, sessions, and verifications                       |
-| `BETTER_AUTH_SECRET`                                | API                 | Server-only secret of at least 32 characters                                                    |
-| `DATABASE_ADMIN_URL`                                | Migration           | Migration process only; forbidden in API, Web, and Worker request paths                         |
-| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`     | Integration tests   | PostgreSQL security tests in local development and CI                                           |
-| `OPENAI_API_KEY`                                    | Optional            | Read by the server-side provider adapter when enabled                                           |
-| `ANTHROPIC_API_KEY`                                 | Optional            | Read by the server-side provider adapter when enabled                                           |
+| Variable                                                                | Required           | Purpose                                                                                         |
+| ----------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| `API_HOST` / `API_PORT` / `API_WEB_ORIGIN`                              | Optional           | Override API bind address and the exact browser origin; omit locally                            |
+| `AUTH_BASE_URL`                                                         | Optional           | Public API origin when it differs from the bind address; derived from `API_HOST`/`API_PORT`     |
+| `INTERNAL_API_ORIGIN`                                                   | Production Web     | Internal API address used by the Web container; never replaces the public authentication origin |
+| `GATEWAY_HTTP_PORT` / `GATEWAY_HTTPS_PORT`                              | Production compose | HTTP/HTTPS host ports published by Gateway; defaults to 80/443                                  |
+| `COLLAB_HOST` / `COLLAB_PORT` / `COLLAB_WEB_ORIGIN`                     | Optional           | CRDT bind address and WebSocket origin; omit unless you start the collab process                |
+| `DEMO_MODE`                                                             | Local seed         | Loads `packages/db/devdata`; never skips login; forbidden in production                         |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_PORT` | Local compose      | Database and admin user created by the image; password must match `DATABASE_ADMIN_URL`          |
+| `HALOAI_APP_USER` / `HALOAI_APP_PASSWORD`                               | Local compose      | Application login role created on first empty volume; must match `DATABASE_URL`                 |
+| `HALOAI_AUTH_USER` / `HALOAI_AUTH_PASSWORD`                             | Local compose      | Auth login role created on first empty volume; must match `AUTH_DATABASE_URL`                   |
+| `DATABASE_URL`                                                          | Worker             | Server-only PostgreSQL application connection                                                   |
+| `AUTH_DATABASE_URL`                                                     | API                | Authentication-only role for users, accounts, sessions, and verifications                       |
+| `BETTER_AUTH_SECRET`                                                    | API                | Server-only secret of at least 32 characters                                                    |
+| `LOG_LEVEL` / `LOG_DIR`                                                 | Optional           | Log level and local file directory; production containers omit `LOG_DIR`                        |
+| `DATABASE_ADMIN_URL`                                                    | Migration          | Migration process only; forbidden in API, Web, and Worker request paths                         |
+| `DATABASE_TEST_URL` / `DATABASE_TEST_ADMIN_URL`                         | Integration tests  | PostgreSQL security tests in local development and CI                                           |
+| `OPENAI_API_KEY`                                                        | Optional           | Read by the server-side provider adapter when enabled                                           |
+| `ANTHROPIC_API_KEY`                                                     | Optional           | Read by the server-side provider adapter when enabled                                           |
 
 Run `pnpm dev:all` only after PostgreSQL is available and `.env.local` exists; it starts the API, collaboration service, and durable worker together.
 
@@ -250,6 +255,7 @@ pnpm dev:local:all # Same, plus the CRDT service and durable worker
 pnpm dev          # Start Web and API only (database must already be ready)
 pnpm dev:collab   # Start the CRDT service (not required for login, rooms, or seed)
 pnpm infra:up     # Start local PostgreSQL 18 and wait until it is healthy
+pnpm infra:logs   # Follow the local PostgreSQL container log
 pnpm db:migrate   # Apply schema migrations with the separate migration connection
 pnpm db:seed      # Load local virtual data when DEMO_MODE=true
 pnpm db:setup     # Migrate, then seed when DEMO_MODE=true
@@ -261,6 +267,20 @@ pnpm build        # Build every workspace package
 pnpm check        # Check docs, formatting, types, unit tests, and builds
 pnpm check:all    # Add browser end-to-end acceptance to the full check
 ```
+
+### Production Compose
+
+Production uses the separate `compose.prod.yaml` and starts the TLS gateway, Web, API, Worker, one-shot migration, and PostgreSQL by default. Prepare the deployment-host secret file before validating, building, and starting:
+
+```bash
+cp .env.production.example .env.production
+# Replace every change_me value and example domain
+pnpm prod:config
+pnpm prod:build
+pnpm prod:up
+```
+
+Production containers write only to stdout/stderr and use bounded Docker log rotation. The Collab image is built with the stack but stays out of default startup until real persistence and short-lived ticket authorization ports are connected. See [deployment and diagnostic logging](docs/en-US/deployment-and-logging.md) for the complete boundary.
 
 Turborepo writes reusable task results to `.turbo/`. This directory is generated local cache, is ignored by Git, and contains no project source. It can be deleted safely to reclaim disk space or troubleshoot a stale cache; the next command recreates it automatically.
 
@@ -288,24 +308,25 @@ Read the [security baseline](docs/en-US/security.md) before enabling real models
 
 ## Documentation
 
-| English                                                            | 中文                                                  | Scope                                                |
-| ------------------------------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
-| [Documentation index](docs/en-US/README.md)                        | [文档索引](docs/zh-CN/README.md)                      | Navigation and maintenance rules                     |
-| [Product brief](docs/en-US/product-brief.md)                       | [产品概要](docs/zh-CN/product-brief.md)               | Audience, first job, principles                      |
-| [Product requirements](docs/en-US/product-requirements.md)         | [产品需求](docs/zh-CN/product-requirements.md)        | Requirements, metrics, MVP acceptance                |
-| [UX and visual](docs/en-US/ux-and-visual.md)                       | [用户体验与视觉](docs/zh-CN/ux-and-visual.md)         | Responsive behavior and quantified visual quality    |
-| [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md) | Collaboration, administration, and authorization     |
-| [Domain model](docs/en-US/domain-model.md)                         | [领域模型](docs/zh-CN/domain-model.md)                | Actors, resources, invariants and lifecycle          |
-| [Architecture](docs/en-US/architecture.md)                         | [系统架构](docs/zh-CN/architecture.md)                | Domain boundaries and evolution                      |
-| [Technical decisions](docs/en-US/technical-decisions.md)           | [技术决策](docs/zh-CN/technical-decisions.md)         | Technology choices and replacement triggers          |
-| [Persistence and tenant transactions](docs/en-US/persistence.md)   | [持久化与租户事务](docs/zh-CN/persistence.md)         | Database roles, migrations, RLS, and repositories    |
-| [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | [实时协作](docs/zh-CN/realtime-collaboration.md)      | SSE recovery, CRDT, presence and offline behavior    |
-| [Agent runtime](docs/en-US/agent-runtime.md)                       | [Agent 运行时](docs/zh-CN/agent-runtime.md)           | State machine, tools, budgets and recovery           |
-| [Security](docs/en-US/security.md)                                 | [安全基线](docs/zh-CN/security.md)                    | Authorization and launch gates                       |
-| [Permissions and security](docs/en-US/permissions-and-security.md) | [权限与安全](docs/zh-CN/permissions-and-security.md)  | Permission matrix, tenant isolation and attack suite |
-| [Internationalization](docs/en-US/internationalization.md)         | [国际化](docs/zh-CN/internationalization.md)          | Locale, ICU, content language and CI rules           |
-| [Quality and testing](docs/en-US/quality-and-testing.md)           | [质量与测试](docs/zh-CN/quality-and-testing.md)       | Test layers and release gates                        |
-| [Roadmap](docs/en-US/roadmap.md)                                   | [交付路线](docs/zh-CN/roadmap.md)                     | Foundation through enterprise                        |
+| English                                                            | 中文                                                   | Scope                                                |
+| ------------------------------------------------------------------ | ------------------------------------------------------ | ---------------------------------------------------- |
+| [Documentation index](docs/en-US/README.md)                        | [文档索引](docs/zh-CN/README.md)                       | Navigation and maintenance rules                     |
+| [Product brief](docs/en-US/product-brief.md)                       | [产品概要](docs/zh-CN/product-brief.md)                | Audience, first job, principles                      |
+| [Product requirements](docs/en-US/product-requirements.md)         | [产品需求](docs/zh-CN/product-requirements.md)         | Requirements, metrics, MVP acceptance                |
+| [UX and visual](docs/en-US/ux-and-visual.md)                       | [用户体验与视觉](docs/zh-CN/ux-and-visual.md)          | Responsive behavior and quantified visual quality    |
+| [Frontend surface boundaries](docs/en-US/frontend-surfaces.md)     | [前台与后台界面边界](docs/zh-CN/frontend-surfaces.md)  | Collaboration, administration, and authorization     |
+| [Domain model](docs/en-US/domain-model.md)                         | [领域模型](docs/zh-CN/domain-model.md)                 | Actors, resources, invariants and lifecycle          |
+| [Architecture](docs/en-US/architecture.md)                         | [系统架构](docs/zh-CN/architecture.md)                 | Domain boundaries and evolution                      |
+| [Technical decisions](docs/en-US/technical-decisions.md)           | [技术决策](docs/zh-CN/technical-decisions.md)          | Technology choices and replacement triggers          |
+| [Persistence and tenant transactions](docs/en-US/persistence.md)   | [持久化与租户事务](docs/zh-CN/persistence.md)          | Database roles, migrations, RLS, and repositories    |
+| [Deployment and logging](docs/en-US/deployment-and-logging.md)     | [部署与诊断日志](docs/zh-CN/deployment-and-logging.md) | Dev/prod Compose, images, and diagnostic logs        |
+| [Realtime collaboration](docs/en-US/realtime-collaboration.md)     | [实时协作](docs/zh-CN/realtime-collaboration.md)       | SSE recovery, CRDT, presence and offline behavior    |
+| [Agent runtime](docs/en-US/agent-runtime.md)                       | [Agent 运行时](docs/zh-CN/agent-runtime.md)            | State machine, tools, budgets and recovery           |
+| [Security](docs/en-US/security.md)                                 | [安全基线](docs/zh-CN/security.md)                     | Authorization and launch gates                       |
+| [Permissions and security](docs/en-US/permissions-and-security.md) | [权限与安全](docs/zh-CN/permissions-and-security.md)   | Permission matrix, tenant isolation and attack suite |
+| [Internationalization](docs/en-US/internationalization.md)         | [国际化](docs/zh-CN/internationalization.md)           | Locale, ICU, content language and CI rules           |
+| [Quality and testing](docs/en-US/quality-and-testing.md)           | [质量与测试](docs/zh-CN/quality-and-testing.md)        | Test layers and release gates                        |
+| [Roadmap](docs/en-US/roadmap.md)                                   | [交付路线](docs/zh-CN/roadmap.md)                      | Foundation through enterprise                        |
 
 ## Development agreements
 

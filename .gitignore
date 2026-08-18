@@ -9,6 +9,8 @@ playwright-report/
 .env.local
 .env.*.local
 *.log
+logs/
+.env.production
 .DS_Store
 Thumbs.db
 .idea/

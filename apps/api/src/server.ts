@@ -3,7 +3,8 @@ import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import { createAuth } from "./auth";
 import { createDatabaseClient, WorkspaceOnboardingRepository } from "@haloai/db";
-import Fastify, { type FastifyInstance, LogController } from "fastify";
+import { createServiceLogger } from "@haloai/logger";
+import Fastify, { type FastifyBaseLogger, type FastifyInstance, LogController } from "fastify";
 import type { ApiConfig } from "./config";
 import { handleError } from "./errors";
 import { registerDemoEventRoutes } from "./routes/demo-events";
@@ -14,6 +15,12 @@ import { registerWorkspaceRoutes } from "./routes/workspaces";
 import { webOriginAllowlist } from "./web-origins";
 
 export async function createServer(config: ApiConfig): Promise<FastifyInstance> {
+  const logger = createServiceLogger({
+    service: "api",
+    environment: config.NODE_ENV,
+    level: config.LOG_LEVEL,
+    logDirectory: config.LOG_DIR,
+  });
   const applicationDatabase = createDatabaseClient({
     url: config.DATABASE_URL,
     applicationName: "haloai-api",
@@ -26,7 +33,8 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   const auth = createAuth(authenticationDatabase.db, config);
   const onboardingRepository = new WorkspaceOnboardingRepository(applicationDatabase);
   const app = Fastify({
-    logger: { level: config.LOG_LEVEL },
+    // Fastify 只依赖其基础 Logger 契约；收窄类型避免 Pino 专有泛型污染全部路由注册签名。
+    loggerInstance: logger as FastifyBaseLogger,
     trustProxy: false,
     requestIdHeader: "x-request-id",
     logController: new LogController({ disableRequestLogging: config.NODE_ENV === "test" }),

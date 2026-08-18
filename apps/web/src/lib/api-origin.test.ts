@@ -27,4 +27,13 @@ describe("API 源站地址", () => {
       }),
     ).toBe("https://api.halo.example");
   });
+
+  it("容器内部 API 地址优先于公开认证地址", () => {
+    expect(
+      resolveApiOrigin({
+        INTERNAL_API_ORIGIN: "http://api:3100",
+        AUTH_BASE_URL: "https://halo.example",
+      }),
+    ).toBe("http://api:3100");
+  });
 });

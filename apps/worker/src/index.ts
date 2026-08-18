@@ -1,10 +1,16 @@
 import { run } from "graphile-worker";
-import pino from "pino";
+import { createServiceLogger } from "@haloai/logger";
 import { readWorkerConfig } from "./config";
+import { createGraphileLogger } from "./logger";
 import { taskList } from "./tasks";
 
 const config = readWorkerConfig();
-const logger = pino({ level: config.LOG_LEVEL });
+const logger = createServiceLogger({
+  service: "worker",
+  environment: config.NODE_ENV,
+  level: config.LOG_LEVEL,
+  logDirectory: config.LOG_DIR,
+});
 
 const runner = await run({
   connectionString: config.DATABASE_URL,
@@ -12,6 +18,7 @@ const runner = await run({
   noHandleSignals: true,
   pollInterval: 1_000,
   taskList,
+  logger: createGraphileLogger(logger),
 });
 
 /**

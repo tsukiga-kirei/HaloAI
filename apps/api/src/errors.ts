@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { safeErrorFields } from "@haloai/logger";
 import { ZodError } from "zod";
 import { PersistenceError } from "@haloai/db";
 import { HttpError } from "./http-error";
@@ -47,7 +48,7 @@ export function handleError(error: Error, request: FastifyRequest, reply: Fastif
     return;
   }
 
-  request.log.error({ error }, "请求处理失败");
+  request.log.error(safeErrorFields(error), "请求处理失败");
   const body: SafeErrorBody = {
     error: {
       code: "INTERNAL_ERROR",

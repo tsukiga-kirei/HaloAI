@@ -13,7 +13,7 @@ import {
   type onTokenSyncPayload,
   type onUpgradePayload,
 } from "@hocuspocus/server";
-import pino, { type Logger } from "pino";
+import { createServiceLogger, type ServiceLogger } from "@haloai/logger";
 import { encodeStateAsUpdate } from "yjs";
 import {
   assertContextOwnsDocument,
@@ -89,10 +89,17 @@ function requirePersistence(
 export function createCollaborationService(
   config: CollaborationConfig,
   ports: CollaborationServicePorts,
-  suppliedLogger?: Logger,
+  suppliedLogger?: ServiceLogger,
 ): CollaborationService {
   const persistence = requirePersistence(config, ports.persistence);
-  const logger = suppliedLogger ?? pino({ level: config.LOG_LEVEL });
+  const logger =
+    suppliedLogger ??
+    createServiceLogger({
+      service: "collab",
+      environment: config.NODE_ENV,
+      level: config.LOG_LEVEL,
+      logDirectory: config.LOG_DIR,
+    });
   const durability = new DocumentDurabilityGuard();
   let forceUnloading = false;
   const security = new RealtimeSecurityGuards({
