@@ -1,15 +1,10 @@
 "use client";
 
 import { Bot, Boxes, LayoutDashboard, ScrollText, ShieldCheck, UsersRound } from "lucide-react";
-import type { SessionContext, WorkspaceMember } from "@haloai/contracts";
-import { WorkspaceCollaborationSnapshotSchema } from "@haloai/contracts";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 import { ManagementShell } from "./management-shell";
-import { AdminSectionContent, type AdminLiveStats } from "./admin-section-content";
-import { type AdminSection } from "@/lib/admin-sections";
-import { apiFetch } from "@/lib/api-client";
-import { notify } from "@/components/toast-host";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 
 const navigation: ReadonlyArray<{
@@ -25,76 +20,21 @@ const navigation: ReadonlyArray<{
   { href: "/admin/audit" as Route, icon: ScrollText, labelKey: "navAudit" },
 ];
 
-export function AdminConsole({ section }: { section: AdminSection }) {
-  const [session, setSession] = useState<SessionContext | null>(null);
-  const [live, setLive] = useState<AdminLiveStats | undefined>(undefined);
-  const activeWorkspace =
-    session?.workspaces.find(
-      (workspace) => workspace.id === window.localStorage.getItem("haloai.workspaceId"),
-    ) ?? session?.workspaces[0];
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load(): Promise<void> {
-      try {
-        const nextSession = await apiFetch<SessionContext>("/v1/session");
-        if (cancelled) return;
-        setSession(nextSession);
-        const remembered = window.localStorage.getItem("haloai.workspaceId");
-        const workspace =
-          nextSession.workspaces.find((item) => item.id === remembered) ??
-          nextSession.workspaces[0];
-        if (!workspace) {
-          setLive({ memberCount: 0, agents: [] });
-          return;
-        }
-
-        const [membersResult, snapshotResult] = await Promise.allSettled([
-          apiFetch<{ members: WorkspaceMember[] }>(`/v1/workspaces/${workspace.id}/members`),
-          apiFetch<unknown>(`/v1/workspaces/${workspace.id}/collaboration`),
-        ]);
-        if (cancelled) return;
-
-        const members = membersResult.status === "fulfilled" ? membersResult.value.members : [];
-        const agents =
-          snapshotResult.status === "fulfilled"
-            ? WorkspaceCollaborationSnapshotSchema.parse(snapshotResult.value).participants.filter(
-                (actor) => actor.kind === "agent",
-              )
-            : [];
-        setLive({ memberCount: members.length, agents });
-      } catch {
-        if (!cancelled) {
-          setSession(null);
-          setLive({ memberCount: 0, agents: [] });
-        }
-      }
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+/**
+ * 空间管理外壳挂在布局层。分区页只替换画布，已收起侧栏不会因换页重播宽度过渡。
+ */
+export function AdminConsole({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
 
   return (
     <ManagementShell
       titleKey="administration"
       navLabelKey="navLabel"
       portalKey="workspace_admin"
-      activeHref={`/admin/${section}`}
-      workspaceName={activeWorkspace?.name ?? "HaloAI"}
+      activeHref={pathname}
       items={navigation}
     >
-      {(dictionary) => (
-        <AdminSectionContent
-          dictionary={dictionary}
-          section={section}
-          onNotify={() => notify(dictionary.localOnlyNotice)}
-          live={live}
-        />
-      )}
+      {() => children}
     </ManagementShell>
   );
 }

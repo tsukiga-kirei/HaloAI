@@ -41,6 +41,7 @@ export function ManagementShell({
     useShellPreferences();
   const [menuOpen, setMenuOpen] = useState(false);
   const [narrowNav, setNarrowNav] = useState(false);
+  const [motionReady, setMotionReady] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
   const router = useRouter();
   const [session, setSession] = useState<SessionContext | null>(null);
@@ -59,6 +60,11 @@ export function ManagementShell({
       .toLocaleUpperCase() || "HA";
   // 窄屏管理页必须展开文字分区栏；折叠轨会把链接收成图标，移动验收与横向浏览都会失败。
   const sidebarCollapsed = narrowNav ? false : collapsed;
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setMotionReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     apiFetch<SessionContext>("/v1/session")
@@ -83,7 +89,7 @@ export function ManagementShell({
   return (
     <div
       className={`halo-shell is-management${sidebarCollapsed ? " is-collapsed" : ""}${
-        sidebarMotion ? " is-sidebar-motion" : ""
+        sidebarMotion && motionReady ? " is-sidebar-motion" : ""
       }`}
     >
       <aside

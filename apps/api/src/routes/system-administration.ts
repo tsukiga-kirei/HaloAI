@@ -12,6 +12,7 @@ import type { HaloAuth } from "../auth";
 import type { ApiConfig } from "../config";
 import { HttpError } from "../http-error";
 import type { ModelSecretCipher } from "../model-secret";
+import type { SessionPolicy } from "../session-policy";
 import { requireSession } from "../session";
 
 async function requireSystemAdministrator(
@@ -50,6 +51,7 @@ export async function registerSystemAdministrationRoutes(
   repository: SystemAdministrationRepository,
   cipher: ModelSecretCipher,
   config: ApiConfig,
+  sessionPolicy: SessionPolicy,
 ): Promise<void> {
   app.get("/v1/system/access", async (request, reply) => {
     await requireSystemAdministrator(auth, repository, request);
@@ -160,15 +162,10 @@ export async function registerSystemAdministrationRoutes(
   app.get("/v1/system/settings", async (request, reply) => {
     await requireSystemAdministrator(auth, repository, request);
     reply.header("cache-control", "no-store");
-    return {
-      defaultLocale: await repository.getDefaultLocale(),
-      authentication: {
-        mode: "database_session",
-        sessionExpiresInSeconds: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
-        sessionUpdateAgeSeconds: config.AUTH_SESSION_UPDATE_AGE_SECONDS,
-        slidingRenewal: config.AUTH_SESSION_UPDATE_AGE_SECONDS > 0,
-      },
-    };
+    return repository.getSettings({
+      sessionExpiresInSeconds: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
+      sessionUpdateAgeSeconds: config.AUTH_SESSION_UPDATE_AGE_SECONDS,
+    });
   });
 
   app.patch(
@@ -177,7 +174,17 @@ export async function registerSystemAdministrationRoutes(
     async (request, reply) => {
       await requireSystemAdministrator(auth, repository, request);
       const input = UpdateSystemSettingsInputSchema.parse(request.body);
-      await repository.updateDefaultLocale(input.defaultLocale);
+      await repository.updateSettings({
+        defaultLocale: input.defaultLocale,
+        sessionExpiresInSeconds: input.authentication.sessionExpiresInSeconds,
+        sessionUpdateAgeSeconds: input.authentication.sessionUpdateAgeSeconds,
+        slidingRenewal: input.authentication.slidingRenewal,
+      });
+      sessionPolicy.replace({
+        sessionExpiresInSeconds: input.authentication.sessionExpiresInSeconds,
+        sessionUpdateAgeSeconds: input.authentication.sessionUpdateAgeSeconds,
+        slidingRenewal: input.authentication.slidingRenewal,
+      });
       return reply.status(204).send();
     },
   );

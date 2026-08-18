@@ -22,19 +22,22 @@ export function animateBackdropIn(element: HTMLElement): void {
     gsap.set(element, { opacity: 1 });
     return;
   }
-  gsap.fromTo(element, { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power1.out" });
+  gsap.fromTo(element, { opacity: 0 }, { opacity: 1, duration: 0.32, ease: "power2.out" });
 }
 
-/** 右侧抽屉从屏幕外滑入。抽屉由 CSS 固定定位，可以使用 transform。 */
+/** 右侧抽屉从屏幕外滑入，内容轻微错峰淡入，避免生硬切出。 */
 export function animateDrawerIn(element: HTMLElement): void {
   if (prefersReducedMotion()) {
     gsap.set(element, { xPercent: 0, opacity: 1 });
     return;
   }
+  gsap.fromTo(element, { xPercent: 100 }, { xPercent: 0, duration: 0.46, ease: "power4.out" });
+  const body = element.querySelector<HTMLElement>(".halo-dialog-body");
+  if (!body) return;
   gsap.fromTo(
-    element,
-    { xPercent: 100, opacity: 1 },
-    { xPercent: 0, duration: 0.24, ease: "power3.out" },
+    body.children,
+    { opacity: 0, y: 10 },
+    { opacity: 1, y: 0, duration: 0.32, stagger: 0.04, delay: 0.12, ease: "power2.out" },
   );
 }
 

@@ -9,17 +9,18 @@ import {
   type SystemModelPage,
   type SystemTenant,
 } from "@haloai/contracts";
-import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { Cpu, Edit3, KeyRound, Plus, UsersRound } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Cpu, KeyRound, Link2, Plus, ShieldCheck, Type, UsersRound, Warehouse } from "lucide-react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { notify, notifyError } from "@/components/toast-host";
-import { HaloDataTable } from "@/components/ui/halo-data-table";
+import { HaloCatalog } from "@/components/ui/halo-catalog";
+import { HaloChoicePills } from "@/components/ui/halo-choice-pills";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloSelect } from "@/components/ui/halo-select";
 import { apiFetch } from "@/lib/api-client";
-import type { SystemAdminDictionary } from "@/lib/system-admin-i18n";
+import { useSystemAdminDictionary } from "@/lib/use-system-admin-dictionary";
 import {
   paginationLabels,
+  SystemFormField,
   SystemSearchToolbar,
   SystemSectionState,
   SystemStatusBadge,
@@ -27,7 +28,8 @@ import {
 
 const apiFormats = PlatformModelApiFormatSchema.options;
 
-export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDictionary }) {
+export function SystemModelsSection() {
+  const { dictionary } = useSystemAdminDictionary();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [query, setQuery] = useState("");
@@ -145,67 +147,6 @@ export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDic
     }
   }
 
-  const columns = useMemo<ColumnDef<SystemModel>[]>(
-    () => [
-      {
-        header: dictionary.name,
-        cell: ({ row }) => (
-          <span className="system-table-identity">
-            <span className="system-list-icon is-blue">
-              <Cpu size={15} />
-            </span>
-            <span>
-              <strong>{row.original.name}</strong>
-              <small>{row.original.remoteModelId}</small>
-            </span>
-          </span>
-        ),
-      },
-      { header: dictionary.provider, accessorKey: "provider" },
-      {
-        header: dictionary.apiFormat,
-        cell: ({ row }) => dictionary.formatLabels[row.original.apiFormat],
-      },
-      {
-        header: dictionary.apiKey,
-        cell: ({ row }) => (
-          <SystemStatusBadge tone={row.original.secretConfigured ? "success" : "muted"}>
-            <KeyRound size={12} />
-            {row.original.secretConfigured ? dictionary.secretConfigured : dictionary.secretMissing}
-          </SystemStatusBadge>
-        ),
-      },
-      {
-        header: dictionary.allocatedTenants,
-        cell: ({ row }) =>
-          row.original.allocations.filter((item) => item.status === "active").length ||
-          dictionary.noAllocation,
-      },
-      {
-        header: dictionary.status,
-        cell: ({ row }) => (
-          <SystemStatusBadge tone={row.original.status === "active" ? "success" : "muted"}>
-            {dictionary[row.original.status]}
-          </SystemStatusBadge>
-        ),
-      },
-      {
-        id: "actions",
-        header: dictionary.actions,
-        cell: ({ row }) => (
-          <button
-            type="button"
-            className="system-table-action"
-            onClick={() => openModel(row.original)}
-          >
-            <Edit3 size={14} /> {dictionary.configure}
-          </button>
-        ),
-      },
-    ],
-    [dictionary],
-  );
-
   if (failed && !result) {
     return (
       <SystemSectionState
@@ -223,9 +164,10 @@ export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDic
         value={query}
         placeholder={dictionary.searchModels}
         searchLabel={dictionary.search}
+        clearLabel={dictionary.clearSearch}
         onChange={(next) => {
           setPage(1);
-          setQuery(next.trim());
+          setQuery(next);
         }}
         action={
           <button type="button" className="admin-primary-button" onClick={() => openModel(null)}>
@@ -233,9 +175,7 @@ export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDic
           </button>
         }
       />
-      <HaloDataTable
-        columns={columns}
-        data={result?.items ?? []}
+      <HaloCatalog
         total={result?.total ?? 0}
         page={page}
         pageSize={pageSize}
@@ -247,7 +187,43 @@ export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDic
           setPage(1);
           setPageSize(next);
         }}
-      />
+      >
+        {(result?.items ?? []).map((model) => {
+          const allocated = model.allocations.filter((item) => item.status === "active").length;
+          return (
+            <article className="system-catalog-card" key={model.id}>
+              <span className="system-list-icon is-blue">
+                <Cpu size={18} />
+              </span>
+              <div>
+                <small>
+                  {model.provider} · {model.remoteModelId}
+                </small>
+                <h2>{model.name}</h2>
+                <p>
+                  {dictionary.formatLabels[model.apiFormat]}
+                  {" · "}
+                  {model.secretConfigured ? dictionary.secretConfigured : dictionary.secretMissing}
+                  {" · "}
+                  {allocated
+                    ? dictionary.allocatedCount.replace("{count}", String(allocated))
+                    : dictionary.noAllocation}
+                </p>
+              </div>
+              <SystemStatusBadge tone={model.status === "active" ? "success" : "muted"}>
+                {dictionary[model.status]}
+              </SystemStatusBadge>
+              <button
+                type="button"
+                className="system-table-action"
+                onClick={() => openModel(model)}
+              >
+                {dictionary.configure}
+              </button>
+            </article>
+          );
+        })}
+      </HaloCatalog>
 
       <HaloDialog
         open={dialogOpen}
@@ -258,87 +234,77 @@ export function SystemModelsSection({ dictionary }: { dictionary: SystemAdminDic
         onClose={() => setDialogOpen(false)}
       >
         <form className="system-form" onSubmit={(event) => void saveModel(event)}>
-          <div className="system-form-grid">
-            <label>
-              <span>{dictionary.name}</span>
-              <input
-                value={name}
-                required
-                maxLength={120}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </label>
-            <label>
-              <span>{dictionary.provider}</span>
-              <input
-                value={provider}
-                required
-                maxLength={120}
-                onChange={(e) => setProvider(e.target.value)}
-              />
-            </label>
-            <label className="is-wide">
-              <span>{dictionary.apiFormat}</span>
-              <HaloSelect
-                value={apiFormat}
-                ariaLabel={dictionary.apiFormat}
-                onValueChange={(value) => setApiFormat(value as PlatformModelApiFormat)}
-                options={apiFormats.map((format) => ({
-                  value: format,
-                  label: dictionary.formatLabels[format],
-                }))}
-              />
-            </label>
-            <label>
-              <span>{dictionary.remoteModelId}</span>
-              <input
-                value={remoteModelId}
-                required
-                maxLength={200}
-                onChange={(e) => setRemoteModelId(e.target.value)}
-              />
-            </label>
-            <label>
-              <span>{dictionary.contextWindow}</span>
-              <input
-                value={contextWindow}
-                inputMode="numeric"
-                onChange={(e) => setContextWindow(e.target.value.replace(/\D/gu, ""))}
-              />
-            </label>
-            <label className="is-wide">
-              <span>{dictionary.baseUrl}</span>
-              <input
-                value={baseUrl}
-                type="url"
-                maxLength={2048}
-                onChange={(e) => setBaseUrl(e.target.value)}
-              />
-            </label>
-            <label className="is-wide">
-              <span>{dictionary.apiKey}</span>
-              <input
-                value={apiKey}
-                type="password"
-                autoComplete="new-password"
-                maxLength={4096}
-                placeholder={editing ? dictionary.apiKeyPlaceholder : undefined}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-            </label>
-            <label className="is-wide">
-              <span>{dictionary.status}</span>
-              <HaloSelect
-                value={status}
-                ariaLabel={dictionary.status}
-                onValueChange={(value) => setStatus(value as SystemModel["status"])}
-                options={[
-                  { value: "active", label: dictionary.active },
-                  { value: "disabled", label: dictionary.disabled },
-                ]}
-              />
-            </label>
-          </div>
+          <SystemFormField icon={<Type size={16} />} tone="blue" label={dictionary.name}>
+            <input
+              value={name}
+              required
+              maxLength={120}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Warehouse size={16} />} tone="blue" label={dictionary.provider}>
+            <input
+              value={provider}
+              required
+              maxLength={120}
+              onChange={(event) => setProvider(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Cpu size={16} />} tone="blue" label={dictionary.apiFormat}>
+            <HaloSelect
+              value={apiFormat}
+              ariaLabel={dictionary.apiFormat}
+              onValueChange={(value) => setApiFormat(value as PlatformModelApiFormat)}
+              options={apiFormats.map((format) => ({
+                value: format,
+                label: dictionary.formatLabels[format],
+              }))}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Type size={16} />} tone="blue" label={dictionary.remoteModelId}>
+            <input
+              value={remoteModelId}
+              required
+              maxLength={200}
+              onChange={(event) => setRemoteModelId(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Link2 size={16} />} tone="blue" label={dictionary.baseUrl}>
+            <input
+              value={baseUrl}
+              type="url"
+              maxLength={2048}
+              onChange={(event) => setBaseUrl(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Cpu size={16} />} tone="blue" label={dictionary.contextWindow}>
+            <input
+              value={contextWindow}
+              inputMode="numeric"
+              onChange={(event) => setContextWindow(event.target.value.replace(/\D/gu, ""))}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<KeyRound size={16} />} tone="blue" label={dictionary.apiKey}>
+            <input
+              value={apiKey}
+              type="password"
+              autoComplete="new-password"
+              maxLength={4096}
+              placeholder={editing ? dictionary.apiKeyPlaceholder : undefined}
+              onChange={(event) => setApiKey(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<ShieldCheck size={16} />} tone="blue" label={dictionary.status}>
+            <HaloChoicePills
+              value={status}
+              ariaLabel={dictionary.status}
+              onChange={(value) => setStatus(value as SystemModel["status"])}
+              options={[
+                { value: "active", label: dictionary.active },
+                { value: "disabled", label: dictionary.disabled },
+              ]}
+            />
+          </SystemFormField>
 
           {editing ? (
             <section className="system-allocation-panel">

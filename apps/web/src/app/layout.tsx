@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { ToastHost } from "@/components/toast-host";
+import { ShellStateBridge } from "@/lib/shell-preferences";
+import { readCollapsedCookie } from "@/lib/shell-collapsed-cookie";
 import "./globals.css";
 import "@/components/ui/halo-overlay.css";
 
@@ -29,12 +31,15 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const initialCollapsed = await readCollapsedCookie();
   return (
     <html lang="zh-CN" className={inter.variable} suppressHydrationWarning>
       <body>
-        {children}
-        <ToastHost />
+        <ShellStateBridge initialCollapsed={initialCollapsed}>
+          {children}
+          <ToastHost />
+        </ShellStateBridge>
       </body>
     </html>
   );

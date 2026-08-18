@@ -2,16 +2,12 @@
 
 import { Activity, Building2, Cpu, LayoutDashboard, Settings2 } from "lucide-react";
 import type { Route } from "next";
-import { useLayoutEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { animateManagementSection } from "@/lib/motion";
 import { systemAdminDictionaries, type SystemAdminDictionary } from "@/lib/system-admin-i18n";
-import { type SystemSection } from "@/lib/system-sections";
+import { isSystemSection, type SystemSection } from "@/lib/system-sections";
 import { ManagementShell } from "./management-shell";
-import { SystemHealthSection } from "./system-health-section";
-import { SystemModelsSection } from "./system-models-section";
-import { SystemOverviewSection } from "./system-overview-section";
-import { SystemSettingsSection } from "./system-settings-section";
-import { SystemTenantsSection } from "./system-tenants-section";
 
 const navigation = [
   { section: "overview", href: "/system" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
@@ -26,6 +22,12 @@ const navigation = [
   },
 ] as const;
 
+function sectionFromPath(pathname: string): SystemSection {
+  if (pathname === "/system" || pathname === "/system/") return "overview";
+  const value = pathname.split("/")[2] ?? "overview";
+  return isSystemSection(value) ? value : "overview";
+}
+
 function titleFrom(section: SystemSection, dictionary: SystemAdminDictionary): string {
   if (section === "tenants") return dictionary.tenantsTitle;
   if (section === "models") return dictionary.modelsTitle;
@@ -35,16 +37,17 @@ function titleFrom(section: SystemSection, dictionary: SystemAdminDictionary): s
 }
 
 /**
- * 系统管理只组合平台级分区，不读取租户房间、文档或对话内容。每个分区自行读取受保护 API，
- * 统一外壳负责导航、主题、语言和进入动效。
+ * 系统管理外壳挂在布局层，分区切换只替换画布。侧栏不得随页面重挂载而播放收起动画。
  */
-export function SystemConsole({ section }: { section: SystemSection }) {
+export function SystemConsole({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const section = sectionFromPath(pathname);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!contentRef.current) return;
     return animateManagementSection(contentRef.current);
-  }, [section]);
+  }, [pathname]);
 
   return (
     <ManagementShell
@@ -65,13 +68,7 @@ export function SystemConsole({ section }: { section: SystemSection }) {
             <div className="admin-section-heading">
               <h1>{titleFrom(section, dictionary)}</h1>
             </div>
-            {section === "overview" ? <SystemOverviewSection dictionary={dictionary} /> : null}
-            {section === "tenants" ? (
-              <SystemTenantsSection dictionary={dictionary} locale={locale} />
-            ) : null}
-            {section === "models" ? <SystemModelsSection dictionary={dictionary} /> : null}
-            {section === "health" ? <SystemHealthSection dictionary={dictionary} /> : null}
-            {section === "settings" ? <SystemSettingsSection dictionary={dictionary} /> : null}
+            {children}
           </div>
         );
       }}

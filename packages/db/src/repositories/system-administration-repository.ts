@@ -260,22 +260,80 @@ export class SystemAdministrationRepository {
     if (!rows[0]?.updated) throw new PersistenceError("access_denied", "无权分配模型");
   }
 
-  async getDefaultLocale(): Promise<"zh-CN" | "en-US"> {
-    const [setting] = await this.client.db
-      .select({ value: systemSettings.value })
-      .from(systemSettings)
-      .where(eq(systemSettings.key, "default_locale"))
-      .limit(1);
-    return setting?.value === "en-US" ? "en-US" : "zh-CN";
+  async getSettings(defaults?: {
+    sessionExpiresInSeconds: number;
+    sessionUpdateAgeSeconds: number;
+  }): Promise<{
+    defaultLocale: "zh-CN" | "en-US";
+    authentication: {
+      mode: "database_session";
+      sessionExpiresInSeconds: number;
+      sessionUpdateAgeSeconds: number;
+      slidingRenewal: boolean;
+    };
+  }> {
+    const rows = await this.client.db
+      .select({ key: systemSettings.key, value: systemSettings.value })
+      .from(systemSettings);
+    const values = new Map(rows.map((row) => [row.key, row.value]));
+    const sessionExpiresInSeconds = parsePositiveInt(
+      values.get("session_expires_in_seconds"),
+      defaults?.sessionExpiresInSeconds ?? 604_800,
+    );
+    const sessionUpdateAgeSeconds = parseNonNegativeInt(
+      values.get("session_update_age_seconds"),
+      defaults?.sessionUpdateAgeSeconds ?? 86_400,
+    );
+    return {
+      defaultLocale: values.get("default_locale") === "en-US" ? "en-US" : "zh-CN",
+      authentication: {
+        mode: "database_session",
+        sessionExpiresInSeconds,
+        sessionUpdateAgeSeconds,
+        slidingRenewal: parseBoolean(values.get("sliding_renewal"), true),
+      },
+    };
   }
 
-  async updateDefaultLocale(locale: "zh-CN" | "en-US"): Promise<void> {
-    await this.client.db
-      .insert(systemSettings)
-      .values({ key: "default_locale", value: locale })
-      .onConflictDoUpdate({
-        target: systemSettings.key,
-        set: { value: locale, updatedAt: new Date() },
-      });
+  async updateSettings(input: {
+    defaultLocale: "zh-CN" | "en-US";
+    sessionExpiresInSeconds: number;
+    sessionUpdateAgeSeconds: number;
+    slidingRenewal: boolean;
+  }): Promise<void> {
+    const entries = [
+      { key: "default_locale", value: input.defaultLocale },
+      { key: "session_expires_in_seconds", value: String(input.sessionExpiresInSeconds) },
+      { key: "session_update_age_seconds", value: String(input.sessionUpdateAgeSeconds) },
+      { key: "sliding_renewal", value: input.slidingRenewal ? "true" : "false" },
+    ] as const;
+    const now = new Date();
+    for (const entry of entries) {
+      await this.client.db
+        .insert(systemSettings)
+        .values({ key: entry.key, value: entry.value })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: { value: entry.value, updatedAt: now },
+        });
+    }
   }
+}
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  if (!value) return fallback;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseNonNegativeInt(value: string | undefined, fallback: number): number {
+  if (!value) return fallback;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function parseBoolean(value: string | undefined, fallback: boolean): boolean {
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return fallback;
 }

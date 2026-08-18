@@ -1,7 +1,8 @@
 "use client";
 
-import { AlertCircle, Inbox, LoaderCircle, RefreshCw, Search } from "lucide-react";
-import type { FormEvent, ReactNode } from "react";
+import { AlertCircle, Inbox, LoaderCircle, RefreshCw, Search, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SystemAdminDictionary } from "@/lib/system-admin-i18n";
 
 export function SystemStatusBadge({
@@ -46,36 +47,94 @@ export function SystemSearchToolbar({
   value,
   placeholder,
   searchLabel,
+  clearLabel,
   action,
   onChange,
 }: {
   value: string;
   placeholder: string;
   searchLabel: string;
+  clearLabel: string;
   action?: ReactNode;
   onChange: (value: string) => void;
 }) {
-  function submit(event: FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    onChange(String(data.get("query") ?? ""));
-  }
+  const [draft, setDraft] = useState(value);
+  const skipSync = useRef(false);
+
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  useEffect(() => {
+    if (skipSync.current) {
+      skipSync.current = false;
+      return;
+    }
+    setDraft(value);
+  }, [value]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const next = draft.trim();
+      if (next !== value) onChangeRef.current(next);
+    }, 280);
+    return () => window.clearTimeout(handle);
+  }, [draft, value]);
 
   return (
     <div className="system-toolbar">
-      <form className="system-search" onSubmit={submit}>
-        <Search size={16} />
+      <label className="system-search">
+        <Search size={16} aria-hidden="true" />
         <input
-          key={value}
-          name="query"
           type="search"
-          defaultValue={value}
+          value={draft}
           placeholder={placeholder}
-          aria-label={placeholder}
+          aria-label={searchLabel}
+          onChange={(event) => {
+            skipSync.current = true;
+            setDraft(event.target.value);
+          }}
         />
-        <button type="submit">{searchLabel}</button>
-      </form>
+        {draft ? (
+          <button
+            type="button"
+            className="system-search-clear"
+            aria-label={clearLabel}
+            onClick={() => {
+              skipSync.current = true;
+              setDraft("");
+              onChange("");
+            }}
+          >
+            <X size={14} />
+          </button>
+        ) : null}
+      </label>
       {action}
+    </div>
+  );
+}
+
+export function SystemFormField({
+  icon,
+  tone = "violet",
+  label,
+  hint,
+  children,
+}: {
+  icon: ReactNode;
+  tone?: "violet" | "blue";
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="system-form-field">
+      <span className={`system-list-icon is-${tone}`}>{icon}</span>
+      <span className="system-form-field-copy">
+        <strong>{label}</strong>
+        {hint ? <small>{hint}</small> : null}
+        {children}
+      </span>
     </div>
   );
 }

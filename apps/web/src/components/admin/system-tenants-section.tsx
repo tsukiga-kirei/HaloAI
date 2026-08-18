@@ -5,30 +5,25 @@ import {
   type SystemTenant,
   type SystemTenantPage,
 } from "@haloai/contracts";
-import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { Building2, Edit3 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { Building2, Globe2, Languages, ShieldCheck } from "lucide-react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { notify, notifyError } from "@/components/toast-host";
-import { HaloDataTable } from "@/components/ui/halo-data-table";
+import { HaloCatalog } from "@/components/ui/halo-catalog";
+import { HaloChoicePills } from "@/components/ui/halo-choice-pills";
 import { HaloDialog } from "@/components/ui/halo-dialog";
-import { HaloSelect } from "@/components/ui/halo-select";
 import { apiFetch } from "@/lib/api-client";
-import type { SystemAdminDictionary } from "@/lib/system-admin-i18n";
+import { useSystemAdminDictionary } from "@/lib/use-system-admin-dictionary";
 import {
   formatSystemDate,
   paginationLabels,
+  SystemFormField,
   SystemSearchToolbar,
   SystemSectionState,
   SystemStatusBadge,
 } from "./system-section-primitives";
 
-export function SystemTenantsSection({
-  dictionary,
-  locale,
-}: {
-  dictionary: SystemAdminDictionary;
-  locale: "zh-CN" | "en-US";
-}) {
+export function SystemTenantsSection() {
+  const { dictionary, locale } = useSystemAdminDictionary();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [query, setQuery] = useState("");
@@ -86,58 +81,6 @@ export function SystemTenantsSection({
     }
   }
 
-  const columns = useMemo<ColumnDef<SystemTenant>[]>(
-    () => [
-      {
-        header: dictionary.name,
-        cell: ({ row }) => (
-          <span className="system-table-identity">
-            <span className="system-list-icon is-violet">
-              <Building2 size={15} />
-            </span>
-            <span>
-              <strong>{row.original.name}</strong>
-              <small>{row.original.slug}</small>
-            </span>
-          </span>
-        ),
-      },
-      {
-        header: dictionary.status,
-        accessorKey: "status",
-        cell: ({ row }) => (
-          <SystemStatusBadge tone={row.original.status === "active" ? "success" : "warning"}>
-            {dictionary[row.original.status]}
-          </SystemStatusBadge>
-        ),
-      },
-      { header: dictionary.members, accessorKey: "memberCount" },
-      {
-        header: dictionary.locale,
-        cell: ({ row }) => row.original.defaultLocale,
-      },
-      { header: dictionary.timeZone, accessorKey: "timeZone" },
-      {
-        header: dictionary.createdAt,
-        cell: ({ row }) => formatSystemDate(row.original.createdAt, locale),
-      },
-      {
-        id: "actions",
-        header: dictionary.actions,
-        cell: ({ row }) => (
-          <button
-            type="button"
-            className="system-table-action"
-            onClick={() => openTenant(row.original)}
-          >
-            <Edit3 size={14} /> {dictionary.configure}
-          </button>
-        ),
-      },
-    ],
-    [dictionary, locale],
-  );
-
   if (failed && !result) {
     return (
       <SystemSectionState
@@ -155,14 +98,13 @@ export function SystemTenantsSection({
         value={query}
         placeholder={dictionary.searchTenants}
         searchLabel={dictionary.search}
+        clearLabel={dictionary.clearSearch}
         onChange={(next) => {
           setPage(1);
-          setQuery(next.trim());
+          setQuery(next);
         }}
       />
-      <HaloDataTable
-        columns={columns}
-        data={result?.items ?? []}
+      <HaloCatalog
         total={result?.total ?? 0}
         page={page}
         pageSize={pageSize}
@@ -174,7 +116,38 @@ export function SystemTenantsSection({
           setPage(1);
           setPageSize(next);
         }}
-      />
+      >
+        {(result?.items ?? []).map((tenant) => (
+          <article className="system-catalog-card" key={tenant.id}>
+            <span className="system-list-icon is-violet">
+              <Building2 size={18} />
+            </span>
+            <div>
+              <small>{tenant.slug}</small>
+              <h2>{tenant.name}</h2>
+              <p>
+                {dictionary.membersCount.replace("{count}", String(tenant.memberCount))}
+                {" · "}
+                {tenant.defaultLocale}
+                {" · "}
+                {tenant.timeZone}
+                {" · "}
+                {formatSystemDate(tenant.createdAt, locale)}
+              </p>
+            </div>
+            <SystemStatusBadge tone={tenant.status === "active" ? "success" : "warning"}>
+              {dictionary[tenant.status]}
+            </SystemStatusBadge>
+            <button
+              type="button"
+              className="system-table-action"
+              onClick={() => openTenant(tenant)}
+            >
+              {dictionary.configure}
+            </button>
+          </article>
+        ))}
+      </HaloCatalog>
 
       <HaloDialog
         open={editing !== null}
@@ -189,39 +162,36 @@ export function SystemTenantsSection({
             <strong>{editing?.name}</strong>
             <small>{editing?.slug}</small>
           </div>
-          <label>
-            <span>{dictionary.status}</span>
-            <HaloSelect
+          <SystemFormField icon={<ShieldCheck size={16} />} label={dictionary.status}>
+            <HaloChoicePills
               value={status}
               ariaLabel={dictionary.status}
-              onValueChange={(value) => setStatus(value as SystemTenant["status"])}
+              onChange={(value) => setStatus(value as SystemTenant["status"])}
               options={[
                 { value: "active", label: dictionary.active },
                 { value: "suspended", label: dictionary.suspended },
                 { value: "archived", label: dictionary.archived },
               ]}
             />
-          </label>
-          <label>
-            <span>{dictionary.locale}</span>
-            <HaloSelect
+          </SystemFormField>
+          <SystemFormField icon={<Languages size={16} />} label={dictionary.locale}>
+            <HaloChoicePills
               value={defaultLocale}
               ariaLabel={dictionary.locale}
-              onValueChange={(value) => setDefaultLocale(value as "zh-CN" | "en-US")}
+              onChange={(value) => setDefaultLocale(value as "zh-CN" | "en-US")}
               options={[
                 { value: "zh-CN", label: dictionary.simplifiedChinese },
                 { value: "en-US", label: dictionary.english },
               ]}
             />
-          </label>
-          <label>
-            <span>{dictionary.timeZone}</span>
+          </SystemFormField>
+          <SystemFormField icon={<Globe2 size={16} />} label={dictionary.timeZone}>
             <input
               value={timeZone}
               maxLength={64}
               onChange={(event) => setTimeZone(event.target.value)}
             />
-          </label>
+          </SystemFormField>
           <footer className="system-form-actions">
             <button
               type="button"

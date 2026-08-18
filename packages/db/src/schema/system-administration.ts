@@ -97,8 +97,8 @@ export const workspaceModelAllocations = pgTable(
 );
 
 /**
- * 系统设置只保存真正能在运行期生效的产品默认值。认证 Cookie 时长来自服务启动配置，
- * 页面通过系统设置 API 读取其有效值，禁止保存一个看似可编辑但不会生效的副本。
+ * 系统设置保存平台默认语言与认证会话策略。键值由系统管理员写入，签发新会话时读取；
+ * 环境变量只在对应键缺失时提供启动缺省，页面不得展示一份不会生效的只读副本。
  */
 export const systemSettings = pgTable(
   "system_settings",

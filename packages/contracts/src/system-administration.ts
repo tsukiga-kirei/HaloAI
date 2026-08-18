@@ -111,21 +111,49 @@ export const SetSystemModelAllocationInputSchema = z
   .object({ workspaceId: UuidSchema, enabled: z.boolean() })
   .strict();
 
+export const SESSION_EXPIRES_IN_SECONDS_OPTIONS = [86_400, 604_800, 1_209_600, 2_592_000] as const;
+export const SESSION_UPDATE_AGE_SECONDS_OPTIONS = [3_600, 21_600, 43_200, 86_400] as const;
+
+export const SystemAuthenticationSettingsSchema = z
+  .object({
+    mode: z.literal("database_session"),
+    sessionExpiresInSeconds: z.number().int().min(3_600).max(31_536_000),
+    sessionUpdateAgeSeconds: z.number().int().min(0).max(2_592_000),
+    slidingRenewal: z.boolean(),
+  })
+  .strict();
+
 export const SystemSettingsSchema = z
+  .object({
+    defaultLocale: LocaleSchema,
+    authentication: SystemAuthenticationSettingsSchema,
+  })
+  .strict();
+
+export const UpdateSystemSettingsInputSchema = z
   .object({
     defaultLocale: LocaleSchema,
     authentication: z
       .object({
-        mode: z.literal("database_session"),
-        sessionExpiresInSeconds: z.number().int().positive(),
-        sessionUpdateAgeSeconds: z.number().int().positive(),
+        sessionExpiresInSeconds: z.number().int().min(3_600).max(31_536_000),
+        sessionUpdateAgeSeconds: z.number().int().min(300).max(2_592_000),
         slidingRenewal: z.boolean(),
       })
       .strict(),
   })
-  .strict();
-
-export const UpdateSystemSettingsInputSchema = z.object({ defaultLocale: LocaleSchema }).strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      value.authentication.slidingRenewal &&
+      value.authentication.sessionUpdateAgeSeconds >= value.authentication.sessionExpiresInSeconds
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["authentication", "sessionUpdateAgeSeconds"],
+        message: "会话续期间隔必须短于登录有效期",
+      });
+    }
+  });
 
 export type SystemPageQuery = z.infer<typeof SystemPageQuerySchema>;
 export type SystemOverview = z.infer<typeof SystemOverviewSchema>;

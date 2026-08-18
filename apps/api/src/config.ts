@@ -74,6 +74,7 @@ const configSchema = z
         message: "生产环境必须配置独立模型密钥加密主密钥",
       });
     }
+    // 这两项只在 system_settings 尚无对应键时作为启动缺省；运行期以管理员保存的数据库值为准。
     if (value.AUTH_SESSION_UPDATE_AGE_SECONDS >= value.AUTH_SESSION_EXPIRES_IN_SECONDS) {
       context.addIssue({
         code: "custom",

@@ -9,7 +9,13 @@ import type { Theme } from "@/components/workspace/types";
 import { adminDictionaries } from "@/lib/admin-i18n";
 import type { Locale } from "@/lib/i18n";
 
-export function RestrictedSurface({ kind }: { kind: "workspace" | "system" }) {
+export function RestrictedSurface({
+  kind,
+  variant = "page",
+}: {
+  kind: "workspace" | "system";
+  variant?: "page" | "panel";
+}) {
   const [locale, setLocale] = useState<Locale>("zh-CN");
   const [theme, setTheme] = useState<Theme>("light");
   const [preferencesReady, setPreferencesReady] = useState(false);
@@ -32,33 +38,36 @@ export function RestrictedSurface({ kind }: { kind: "workspace" | "system" }) {
   }, [locale, preferencesReady, theme]);
 
   const system = kind === "system";
+  const panel = variant === "panel";
   return (
-    <main className="restricted-shell">
-      <div className="restricted-toolbar">
-        <Link className="restricted-brand" href={"/app" as Route} aria-label="HaloAI">
-          <HaloMark compact />
-          <strong>HaloAI</strong>
-        </Link>
-        <div>
-          <button
-            type="button"
-            className="admin-icon-button"
-            aria-label={dictionary.changeLanguage}
-            onClick={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
-          >
-            <Languages size={18} />
-            <span>{locale === "zh-CN" ? "EN" : "中"}</span>
-          </button>
-          <button
-            type="button"
-            className="admin-icon-button is-square"
-            aria-label={dictionary.changeTheme}
-            onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
-          >
-            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
+    <main className={`restricted-shell${panel ? " is-panel" : ""}`}>
+      {panel ? null : (
+        <div className="restricted-toolbar">
+          <Link className="restricted-brand" href={"/app" as Route} aria-label="HaloAI">
+            <HaloMark compact />
+            <strong>HaloAI</strong>
+          </Link>
+          <div>
+            <button
+              type="button"
+              className="admin-icon-button"
+              aria-label={dictionary.changeLanguage}
+              onClick={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
+            >
+              <Languages size={18} />
+              <span>{locale === "zh-CN" ? "EN" : "中"}</span>
+            </button>
+            <button
+              type="button"
+              className="admin-icon-button is-square"
+              aria-label={dictionary.changeTheme}
+              onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+            >
+              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <section className="restricted-card">
         <div className="restricted-visual" aria-hidden="true">

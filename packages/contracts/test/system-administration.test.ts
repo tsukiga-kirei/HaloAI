@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { SaveSystemModelInputSchema, SystemModelSchema, SystemPageQuerySchema } from "../src";
+import {
+  SaveSystemModelInputSchema,
+  SystemModelSchema,
+  SystemPageQuerySchema,
+  UpdateSystemSettingsInputSchema,
+} from "../src";
 
 describe("系统管理契约", () => {
   it("限制服务端分页范围", () => {
@@ -40,5 +45,31 @@ describe("系统管理契约", () => {
 
     expect(SystemModelSchema.safeParse(publicModel).success).toBe(true);
     expect(SystemModelSchema.safeParse({ ...publicModel, secretHint: "cret" }).success).toBe(false);
+  });
+
+  it("系统设置必须同时提交语言与认证策略且续期短于有效期", () => {
+    expect(UpdateSystemSettingsInputSchema.safeParse({ defaultLocale: "zh-CN" }).success).toBe(
+      false,
+    );
+    expect(
+      UpdateSystemSettingsInputSchema.parse({
+        defaultLocale: "en-US",
+        authentication: {
+          sessionExpiresInSeconds: 604_800,
+          sessionUpdateAgeSeconds: 86_400,
+          slidingRenewal: true,
+        },
+      }).defaultLocale,
+    ).toBe("en-US");
+    expect(
+      UpdateSystemSettingsInputSchema.safeParse({
+        defaultLocale: "zh-CN",
+        authentication: {
+          sessionExpiresInSeconds: 86_400,
+          sessionUpdateAgeSeconds: 86_400,
+          slidingRenewal: true,
+        },
+      }).success,
+    ).toBe(false);
   });
 });

@@ -14,10 +14,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import { apiFetch } from "@/lib/api-client";
-import type { SystemAdminDictionary } from "@/lib/system-admin-i18n";
+import { useSystemAdminDictionary } from "@/lib/use-system-admin-dictionary";
 import { SystemSectionState, SystemStatusBadge } from "./system-section-primitives";
 
-export function SystemOverviewSection({ dictionary }: { dictionary: SystemAdminDictionary }) {
+export function SystemOverviewSection() {
+  const { dictionary } = useSystemAdminDictionary();
   const [overview, setOverview] = useState<SystemOverview | null>(null);
   const [tenants, setTenants] = useState<SystemTenant[]>([]);
   const [models, setModels] = useState<SystemModel[]>([]);

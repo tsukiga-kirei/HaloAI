@@ -3,10 +3,11 @@
 import { Activity, Database, Server } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch, getApiBaseUrl } from "@/lib/api-client";
-import type { SystemAdminDictionary } from "@/lib/system-admin-i18n";
+import { useSystemAdminDictionary } from "@/lib/use-system-admin-dictionary";
 import { SystemSectionState, SystemStatusBadge } from "./system-section-primitives";
 
-export function SystemHealthSection({ dictionary }: { dictionary: SystemAdminDictionary }) {
+export function SystemHealthSection() {
+  const { dictionary } = useSystemAdminDictionary();
   const [apiReady, setApiReady] = useState<boolean | null>(null);
   const [directoryReady, setDirectoryReady] = useState<boolean | null>(null);
 

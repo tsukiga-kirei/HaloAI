@@ -1,9 +1,5 @@
-import { SystemConsole } from "@/components/admin/system-console";
-import { RestrictedSurface } from "@/components/admin/restricted-surface";
-import { getSystemAdminAccess } from "@/server/system-admin-access";
+import { SystemOverviewSection } from "@/components/admin/system-overview-section";
 
-export default async function SystemAdministrationPage() {
-  const access = await getSystemAdminAccess();
-  if (!access.allowed) return <RestrictedSurface kind="system" />;
-  return <SystemConsole section="overview" />;
+export default function SystemAdministrationPage() {
+  return <SystemOverviewSection />;
 }

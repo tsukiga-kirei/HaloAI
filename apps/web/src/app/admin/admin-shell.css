@@ -383,6 +383,13 @@
     var(--canvas);
 }
 
+.restricted-shell.is-panel {
+  min-height: 0;
+  height: auto;
+  padding: 12px 0;
+  background: none;
+}
+
 .restricted-toolbar {
   position: fixed;
   inset-block-start: 24px;

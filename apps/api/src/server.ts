@@ -7,6 +7,7 @@ import {
   SystemAdministrationRepository,
   WorkspaceOnboardingRepository,
 } from "@haloai/db";
+import { createSessionPolicy } from "./session-policy";
 import { createServiceLogger } from "@haloai/logger";
 import Fastify, { type FastifyBaseLogger, type FastifyInstance, LogController } from "fastify";
 import type { ApiConfig } from "./config";
@@ -36,9 +37,23 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     applicationName: "haloai-auth",
     maxConnections: 5,
   });
-  const auth = createAuth(authenticationDatabase.db, config);
   const onboardingRepository = new WorkspaceOnboardingRepository(applicationDatabase);
   const systemAdministrationRepository = new SystemAdministrationRepository(applicationDatabase);
+  const sessionPolicy = createSessionPolicy({
+    sessionExpiresInSeconds: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    sessionUpdateAgeSeconds: config.AUTH_SESSION_UPDATE_AGE_SECONDS,
+    slidingRenewal: config.AUTH_SESSION_UPDATE_AGE_SECONDS > 0,
+  });
+  try {
+    const stored = await systemAdministrationRepository.getSettings({
+      sessionExpiresInSeconds: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
+      sessionUpdateAgeSeconds: config.AUTH_SESSION_UPDATE_AGE_SECONDS,
+    });
+    sessionPolicy.replace(stored.authentication);
+  } catch {
+    // 健康检查与无库测试不能被系统设置表绑死；缺库时继续使用启动缺省。
+  }
+  const auth = createAuth(authenticationDatabase.db, config, sessionPolicy);
   const modelSecretCipher = new ModelSecretCipher(
     config.MODEL_SECRET_ENCRYPTION_KEY,
     config.MODEL_SECRET_KEY_VERSION,
@@ -77,6 +92,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     systemAdministrationRepository,
     modelSecretCipher,
     config,
+    sessionPolicy,
   );
   await registerCollaborationRoutes(app, auth, applicationDatabase, onboardingRepository);
   return app;

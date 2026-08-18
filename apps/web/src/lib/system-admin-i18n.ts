@@ -24,14 +24,15 @@ export interface SystemAdminDictionary {
   search: string;
   searchTenants: string;
   searchModels: string;
+  clearSearch: string;
   name: string;
   slug: string;
   status: string;
   members: string;
+  membersCount: string;
   locale: string;
   timeZone: string;
   createdAt: string;
-  actions: string;
   configure: string;
   active: string;
   suspended: string;
@@ -57,7 +58,7 @@ export interface SystemAdminDictionary {
   secretConfigured: string;
   secretMissing: string;
   allocatedTenants: string;
-  allocate: string;
+  allocatedCount: string;
   allocationTitle: string;
   noAllocation: string;
   modelSaved: string;
@@ -71,17 +72,25 @@ export interface SystemAdminDictionary {
   unavailable: string;
   generalTab: string;
   authenticationTab: string;
-  aiConversationTab: string;
   defaultLocale: string;
+  defaultLocaleHint: string;
   sessionMode: string;
   databaseSession: string;
   cookieLifetime: string;
+  cookieLifetimeHint: string;
   renewalInterval: string;
+  renewalIntervalHint: string;
   slidingRenewal: string;
+  slidingRenewalHint: string;
   enabled: string;
-  days: string;
-  hours: string;
-  aiSettingsReserved: string;
+  lifetime1Day: string;
+  lifetime7Days: string;
+  lifetime14Days: string;
+  lifetime30Days: string;
+  renewal1Hour: string;
+  renewal6Hours: string;
+  renewal12Hours: string;
+  renewal1Day: string;
   settingsSaved: string;
   simplifiedChinese: string;
   english: string;
@@ -111,14 +120,15 @@ const zhCN: SystemAdminDictionary = {
   search: "搜索",
   searchTenants: "搜索租户名称或标识",
   searchModels: "搜索模型、供应商或远端 ID",
+  clearSearch: "清除搜索",
   name: "名称",
   slug: "租户标识",
   status: "状态",
   members: "成员",
+  membersCount: "{count} 名成员",
   locale: "默认语言",
   timeZone: "时区",
   createdAt: "创建时间",
-  actions: "操作",
   configure: "配置",
   active: "运行中",
   suspended: "已暂停",
@@ -144,7 +154,7 @@ const zhCN: SystemAdminDictionary = {
   secretConfigured: "已配置",
   secretMissing: "未配置",
   allocatedTenants: "已分配租户",
-  allocate: "租户分配",
+  allocatedCount: "已分配 {count} 个租户",
   allocationTitle: "模型分配",
   noAllocation: "尚未分配",
   modelSaved: "模型配置已保存",
@@ -158,17 +168,25 @@ const zhCN: SystemAdminDictionary = {
   unavailable: "连接异常",
   generalTab: "通用",
   authenticationTab: "认证",
-  aiConversationTab: "AI 对话",
   defaultLocale: "平台默认语言",
+  defaultLocaleHint: "新租户与未设置语言偏好的页面默认使用该语言。",
   sessionMode: "会话方式",
   databaseSession: "数据库会话",
   cookieLifetime: "登录有效期",
+  cookieLifetimeHint: "保存后对新登录立即生效，已签发会话保持原到期时间。",
   renewalInterval: "续期间隔",
+  renewalIntervalHint: "活跃用户会在该间隔后自动延长登录，且必须短于有效期。",
   slidingRenewal: "滑动续期",
+  slidingRenewalHint: "关闭后登录到期即失效，不再因为持续使用而自动续期。",
   enabled: "已启用",
-  days: "{count} 天",
-  hours: "{count} 小时",
-  aiSettingsReserved: "AI 对话设置将在模型路由接入后开放。",
+  lifetime1Day: "1 天",
+  lifetime7Days: "7 天",
+  lifetime14Days: "14 天",
+  lifetime30Days: "30 天",
+  renewal1Hour: "1 小时",
+  renewal6Hours: "6 小时",
+  renewal12Hours: "12 小时",
+  renewal1Day: "1 天",
   settingsSaved: "系统设置已保存",
   simplifiedChinese: "简体中文",
   english: "English",
@@ -203,14 +221,15 @@ const enUS: SystemAdminDictionary = {
   search: "Search",
   searchTenants: "Search tenant name or slug",
   searchModels: "Search model, provider, or remote ID",
+  clearSearch: "Clear search",
   name: "Name",
   slug: "Tenant slug",
   status: "Status",
   members: "Members",
+  membersCount: "{count} members",
   locale: "Default language",
   timeZone: "Time zone",
   createdAt: "Created",
-  actions: "Actions",
   configure: "Configure",
   active: "Active",
   suspended: "Suspended",
@@ -236,7 +255,7 @@ const enUS: SystemAdminDictionary = {
   secretConfigured: "Configured",
   secretMissing: "Not configured",
   allocatedTenants: "Allocated tenants",
-  allocate: "Tenant allocation",
+  allocatedCount: "{count} tenants allocated",
   allocationTitle: "Model allocation",
   noAllocation: "Not allocated",
   modelSaved: "Model configuration saved",
@@ -250,17 +269,28 @@ const enUS: SystemAdminDictionary = {
   unavailable: "Connection issue",
   generalTab: "General",
   authenticationTab: "Authentication",
-  aiConversationTab: "AI conversation",
   defaultLocale: "Platform default language",
+  defaultLocaleHint: "New tenants and pages without a locale preference use this language.",
   sessionMode: "Session mode",
   databaseSession: "Database session",
   cookieLifetime: "Sign-in lifetime",
+  cookieLifetimeHint:
+    "New sign-ins pick this up immediately. Existing sessions keep their original expiry.",
   renewalInterval: "Renewal interval",
+  renewalIntervalHint:
+    "Active users extend their session after this interval. It must be shorter than the lifetime.",
   slidingRenewal: "Sliding renewal",
+  slidingRenewalHint:
+    "When off, a session expires at its original time and is not extended by continued use.",
   enabled: "Enabled",
-  days: "{count} days",
-  hours: "{count} hours",
-  aiSettingsReserved: "AI conversation settings open when model routing is connected.",
+  lifetime1Day: "1 day",
+  lifetime7Days: "7 days",
+  lifetime14Days: "14 days",
+  lifetime30Days: "30 days",
+  renewal1Hour: "1 hour",
+  renewal6Hours: "6 hours",
+  renewal12Hours: "12 hours",
+  renewal1Day: "1 day",
   settingsSaved: "System settings saved",
   simplifiedChinese: "Simplified Chinese",
   english: "English",
