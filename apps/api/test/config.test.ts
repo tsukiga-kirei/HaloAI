@@ -45,4 +45,33 @@ describe("API 环境配置", () => {
       }),
     ).toThrow();
   });
+
+  it("暴露真实会话时长并拒绝晚于到期时间的续期配置", () => {
+    expect(
+      readConfig({
+        NODE_ENV: "test",
+        AUTH_SESSION_EXPIRES_IN_SECONDS: "7200",
+        AUTH_SESSION_UPDATE_AGE_SECONDS: "900",
+      }),
+    ).toMatchObject({
+      AUTH_SESSION_EXPIRES_IN_SECONDS: 7200,
+      AUTH_SESSION_UPDATE_AGE_SECONDS: 900,
+    });
+    expect(() =>
+      readConfig({
+        NODE_ENV: "test",
+        AUTH_SESSION_EXPIRES_IN_SECONDS: "3600",
+        AUTH_SESSION_UPDATE_AGE_SECONDS: "3600",
+      }),
+    ).toThrow();
+  });
+
+  it("生产环境拒绝本地模型密钥加密主密钥", () => {
+    expect(() =>
+      readConfig({
+        NODE_ENV: "production",
+        BETTER_AUTH_SECRET: "a-production-auth-secret-that-is-long-enough",
+      }),
+    ).toThrow();
+  });
 });

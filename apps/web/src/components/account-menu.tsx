@@ -102,7 +102,12 @@ export function AccountMenu({
     <div className={`account-menu ${collapsed ? "is-collapsed" : ""}`}>
       <DropdownMenu.Root open={open} onOpenChange={onOpenChange} modal={false}>
         <DropdownMenu.Trigger asChild>
-          <button type="button" className="account-trigger" aria-label={labels.personalSettings}>
+          <button
+            type="button"
+            className="account-trigger"
+            aria-label={labels.personalSettings}
+            title={collapsed ? labels.personalSettings : undefined}
+          >
             <span className="account-avatar">{initials}</span>
             <span className="account-meta sidebar-label">
               <strong>{name}</strong>

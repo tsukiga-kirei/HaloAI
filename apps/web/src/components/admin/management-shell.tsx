@@ -14,6 +14,7 @@ import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch } from "@/lib/api-client";
 import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
+import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 
 /**
  * 工作空间后台与系统后台共用侧栏外壳。
@@ -34,7 +35,7 @@ export function ManagementShell({
   activeHref: string;
   portalKey: PortalKey;
   workspaceName?: string;
-  children: (dictionary: AdminDictionary) => ReactNode;
+  children: (dictionary: AdminDictionary, locale: "zh-CN" | "en-US") => ReactNode;
 }) {
   const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, sidebarMotion } =
     useShellPreferences();
@@ -131,16 +132,17 @@ export function ManagementShell({
             const active = activeHref === item.href;
             const label = dictionary[item.labelKey];
             return (
-              <Link
-                key={item.href}
-                className={`nav-item ${active ? "is-active" : ""}`}
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                title={label}
-              >
-                <Icon size={18} />
-                <span className="sidebar-label">{label}</span>
-              </Link>
+              <SidebarTooltip key={item.href} enabled={sidebarCollapsed} label={label}>
+                <Link
+                  className={`nav-item ${active ? "is-active" : ""}`}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  title={label}
+                >
+                  <Icon size={18} />
+                  <span className="sidebar-label">{label}</span>
+                </Link>
+              </SidebarTooltip>
             );
           })}
         </nav>
@@ -182,7 +184,7 @@ export function ManagementShell({
           />
         </div>
       </aside>
-      <main className="management-main">{children(dictionary)}</main>
+      <main className="management-main">{children(dictionary, locale)}</main>
     </div>
   );
 }

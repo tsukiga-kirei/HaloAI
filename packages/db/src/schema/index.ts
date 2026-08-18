@@ -11,4 +11,5 @@ export * from "./identity";
 export * from "./outbox";
 export * from "./runtime";
 export * from "./runtime-context";
+export * from "./system-administration";
 export * from "./workspace-onboarding";

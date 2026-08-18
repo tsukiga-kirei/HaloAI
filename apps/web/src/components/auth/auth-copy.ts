@@ -20,7 +20,7 @@ export const authCopy = {
     portalSystem: "系统管理",
     portalMemberDesc: "进入房间、处理待办、推进文档",
     portalWorkspaceDesc: "管理成员、AI 角色和安全边界",
-    portalSystemDesc: "租户生命周期、平台健康与全局策略",
+    portalSystemDesc: "租户生命周期、模型目录与系统设置",
     roleMemberOption: "协作成员",
     roleGuestOption: "访客",
     roleAdminOption: "空间管理员",
@@ -48,6 +48,7 @@ export const authCopy = {
     duplicate: "这个邮箱已经注册，请直接登录。",
     generic: "暂时无法完成请求，请稍后重试。",
     sessionUnreadable: "登录已通过，但工作区暂时无法读取，请刷新后重试。",
+    systemAccessDenied: "当前账户没有系统管理权限。",
   },
   "en-US": {
     language: "中文",
@@ -72,7 +73,7 @@ export const authCopy = {
     portalSystem: "System admin",
     portalMemberDesc: "Enter rooms, handle inbox items, and move documents forward",
     portalWorkspaceDesc: "Manage members, AI roles, and safety boundaries",
-    portalSystemDesc: "Tenant lifecycle, platform health, and global policy",
+    portalSystemDesc: "Tenant lifecycle, model catalog, and system settings",
     roleMemberOption: "Collaborator",
     roleGuestOption: "Guest",
     roleAdminOption: "Workspace admin",
@@ -101,6 +102,7 @@ export const authCopy = {
     generic: "We could not complete the request. Please try again.",
     sessionUnreadable:
       "You are signed in, but workspaces could not be loaded. Refresh and try again.",
+    systemAccessDenied: "This account does not have system administration access.",
   },
 } as const;
 

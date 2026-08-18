@@ -8,7 +8,8 @@ This specification defines human login identities, revocable browser sessions, f
 
 - A mature authentication component handles email and password. Passwords use a memory-hard hash and exist only on credential Accounts.
 - Browsers receive only `HttpOnly`, `SameSite=Lax` cookies. Session tokens never enter `localStorage`, URLs, logs, or error responses. The login page sends authentication and session requests through the web origin so browsers do not reject cookies when the API uses another port, or when `localhost` and `127.0.0.1` are mixed.
-- Sessions are stored in PostgreSQL, expire after seven days by default, refresh daily, and can be revoked immediately on sign-out or a security event.
+- Sessions are stored in PostgreSQL, expire after seven days by default, renew daily, and can be revoked immediately on sign-out or a security event. Renewal rotates a revocable opaque session cookie; it does not expose an access token or refresh token to browser JavaScript.
+- AuraOA's access/refresh JWT design fits Bearer API clients, but HaloAI does not adopt its browser-side `localStorage` token storage. Agentum keeps short-lived access tokens in memory and places a rotatable refresh token in an HttpOnly cookie scoped to `/api/auth`. HaloAI currently has only a same-origin Web/BFF client, so a database session cookie avoids two token classes, refresh races, and XSS-readable credentials. An access/refresh protocol should be introduced behind AuthGateway only when native clients, third-party APIs, or cross-origin resource servers become real requirements.
 - Authentication origins and CORS use explicit allowlists. CSRF and origin checks must never be disabled.
 - The authentication database role accesses only User, Account, Session, and Verification tables and cannot read workspace content.
 - Sign-up, sign-in, and invitation acceptance return stable error codes without exposing whether an email exists or which workspace owns an invitation.
@@ -44,7 +45,7 @@ The transaction generates server-owned UUIDs before setting the PostgreSQL works
 
 The Alpha slice delivers email/password sign-up and sign-in, session lookup and sign-out, workspace creation and listing, invitation creation and acceptance, and built-in role changes. Local `DEMO_MODE=true` writes scrypt-hashed seed accounts for frontend/backend integration; the switch never skips cookie sessions or server authorization. Until email delivery is connected, development may display a one-time invitation link. Production must never return or log the raw token.
 
-The login page shows a workspace dropdown for collaborator and workspace-admin portals, below the email and password fields; system admin does not. Opening the login page does not reuse an existing cookie to fill workspaces, so a refresh with empty credentials cannot enter. After email/password sign-in succeeds on this page, it fills options from `GET /v1/session` and selects the first workspace, or the last remembered one if it still belongs to the account. Zero workspaces keep the empty state and continue to onboarding. A client-stored `workspaceId` is only a UI preference and is never authorization evidence. The account menu shows “Switch workspace” only when the account belongs to more than one workspace.
+The login page shows a workspace dropdown for collaborator and workspace-admin portals, below the email and password fields; system admin does not. Opening the login page does not reuse an existing cookie to fill workspaces, so a refresh with empty credentials cannot enter. After email/password sign-in succeeds on this page, it fills options from `GET /v1/session` and selects the first workspace, or the last remembered one if it still belongs to the account. The system-admin portal also calls the platform access check and admits only an active `system_administrators` grant. Zero workspaces keep the empty state and continue to onboarding. A client-stored `workspaceId` is only a UI preference and is never authorization evidence. The account menu shows “Switch workspace” only when the account belongs to more than one workspace.
 
 ## 7. Acceptance
 
@@ -57,4 +58,5 @@ The login page shows a workspace dropdown for collaborator and workspace-admin p
 - An Owner can invite a member; wrong email, expired tokens, and replay fail safely.
 - The final Owner cannot be demoted, suspended, or removed.
 - A signed-out session becomes invalid immediately.
+- Authentication settings display the server's effective expiration and renewal intervals instead of a non-functional frontend default. System-administrator authority is never derived from a Workspace role.
 - Sign-in, onboarding, and member-management pages work in Chinese, English, light and dark themes, and 390/768/1440 viewports.

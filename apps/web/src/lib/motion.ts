@@ -125,3 +125,26 @@ export function animatePortalDescription(element: HTMLElement): () => void {
   );
   return () => tween.revert();
 }
+
+/**
+ * 管理分区切换只做短距离淡入与轻量错峰，不让数据表或表单产生夸张位移。
+ * 动画目标由分区根节点限定，分页、搜索和抽屉内部更新不会重播整页。
+ */
+export function animateManagementSection(element: HTMLElement): () => void {
+  const targets = [
+    element.querySelector<HTMLElement>(".admin-section-heading"),
+    ...Array.from(element.querySelectorAll<HTMLElement>("[data-motion='admin-item']")),
+  ].filter((target): target is HTMLElement => Boolean(target));
+  if (prefersReducedMotion()) {
+    gsap.set(targets, { clearProps: "all", opacity: 1, y: 0 });
+    return () => undefined;
+  }
+  const context = gsap.context(() => {
+    gsap.fromTo(
+      targets,
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.34, stagger: 0.045, ease: "power3.out" },
+    );
+  }, element);
+  return () => context.revert();
+}

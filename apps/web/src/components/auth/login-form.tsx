@@ -187,12 +187,18 @@ export function LoginForm() {
       const session = await apiFetch<SessionContext>("/v1/session");
       applySession(session);
       if (portal === "system_admin") {
+        await apiFetch<{ allowed: true }>("/v1/system/access");
         continueAfterSession(session.workspaces, preferredWorkspaceId(session.workspaces));
       }
     } catch (caught) {
+      if (caught instanceof ApiClientError && caught.status === 403) setHasSession(false);
       notifyError(
-        caught instanceof ApiClientError && caught.status === 401
-          ? copy.sessionUnreadable
+        caught instanceof ApiClientError
+          ? caught.status === 403
+            ? copy.systemAccessDenied
+            : caught.status === 401
+              ? copy.sessionUnreadable
+              : copy.generic
           : copy.generic,
         "login-error",
       );

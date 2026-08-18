@@ -940,6 +940,7 @@ a {
   overflow: visible;
   border-right: 1px solid var(--border);
   background: var(--sidebar);
+  font-weight: 600;
 }
 /* 宽度过渡只在用户折叠/展开时开启；恢复偏好或换门户时不要播一遍收起。 */
 .halo-shell.is-sidebar-motion .workspace-sidebar {
@@ -1287,6 +1288,7 @@ a {
   overflow: hidden;
   padding: 0 8px;
   font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 :is(.nav-item, .room-item, .dm-item, .profile-button):hover {
@@ -1350,6 +1352,31 @@ a {
   grid-template-columns: 22px minmax(0, 1fr) auto;
   gap: 7px;
   padding: 0 8px;
+  font-weight: 600;
+}
+
+/* 收起侧栏的名称说明挂在 body 上，不能受侧栏裁切或层叠上下文影响。 */
+.sidebar-item-tooltip {
+  z-index: 120;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--canvas);
+  box-shadow: var(--shadow-popover);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  animation: tooltip-in var(--fast) var(--ease) both;
+}
+.sidebar-item-tooltip-arrow {
+  fill: var(--text);
+}
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateX(-3px) scale(0.98);
+  }
 }
 .room-glyph-wrap {
   position: relative;
@@ -2851,14 +2878,16 @@ a {
     inset: auto;
     width: 100%;
     min-width: 0;
-    height: auto;
+    height: 106px;
+    min-height: 106px;
+    flex: 0 0 106px;
     transform: none;
     box-shadow: none;
     overflow: hidden;
     border-right: 0;
     border-bottom: 1px solid var(--border);
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto auto;
+    grid-template-rows: 52px 54px;
   }
   .halo-shell.is-management .brand-row {
     grid-column: 1;
@@ -2883,6 +2912,7 @@ a {
     flex: 0 0 auto;
     flex-direction: row;
     gap: 4px;
+    height: 54px;
     min-height: 52px;
     max-width: 100%;
     padding: 0 10px 10px;

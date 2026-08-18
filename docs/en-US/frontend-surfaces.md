@@ -4,11 +4,11 @@
 
 HaloAI separates team collaboration, workspace governance, and platform operations into three product surfaces. The split exists to preserve clear mental models and least privilege, not to create more pages.
 
-| Surface                  | Stable route | Audience                                                      | Primary responsibility                                                                                                                     |
-| ------------------------ | ------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Collaboration            | `/app`       | Team members and invited guests                               | Rooms, messages, documents, AI collaboration, approvals, and deliverables                                                                  |
-| Workspace administration | `/admin/*`   | Workspace Owners, Workspace Admins, and scoped administrators | Members, roles, AI (using allocated models only), integrations, security, usage, and audit                                                 |
-| System administration    | `/system`    | Platform operations and security staff                        | Tenant lifecycle, the platform model catalog and per-tenant allocation, system health, and global policy; no default tenant-content access |
+| Surface                  | Stable route | Audience                                                      | Primary responsibility                                                                                                                         |
+| ------------------------ | ------------ | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Collaboration            | `/app`       | Team members and invited guests                               | Rooms, messages, documents, AI collaboration, approvals, and deliverables                                                                      |
+| Workspace administration | `/admin/*`   | Workspace Owners, Workspace Admins, and scoped administrators | Members, roles, AI (using allocated models only), integrations, security, usage, and audit                                                     |
+| System administration    | `/system`    | Platform operations and security staff                        | Tenant lifecycle, the platform model catalog and per-tenant allocation, system health, and platform defaults; no default tenant-content access |
 
 The root route `/` only enters the collaboration surface and does not host a second home page.
 
@@ -19,6 +19,7 @@ The root route `/` only enters the collaboration surface and does not host a sec
 - The three surfaces share brand tokens, the product mark, theme, and locale preferences, but not their page hierarchy or primary navigation.
 - Desktop administration uses side navigation and a content canvas. Narrow screens convert navigation into a horizontally browsable section bar instead of shrinking a desktop page.
 - Transitions between collaboration and administration use the account menu’s role switch. Do not add a second language, theme, or role control in the top bar.
+- Sidebar labels use a clear medium weight in both default and selected states. When collapsed to an icon rail, every navigation item, room, and account entry shows its name on hover or keyboard focus.
 
 ## 3. Authorization boundary
 
@@ -40,15 +41,17 @@ This is the product boundary for the current page-design stage. Later implementa
 | Workspace administrator | See models allocated to this tenant; pick one for each workspace AI member; view this workspace’s usage within that allocation                                         | Add a provider, paste a secret, or use a model that was not allocated |
 | Collaborating member    | Work with AI members that are already configured                                                                                                                       | Configure providers or the model catalog                              |
 
-System administration’s page design includes a Models section: catalog, tenant allocation, and availability. The current preview shell provides `/system/models`. Workspace “Available models” may only show this tenant’s allocated options; it must not read as tenant-owned provider onboarding.
+System administration’s page design includes a Models section: catalog, tenant allocation, and availability. The catalog explicitly supports OpenAI Chat Completions, OpenAI Responses, Anthropic Messages, and Google Generate Content protocol formats instead of hiding different request contracts behind one generic compatibility field. Workspace “Available models” may only show this tenant’s allocated options; it must not read as tenant-owned provider onboarding.
+
+A system administrator submits a model API key only when creating or rotating a model connection. PostgreSQL stores AES-256-GCM ciphertext, a random IV, an authentication tag, and a key version. Pages and list responses return only configured/not-configured state and never echo or log plaintext. Production injects a dedicated model-secret encryption master key; the authentication secret must not double as that key.
 
 ## 4. Current Alpha boundary
 
-The current implementation provides complete navigable shells for collaboration, workspace administration, and system-administration preview. The collaboration surface requires email/password sign-in and an HttpOnly session. `DEMO_MODE=true` only loads local PostgreSQL seed data; it never skips authentication and does not enable collaboration demo tickets. Local development still authorizes administration shells with a hardcoded Owner preview principal until session membership is enforced. Production builds deny unauthenticated administration.
+The current implementation provides complete navigable collaboration, workspace-administration, and system-administration surfaces. Collaboration requires email/password sign-in and an HttpOnly session. `DEMO_MODE=true` only loads local PostgreSQL seed data; it never skips authentication and does not enable collaboration demo tickets. System administration is protected by a separate `system_administrators` platform grant. Workspace Owners are never promoted implicitly, and cross-tenant directory reads use narrow `SECURITY DEFINER` database functions that verify the platform identity.
 
 Workspace administration loads members and AI collaborators from the server snapshot. Sections without a ledger, audit log, or model catalog stay empty. Action buttons only provide local interface feedback and do not claim to have mutated durable data. Every action without an API must disclose that state in a centered toast, never as a persistent banner, and never fill the page with sample numbers or sample events.
 
-System administration provides a navigable platform preview (tenants, models, health, policy, audit). Tenant and model directories stay empty until a platform API exists. Health probes only the API readiness endpoint and must not mark unconnected dependencies as available. It never shows tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right. Collaborator and workspace-admin portals show a workspace dropdown below email and password. System admin does not. The dropdown stays empty until email/password sign-in succeeds on this page, then lists workspaces from `GET /v1/session` and selects the first item. Unauthenticated clients must not enumerate workspaces. The account menu offers “Switch workspace” only when the same account belongs to more than one workspace.
+System administration has five stable sections: overview, tenants, models, health, and settings. Policy and audit remain workspace-governance responsibilities and are not duplicated in platform navigation. Overview and tenants read real platform APIs, so a seeded workspace immediately appears in counts and the directory instead of being hidden by a hardcoded empty state. Tenant lists use server pagination with one-based pages, 10/20/50 page sizes, and reset to page one when filters or page size change. The model catalog supports registration, updates, enable/disable, and tenant allocation. Settings show the default locale and the authentication policy that is actually in force, with a stable AI Conversation tab reserved for later integration. Health probes only the API readiness endpoint and must not mark unconnected dependencies as available. No section shows tenant rooms, documents, or conversation content. The login page keeps a two-column layout: brand story on the left, a three-portal identity form on the right. Collaborator and workspace-admin portals show a workspace dropdown below email and password. System admin does not; after sign-in, it performs an additional platform-identity check. The dropdown stays empty until email/password sign-in succeeds on this page, then lists workspaces from `GET /v1/session` and selects the first item. Unauthenticated clients must not enumerate workspaces. The account menu offers “Switch workspace” only when the same account belongs to more than one workspace.
 
 ### 4.1 Non-AI collaboration shell
 
@@ -64,12 +67,14 @@ The visual hierarchy continues to use HaloAI semantic tokens. Reference products
 
 ## 5. Completion criteria
 
-- `/app`, `/admin/overview`, `/system`, and `/system/tenants`, `/system/models`, `/system/health`, `/system/policy`, `/system/audit` navigate through real links. Section-route validation must not be imported from a Client Component module.
+- `/app`, `/admin/overview`, `/system`, and `/system/tenants`, `/system/models`, `/system/health`, `/system/settings` navigate through real links. Section-route validation must not be imported from a Client Component module.
 - Administration has no unexpected horizontal overflow on desktop or a 390px mobile viewport, and interaction targets are at least 44×44 CSS pixels.
 - Chinese, English, light theme, and dark theme cover collaboration, administration, and denial states.
 - Unauthorized principals cannot bypass the server guard by entering a route directly.
 - Every administration page displays its scope and distinguishes active, pending approval, disconnected, and read-only states.
 - System administration denies workspace roles by default and exposes no tenant-content summary.
+- Seeded tenants appear in platform counts and the paginated directory. Model-secret responses never contain plaintext, including after a rotation.
+- Platform tables keep a stable layout across pagination, filtering, loading, error, and empty states. Mobile renders readable card rows and does not require desktop horizontal scrolling for primary actions.
 - Overview, inbox, document directory, and activity are reachable through real collaboration navigation without triggering AI or external writes.
 - 1440×900 preserves the rooms, conversation, and document columns. Tablet and mobile use a single-view path instead of a compressed desktop layout.
 - The login page shows a workspace dropdown only for collaborator and workspace-admin portals; it stays empty before sign-in and fills from the session afterwards. System admin does not show it. The account menu offers workspace switching only when there is more than one workspace.

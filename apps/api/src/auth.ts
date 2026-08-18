@@ -37,8 +37,8 @@ export function createAuth(database: HaloDatabase, config: ApiConfig) {
       autoSignIn: true,
     },
     session: {
-      expiresIn: 60 * 60 * 24 * 7,
-      updateAge: 60 * 60 * 24,
+      expiresIn: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
+      updateAge: config.AUTH_SESSION_UPDATE_AGE_SECONDS,
     },
     advanced: {
       database: { generateId: "uuid" },

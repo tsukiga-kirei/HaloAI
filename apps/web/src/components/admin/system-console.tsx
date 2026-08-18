@@ -1,68 +1,50 @@
 "use client";
 
-import {
-  Activity,
-  Building2,
-  CircleAlert,
-  Cpu,
-  LayoutDashboard,
-  Plus,
-  ScrollText,
-  ShieldCheck,
-} from "lucide-react";
+import { Activity, Building2, Cpu, LayoutDashboard, Settings2 } from "lucide-react";
 import type { Route } from "next";
-import { useEffect, useState } from "react";
-import { ManagementShell } from "./management-shell";
-import { SystemModelsSection } from "./system-models-section";
-import { HaloMetricCard } from "@/components/ui/halo-metric-card";
-import { notify } from "@/components/toast-host";
-import { getApiBaseUrl } from "@/lib/api-client";
-import type { AdminDictionary } from "@/lib/admin-i18n";
+import { useLayoutEffect, useRef } from "react";
+import { animateManagementSection } from "@/lib/motion";
+import { systemAdminDictionaries, type SystemAdminDictionary } from "@/lib/system-admin-i18n";
 import { type SystemSection } from "@/lib/system-sections";
+import { ManagementShell } from "./management-shell";
+import { SystemHealthSection } from "./system-health-section";
+import { SystemModelsSection } from "./system-models-section";
+import { SystemOverviewSection } from "./system-overview-section";
+import { SystemSettingsSection } from "./system-settings-section";
+import { SystemTenantsSection } from "./system-tenants-section";
 
 const navigation = [
   { section: "overview", href: "/system" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
   { section: "tenants", href: "/system/tenants" as Route, icon: Building2, labelKey: "navTenants" },
   { section: "models", href: "/system/models" as Route, icon: Cpu, labelKey: "navModels" },
   { section: "health", href: "/system/health" as Route, icon: Activity, labelKey: "navHealth" },
-  { section: "policy", href: "/system/policy" as Route, icon: ShieldCheck, labelKey: "navPolicy" },
-  { section: "audit", href: "/system/audit" as Route, icon: ScrollText, labelKey: "navAudit" },
+  {
+    section: "settings",
+    href: "/system/settings" as Route,
+    icon: Settings2,
+    labelKey: "navSettings",
+  },
 ] as const;
 
-function titleFrom(section: SystemSection, dictionary: AdminDictionary): string {
-  if (section === "tenants") return dictionary.systemTenantsTitle;
-  if (section === "models") return dictionary.systemModelsTitle;
-  if (section === "health") return dictionary.systemHealthTitle;
-  if (section === "policy") return dictionary.systemPolicyTitle;
-  if (section === "audit") return dictionary.auditTitle;
-  return dictionary.systemOverviewTitle;
-}
-
-function healthLabel(apiReady: boolean | null, dictionary: AdminDictionary): string {
-  if (apiReady === null) return "…";
-  return apiReady ? dictionary.apiReady : dictionary.apiUnavailable;
+function titleFrom(section: SystemSection, dictionary: SystemAdminDictionary): string {
+  if (section === "tenants") return dictionary.tenantsTitle;
+  if (section === "models") return dictionary.modelsTitle;
+  if (section === "health") return dictionary.healthTitle;
+  if (section === "settings") return dictionary.settingsTitle;
+  return dictionary.overviewTitle;
 }
 
 /**
- * 系统管理不展示租户房间或文档内容。没有平台目录 API 时保持空态，
- * 健康检查只探测 API 就绪接口，不得把未接入的依赖显示为可用。
+ * 系统管理只组合平台级分区，不读取租户房间、文档或对话内容。每个分区自行读取受保护 API，
+ * 统一外壳负责导航、主题、语言和进入动效。
  */
 export function SystemConsole({ section }: { section: SystemSection }) {
-  const [apiReady, setApiReady] = useState<boolean | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`${getApiBaseUrl()}/health/ready`, { credentials: "include" })
-      .then((response) => {
-        if (!cancelled) setApiReady(response.ok);
-      })
-      .catch(() => {
-        if (!cancelled) setApiReady(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+    return animateManagementSection(contentRef.current);
+  }, [section]);
 
   return (
     <ManagementShell
@@ -76,95 +58,23 @@ export function SystemConsole({ section }: { section: SystemSection }) {
         icon: item.icon,
       }))}
     >
-      {(dictionary) => (
-        <>
-          <div className="admin-section-heading">
-            <div>
+      {(_adminDictionary, locale) => {
+        const dictionary = systemAdminDictionaries[locale];
+        return (
+          <div className="system-console" ref={contentRef}>
+            <div className="admin-section-heading">
               <h1>{titleFrom(section, dictionary)}</h1>
-              {section === "models" ? <p>{dictionary.systemModelsIntro}</p> : null}
             </div>
-            {section === "models" ? (
-              <button
-                type="button"
-                className="admin-primary-button"
-                onClick={() => notify(dictionary.localOnlyNotice)}
-              >
-                <Plus size={17} />
-                {dictionary.registerModel}
-              </button>
+            {section === "overview" ? <SystemOverviewSection dictionary={dictionary} /> : null}
+            {section === "tenants" ? (
+              <SystemTenantsSection dictionary={dictionary} locale={locale} />
             ) : null}
+            {section === "models" ? <SystemModelsSection dictionary={dictionary} /> : null}
+            {section === "health" ? <SystemHealthSection dictionary={dictionary} /> : null}
+            {section === "settings" ? <SystemSettingsSection dictionary={dictionary} /> : null}
           </div>
-          {section === "overview" ? (
-            <section className="admin-metrics" aria-label={dictionary.systemOverviewTitle}>
-              <HaloMetricCard
-                icon={<Building2 size={20} />}
-                label={dictionary.navTenants}
-                value="0"
-                detail={dictionary.metricUnavailable}
-                tone="violet"
-              />
-              <HaloMetricCard
-                icon={<Cpu size={20} />}
-                label={dictionary.navModels}
-                value="0"
-                detail={dictionary.metricUnavailable}
-                tone="blue"
-              />
-              <HaloMetricCard
-                icon={<Activity size={20} />}
-                label={dictionary.navHealth}
-                value={healthLabel(apiReady, dictionary)}
-                detail={dictionary.availableNow}
-                tone="mint"
-              />
-              <HaloMetricCard
-                icon={<CircleAlert size={20} />}
-                label={dictionary.pendingApprovals}
-                value="0"
-                detail={dictionary.metricUnavailable}
-                tone="amber"
-              />
-            </section>
-          ) : null}
-          {section === "tenants" || section === "overview" ? (
-            <p className="document-empty-copy">{dictionary.emptyTenantDirectory}</p>
-          ) : null}
-          {section === "models" ? <SystemModelsSection dictionary={dictionary} /> : null}
-          {section === "health" ? (
-            <section className="admin-panel admin-table-panel">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>{dictionary.healthService}</th>
-                    <th>{dictionary.healthState}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>API</td>
-                    <td>{healthLabel(apiReady, dictionary)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </section>
-          ) : null}
-          {section === "policy" ? (
-            <section className="admin-security-grid is-two">
-              <article className="admin-security-card">
-                <h2>{dictionary.securitySession}</h2>
-                <p>{dictionary.securitySessionDetail}</p>
-              </article>
-              <article className="admin-security-card">
-                <h2>{dictionary.securityRls}</h2>
-                <p>{dictionary.securityRlsDetail}</p>
-              </article>
-            </section>
-          ) : null}
-          {section === "audit" ? (
-            <p className="document-empty-copy">{dictionary.emptyAuditLog}</p>
-          ) : null}
-        </>
-      )}
+        );
+      }}
     </ManagementShell>
   );
 }

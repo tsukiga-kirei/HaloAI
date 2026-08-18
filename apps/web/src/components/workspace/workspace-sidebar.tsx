@@ -8,6 +8,7 @@ import { AccountMenu } from "@/components/account-menu";
 import { HaloMark, RoomGlyph, SidebarSection } from "./primitives";
 import type { PortalKey } from "@/lib/portals";
 import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
+import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 
 export function WorkspaceSidebar({
   dictionary,
@@ -149,18 +150,19 @@ export function WorkspaceSidebar({
             ["activity", dictionary.activity, Bell],
           ] as const
         ).map(([section, label, Icon]) => (
-          <button
-            type="button"
-            key={section}
-            className={`nav-item ${activeSection === section ? "is-active" : ""}`}
-            aria-label={label}
-            aria-pressed={activeSection === section}
-            title={label}
-            onClick={() => onSectionSelect(section)}
-          >
-            <Icon size={18} />
-            <span className="sidebar-label">{label}</span>
-          </button>
+          <SidebarTooltip key={section} enabled={collapsed} label={label}>
+            <button
+              type="button"
+              className={`nav-item ${activeSection === section ? "is-active" : ""}`}
+              aria-label={label}
+              aria-pressed={activeSection === section}
+              title={label}
+              onClick={() => onSectionSelect(section)}
+            >
+              <Icon size={18} />
+              <span className="sidebar-label">{label}</span>
+            </button>
+          </SidebarTooltip>
         ))}
       </nav>
 
@@ -174,22 +176,23 @@ export function WorkspaceSidebar({
             {visibleRooms.map((room) => {
               const name = displayRoomName(room);
               return (
-                <button
-                  type="button"
-                  className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
-                  key={room.id}
-                  aria-label={name}
-                  title={name}
-                  aria-pressed={activeSection === "room" && room.id === activeRoomId}
-                  onClick={() => onRoomSelect(room.id)}
-                >
-                  <span className="room-glyph-wrap">
-                    <RoomGlyph id={room.id} name={name} />
-                    {room.unread > 0 ? <i className="room-unread-dot" /> : null}
-                  </span>
-                  <span className="sidebar-label">{name}</span>
-                  {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
-                </button>
+                <SidebarTooltip key={room.id} enabled={collapsed} label={name}>
+                  <button
+                    type="button"
+                    className={`room-item ${activeSection === "room" && room.id === activeRoomId ? "is-active" : ""}`}
+                    aria-label={name}
+                    title={name}
+                    aria-pressed={activeSection === "room" && room.id === activeRoomId}
+                    onClick={() => onRoomSelect(room.id)}
+                  >
+                    <span className="room-glyph-wrap">
+                      <RoomGlyph id={room.id} name={name} />
+                      {room.unread > 0 ? <i className="room-unread-dot" /> : null}
+                    </span>
+                    <span className="sidebar-label">{name}</span>
+                    {room.unread > 0 ? <span className="room-unread">{room.unread}</span> : null}
+                  </button>
+                </SidebarTooltip>
               );
             })}
           </div>

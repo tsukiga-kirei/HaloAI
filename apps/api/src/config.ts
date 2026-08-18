@@ -8,6 +8,15 @@ const WebOriginSchema = z
     return (url.protocol === "http:" || url.protocol === "https:") && url.origin === value;
   }, "API_WEB_ORIGIN 必须是不含路径、查询参数或凭据的规范 HTTP(S) Origin");
 
+const developmentModelSecretKey = "aGFsb2FpLWRldi1tb2RlbC1zZWNyZXQta2V5LTMyISE=";
+const ModelSecretKeySchema = z.string().refine((value) => {
+  try {
+    return Buffer.from(value, "base64").byteLength === 32;
+  } catch {
+    return false;
+  }
+}, "MODEL_SECRET_ENCRYPTION_KEY 必须是 32 字节密钥的 Base64 编码");
+
 const configSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -20,6 +29,20 @@ const configSchema = z
     WEB_ORIGIN: WebOriginSchema.default("http://127.0.0.1:3000"),
     AUTH_BASE_URL: WebOriginSchema.default("http://127.0.0.1:3100"),
     AUTH_SECRET: z.string().min(32).default("haloai-local-auth-secret-change-before-production"),
+    AUTH_SESSION_EXPIRES_IN_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(3600)
+      .max(31_536_000)
+      .default(604_800),
+    AUTH_SESSION_UPDATE_AGE_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(300)
+      .max(2_592_000)
+      .default(86_400),
+    MODEL_SECRET_ENCRYPTION_KEY: ModelSecretKeySchema.default(developmentModelSecretKey),
+    MODEL_SECRET_KEY_VERSION: z.string().trim().min(1).max(64).default("v1"),
     DATABASE_URL: z
       .string()
       .url()
@@ -39,6 +62,23 @@ const configSchema = z
         code: "custom",
         path: ["AUTH_SECRET"],
         message: "生产环境必须配置独立认证密钥",
+      });
+    }
+    if (
+      value.NODE_ENV === "production" &&
+      value.MODEL_SECRET_ENCRYPTION_KEY === developmentModelSecretKey
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["MODEL_SECRET_ENCRYPTION_KEY"],
+        message: "生产环境必须配置独立模型密钥加密主密钥",
+      });
+    }
+    if (value.AUTH_SESSION_UPDATE_AGE_SECONDS >= value.AUTH_SESSION_EXPIRES_IN_SECONDS) {
+      context.addIssue({
+        code: "custom",
+        path: ["AUTH_SESSION_UPDATE_AGE_SECONDS"],
+        message: "会话续期间隔必须短于会话有效期",
       });
     }
   });
@@ -78,6 +118,10 @@ export function readConfig(environment: NodeJS.ProcessEnv = process.env): ApiCon
     WEB_ORIGIN: environment.API_WEB_ORIGIN,
     AUTH_BASE_URL: deriveAuthBaseUrl(environment),
     AUTH_SECRET: environment.BETTER_AUTH_SECRET,
+    AUTH_SESSION_EXPIRES_IN_SECONDS: environment.AUTH_SESSION_EXPIRES_IN_SECONDS,
+    AUTH_SESSION_UPDATE_AGE_SECONDS: environment.AUTH_SESSION_UPDATE_AGE_SECONDS,
+    MODEL_SECRET_ENCRYPTION_KEY: environment.MODEL_SECRET_ENCRYPTION_KEY,
+    MODEL_SECRET_KEY_VERSION: environment.MODEL_SECRET_KEY_VERSION,
     DATABASE_URL: environment.DATABASE_URL,
     AUTH_DATABASE_URL: environment.AUTH_DATABASE_URL,
     EXPOSE_DEVELOPMENT_INVITE_TOKENS: environment.EXPOSE_DEVELOPMENT_INVITE_TOKENS === "true",

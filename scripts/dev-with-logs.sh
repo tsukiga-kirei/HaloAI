@@ -7,12 +7,11 @@ cd "$root"
 mkdir -p logs
 
 mode=${1:-default}
-if [[ "$mode" == "all" ]]; then
-  filters=()
-else
-  filters=(--filter=@haloai/web --filter=@haloai/api)
-fi
 
 printf '\n[%s] HaloAI development session (%s)\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$mode" >>logs/dev.log
 exec > >(tee -a logs/dev.log) 2>&1
-exec pnpm exec turbo dev --ui=stream "${filters[@]}"
+# macOS 自带 Bash 3.2 在 nounset 下展开空数组会直接退出；all 模式必须完全省略参数。
+if [[ "$mode" == "all" ]]; then
+  exec pnpm exec turbo dev --ui=stream
+fi
+exec pnpm exec turbo dev --ui=stream --filter=@haloai/web --filter=@haloai/api

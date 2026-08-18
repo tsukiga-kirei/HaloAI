@@ -1,0 +1,3 @@
+ALTER TABLE "platform_models" DROP CONSTRAINT "platform_models_secret_tuple_check";--> statement-breakpoint
+ALTER TABLE "platform_models" DROP COLUMN "secret_hint";--> statement-breakpoint
+ALTER TABLE "platform_models" ADD CONSTRAINT "platform_models_secret_tuple_check" CHECK (num_nonnulls("platform_models"."secret_ciphertext", "platform_models"."secret_iv", "platform_models"."secret_tag", "platform_models"."secret_key_version") in (0, 4));

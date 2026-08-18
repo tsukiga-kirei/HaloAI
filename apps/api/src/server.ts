@@ -2,7 +2,11 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import { createAuth } from "./auth";
-import { createDatabaseClient, WorkspaceOnboardingRepository } from "@haloai/db";
+import {
+  createDatabaseClient,
+  SystemAdministrationRepository,
+  WorkspaceOnboardingRepository,
+} from "@haloai/db";
 import { createServiceLogger } from "@haloai/logger";
 import Fastify, { type FastifyBaseLogger, type FastifyInstance, LogController } from "fastify";
 import type { ApiConfig } from "./config";
@@ -12,7 +16,9 @@ import { registerHealthRoutes } from "./routes/health";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerCollaborationRoutes } from "./routes/collaboration";
 import { registerWorkspaceRoutes } from "./routes/workspaces";
+import { registerSystemAdministrationRoutes } from "./routes/system-administration";
 import { webOriginAllowlist } from "./web-origins";
+import { ModelSecretCipher } from "./model-secret";
 
 export async function createServer(config: ApiConfig): Promise<FastifyInstance> {
   const logger = createServiceLogger({
@@ -32,6 +38,11 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   });
   const auth = createAuth(authenticationDatabase.db, config);
   const onboardingRepository = new WorkspaceOnboardingRepository(applicationDatabase);
+  const systemAdministrationRepository = new SystemAdministrationRepository(applicationDatabase);
+  const modelSecretCipher = new ModelSecretCipher(
+    config.MODEL_SECRET_ENCRYPTION_KEY,
+    config.MODEL_SECRET_KEY_VERSION,
+  );
   const app = Fastify({
     // Fastify 只依赖其基础 Logger 契约；收窄类型避免 Pino 专有泛型污染全部路由注册签名。
     loggerInstance: logger as FastifyBaseLogger,
@@ -47,7 +58,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   await app.register(cors, {
     origin: webOriginAllowlist(config.WEB_ORIGIN),
     credentials: true,
-    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
   await app.register(rateLimit, { global: false });
 
@@ -60,6 +71,13 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   await registerDemoEventRoutes(app);
   await registerAuthRoutes(app, auth, config);
   await registerWorkspaceRoutes(app, auth, onboardingRepository, config);
+  await registerSystemAdministrationRoutes(
+    app,
+    auth,
+    systemAdministrationRepository,
+    modelSecretCipher,
+    config,
+  );
   await registerCollaborationRoutes(app, auth, applicationDatabase, onboardingRepository);
   return app;
 }

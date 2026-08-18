@@ -2,6 +2,19 @@ import { pgEnum } from "drizzle-orm/pg-core";
 
 export const workspaceStatus = pgEnum("workspace_status", ["active", "suspended", "archived"]);
 
+export const systemAdministratorStatus = pgEnum("system_administrator_status", [
+  "active",
+  "suspended",
+]);
+export const platformModelStatus = pgEnum("platform_model_status", ["active", "disabled"]);
+export const platformModelApiFormat = pgEnum("platform_model_api_format", [
+  "openai_chat_completions",
+  "openai_responses",
+  "anthropic_messages",
+  "google_generate_content",
+]);
+export const modelAllocationStatus = pgEnum("model_allocation_status", ["active", "revoked"]);
+
 export const userStatus = pgEnum("user_status", ["active", "suspended", "deleted"]);
 export const actorKind = pgEnum("actor_kind", ["human", "agent", "system"]);
 export const actorStatus = pgEnum("actor_status", ["active", "suspended", "archived"]);

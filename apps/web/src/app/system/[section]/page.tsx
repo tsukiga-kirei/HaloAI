@@ -14,7 +14,7 @@ export default async function SystemSectionPage({
     notFound();
   }
 
-  const access = getSystemAdminAccess();
+  const access = await getSystemAdminAccess();
   if (!access.allowed) return <RestrictedSurface kind="system" />;
   return <SystemConsole section={section} />;
 }

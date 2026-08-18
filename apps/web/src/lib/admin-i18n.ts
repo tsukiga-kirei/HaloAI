@@ -124,12 +124,13 @@ export interface AdminDictionary {
   navModels: string;
   navHealth: string;
   navPolicy: string;
+  navSettings: string;
   systemOverviewTitle: string;
   systemTenantsTitle: string;
   systemModelsTitle: string;
   systemHealthTitle: string;
   systemPolicyTitle: string;
-  systemModelsIntro: string;
+  systemSettingsTitle: string;
   systemModelsCatalog: string;
   systemModelsAllocation: string;
   registerModel: string;
@@ -298,12 +299,13 @@ const zhCN: AdminDictionary = {
   navModels: "模型",
   navHealth: "健康",
   navPolicy: "策略",
+  navSettings: "系统设置",
   systemOverviewTitle: "平台总览",
   systemTenantsTitle: "租户目录",
   systemModelsTitle: "平台模型",
   systemHealthTitle: "平台健康",
   systemPolicyTitle: "全局策略",
-  systemModelsIntro: "在这里维护整套可用模型，再分配给租户。密钥只保存在服务端，页面不展示明文。",
+  systemSettingsTitle: "系统设置",
   systemModelsCatalog: "模型目录",
   systemModelsAllocation: "分配给租户",
   registerModel: "登记模型",
@@ -484,13 +486,13 @@ const enUS: AdminDictionary = {
   navModels: "Models",
   navHealth: "Health",
   navPolicy: "Policy",
+  navSettings: "Settings",
   systemOverviewTitle: "Platform overview",
   systemTenantsTitle: "Tenant directory",
   systemModelsTitle: "Platform models",
   systemHealthTitle: "Platform health",
   systemPolicyTitle: "Global policy",
-  systemModelsIntro:
-    "Maintain the full catalog here, then allocate models to tenants. Secrets stay on the server and never appear on this page.",
+  systemSettingsTitle: "System settings",
   systemModelsCatalog: "Model catalog",
   systemModelsAllocation: "Tenant allocation",
   registerModel: "Register model",
