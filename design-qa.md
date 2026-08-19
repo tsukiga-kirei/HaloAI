@@ -63,3 +63,35 @@ No additional crop was needed because both mobile captures are native-size `390p
 - [x] `pnpm check` passed.
 
 final result: passed
+
+---
+
+# 空间组织与成员设计 QA
+
+## 对照基准
+
+- Source visual truth path: `/Users/kirei/Work/Project/Agentum/docs/images/tenant-management.png`
+- Supporting system reference: `/Users/kirei/Work/Project/AuraOA/docs/assets/screenshots/system-overview.jpg`
+- Implementation route: `http://127.0.0.1:3000/admin/members`
+- Intended viewports: `390 × 844`、`768 × 1024`、`1440 × 900`，中英文与明暗主题。
+
+## 已完成的设计对照
+
+- 采用 Agentum 的“左侧部门树 + 右侧成员目录”信息架构，并保留 HaloAI 自己的语义色、导航、角色边界和抽屉表单。
+- 部门、岗位、负责人、成员数量、访问角色、搜索、分页、邀请及编辑均接入真实服务端数据，不使用静态占位。
+- 移动端将成员表格转换为卡片式信息块，部门树横向滚动；编辑操作保留不小于 44px 的可访问路径。
+- 系统租户目录补充默认管理员、部门数，并提供“已有注册账户成为默认管理员”的原子化创建流程。
+
+## 运行验证
+
+- 组织接口实测返回 3 个部门、4 名成员及岗位归属。
+- 新租户数据库事务实测生成 1 个默认部门、1 个 Owner，并已回滚测试数据。
+- `pnpm check` 已通过：文档配对、格式、10 个包类型检查、121 项测试和完整构建全部成功。
+
+## 阻塞项
+
+- Codex 应用内浏览器按安全策略拒绝访问本地预览地址，因此无法采集实现截图，也无法完成要求的同尺寸并排视觉比较。
+- 未尝试 Playwright CLI、替代浏览器或其他绕过方式。
+- 在没有实现截图的情况下，不宣称 390 / 768 / 1440 三档视觉验收已经完成。
+
+final result: blocked

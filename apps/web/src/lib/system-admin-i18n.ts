@@ -43,6 +43,12 @@ export interface SystemAdminDictionary {
   pageSummary: string;
   pageSize: string;
   editTenant: string;
+  createTenant: string;
+  createTenantDescription: string;
+  defaultAdministrator: string;
+  administratorEmail: string;
+  departmentsCount: string;
+  tenantCreated: string;
   save: string;
   cancel: string;
   saved: string;
@@ -139,6 +145,12 @@ const zhCN: SystemAdminDictionary = {
   pageSummary: "第 {page} / {pages} 页，共 {total} 条",
   pageSize: "每页 {size} 条",
   editTenant: "租户配置",
+  createTenant: "创建租户",
+  createTenantDescription: "建立工作空间并指定首位负责人。管理员账号需已完成注册。",
+  defaultAdministrator: "默认管理员",
+  administratorEmail: "管理员邮箱",
+  departmentsCount: "{count} 个部门",
+  tenantCreated: "租户已创建",
   save: "保存",
   cancel: "取消",
   saved: "租户配置已保存",
@@ -240,6 +252,13 @@ const enUS: SystemAdminDictionary = {
   pageSummary: "Page {page} of {pages} · {total} items",
   pageSize: "{size} per page",
   editTenant: "Tenant configuration",
+  createTenant: "Create tenant",
+  createTenantDescription:
+    "Create a workspace and assign its first owner. The administrator account must already be registered.",
+  defaultAdministrator: "Default administrator",
+  administratorEmail: "Administrator email",
+  departmentsCount: "{count} departments",
+  tenantCreated: "Tenant created",
   save: "Save",
   cancel: "Cancel",
   saved: "Tenant configuration saved",

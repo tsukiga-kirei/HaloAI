@@ -5,7 +5,7 @@ import {
   type SystemTenant,
   type SystemTenantPage,
 } from "@haloai/contracts";
-import { Building2, Globe2, Languages, ShieldCheck } from "lucide-react";
+import { Building2, Globe2, Languages, Mail, Plus, ShieldCheck, UserRoundCog } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { notify, notifyError } from "@/components/toast-host";
 import { HaloCatalog } from "@/components/ui/halo-catalog";
@@ -35,6 +35,12 @@ export function SystemTenantsSection() {
   const [defaultLocale, setDefaultLocale] = useState<"zh-CN" | "en-US">("zh-CN");
   const [timeZone, setTimeZone] = useState("UTC");
   const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSlug, setNewSlug] = useState("");
+  const [newAdministratorEmail, setNewAdministratorEmail] = useState("");
+  const [newLocale, setNewLocale] = useState<"zh-CN" | "en-US">("zh-CN");
+  const [newTimeZone, setNewTimeZone] = useState("Asia/Shanghai");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -81,6 +87,31 @@ export function SystemTenantsSection() {
     }
   }
 
+  async function createTenant(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      await apiFetch<{ id: string }>("/v1/system/tenants", {
+        method: "POST",
+        body: JSON.stringify({
+          name: newName,
+          slug: newSlug,
+          defaultAdministratorEmail: newAdministratorEmail,
+          defaultLocale: newLocale,
+          timeZone: newTimeZone,
+        }),
+      });
+      notify(dictionary.tenantCreated);
+      setCreating(false);
+      setPage(1);
+      await load();
+    } catch {
+      notifyError(dictionary.loadError, "system-tenant-create-error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (failed && !result) {
     return (
       <SystemSectionState
@@ -94,16 +125,32 @@ export function SystemTenantsSection() {
 
   return (
     <div className="system-section-stack">
-      <SystemSearchToolbar
-        value={query}
-        placeholder={dictionary.searchTenants}
-        searchLabel={dictionary.search}
-        clearLabel={dictionary.clearSearch}
-        onChange={(next) => {
-          setPage(1);
-          setQuery(next);
-        }}
-      />
+      <div className="system-tenant-toolbar-row">
+        <SystemSearchToolbar
+          value={query}
+          placeholder={dictionary.searchTenants}
+          searchLabel={dictionary.search}
+          clearLabel={dictionary.clearSearch}
+          onChange={(next) => {
+            setPage(1);
+            setQuery(next);
+          }}
+        />
+        <button
+          type="button"
+          className="admin-primary-button"
+          onClick={() => {
+            setNewName("");
+            setNewSlug("");
+            setNewAdministratorEmail("");
+            setNewLocale(locale);
+            setNewTimeZone("Asia/Shanghai");
+            setCreating(true);
+          }}
+        >
+          <Plus size={16} /> {dictionary.createTenant}
+        </button>
+      </div>
       <HaloCatalog
         total={result?.total ?? 0}
         page={page}
@@ -128,12 +175,24 @@ export function SystemTenantsSection() {
               <p>
                 {dictionary.membersCount.replace("{count}", String(tenant.memberCount))}
                 {" · "}
+                {dictionary.departmentsCount.replace("{count}", String(tenant.departmentCount))}
+                {" · "}
                 {tenant.defaultLocale}
                 {" · "}
                 {tenant.timeZone}
                 {" · "}
                 {formatSystemDate(tenant.createdAt, locale)}
               </p>
+            </div>
+            <div className="system-tenant-administrator">
+              <span>
+                <UserRoundCog size={15} />
+              </span>
+              <span>
+                <small>{dictionary.defaultAdministrator}</small>
+                <strong>{tenant.defaultAdministratorName}</strong>
+                <em>{tenant.defaultAdministratorEmail}</em>
+              </span>
             </div>
             <SystemStatusBadge tone={tenant.status === "active" ? "success" : "warning"}>
               {dictionary[tenant.status]}
@@ -150,6 +209,76 @@ export function SystemTenantsSection() {
       </HaloCatalog>
 
       <HaloDialog
+        open={creating}
+        className="system-admin-drawer"
+        title={dictionary.createTenant}
+        description={dictionary.createTenantDescription}
+        icon={<Plus size={18} />}
+        closeLabel={dictionary.close}
+        onClose={() => setCreating(false)}
+      >
+        <form className="system-form" noValidate onSubmit={(event) => void createTenant(event)}>
+          <SystemFormField icon={<Building2 size={16} />} label={dictionary.name}>
+            <input
+              required
+              value={newName}
+              maxLength={80}
+              onChange={(event) => setNewName(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Building2 size={16} />} label={dictionary.slug}>
+            <input
+              required
+              value={newSlug}
+              maxLength={63}
+              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+              onChange={(event) => setNewSlug(event.target.value.toLowerCase())}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Mail size={16} />} label={dictionary.administratorEmail}>
+            <input
+              required
+              type="email"
+              value={newAdministratorEmail}
+              maxLength={320}
+              onChange={(event) => setNewAdministratorEmail(event.target.value)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Languages size={16} />} label={dictionary.locale}>
+            <HaloChoicePills
+              value={newLocale}
+              ariaLabel={dictionary.locale}
+              onChange={(value) => setNewLocale(value as "zh-CN" | "en-US")}
+              options={[
+                { value: "zh-CN", label: dictionary.simplifiedChinese },
+                { value: "en-US", label: dictionary.english },
+              ]}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Globe2 size={16} />} label={dictionary.timeZone}>
+            <input
+              required
+              value={newTimeZone}
+              maxLength={64}
+              onChange={(event) => setNewTimeZone(event.target.value)}
+            />
+          </SystemFormField>
+          <footer className="system-form-actions">
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setCreating(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button type="submit" className="admin-primary-button" disabled={saving}>
+              {dictionary.createTenant}
+            </button>
+          </footer>
+        </form>
+      </HaloDialog>
+
+      <HaloDialog
         open={editing !== null}
         className="system-admin-drawer"
         title={dictionary.editTenant}
@@ -157,7 +286,7 @@ export function SystemTenantsSection() {
         closeLabel={dictionary.close}
         onClose={() => setEditing(null)}
       >
-        <form className="system-form" onSubmit={(event) => void saveTenant(event)}>
+        <form className="system-form" noValidate onSubmit={(event) => void saveTenant(event)}>
           <div className="system-form-summary">
             <strong>{editing?.name}</strong>
             <small>{editing?.slug}</small>

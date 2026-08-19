@@ -14,8 +14,17 @@ describe("认证与工作区契约", () => {
       }),
     ).toMatchObject({ name: "产品团队", slug: "product-team" });
     expect(
-      CreateWorkspaceInvitationInputSchema.parse({ email: " Member@Example.COM " }),
-    ).toMatchObject({ email: "member@example.com", role: "member" });
+      CreateWorkspaceInvitationInputSchema.parse({
+        email: " Member@Example.COM ",
+        departmentId: "00000000-0000-4000-8000-000000000701",
+        jobTitle: " 产品经理 ",
+      }),
+    ).toMatchObject({
+      email: "member@example.com",
+      role: "member",
+      departmentId: "00000000-0000-4000-8000-000000000701",
+      jobTitle: "产品经理",
+    });
   });
 
   it("拒绝路径式工作区标识和低熵邀请令牌", () => {

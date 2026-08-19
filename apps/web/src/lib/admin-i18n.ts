@@ -41,6 +41,7 @@ export interface AdminDictionary {
   exportAudit: string;
   activeMembers: string;
   aiCollaborators: string;
+  departments: string;
   monthlyRuns: string;
   pendingApprovals: string;
   comparedToLastMonth: string;
@@ -199,7 +200,7 @@ const zhCN: AdminDictionary = {
   switchedToRole: "已切换到{role}",
   navLabel: "后台配置导航",
   navOverview: "总览",
-  navMembers: "成员与角色",
+  navMembers: "组织与成员",
   navAgents: "AI 协作者",
   navIntegrations: "可用模型",
   navSecurity: "安全策略",
@@ -216,6 +217,7 @@ const zhCN: AdminDictionary = {
   exportAudit: "导出审计记录",
   activeMembers: "活跃成员",
   aiCollaborators: "已发布 AI",
+  departments: "组织部门",
   monthlyRuns: "本月 AI 运行",
   pendingApprovals: "待处理审批",
   comparedToLastMonth: "较上月 +12%",
@@ -375,7 +377,7 @@ const enUS: AdminDictionary = {
   switchedToRole: "Switched to {role}",
   navLabel: "Administration navigation",
   navOverview: "Overview",
-  navMembers: "Members & roles",
+  navMembers: "Organization",
   navAgents: "AI collaborators",
   navIntegrations: "Available models",
   navSecurity: "Security policy",
@@ -392,6 +394,7 @@ const enUS: AdminDictionary = {
   exportAudit: "Export audit log",
   activeMembers: "Active members",
   aiCollaborators: "Published AI",
+  departments: "Departments",
   monthlyRuns: "AI runs this month",
   pendingApprovals: "Pending approvals",
   comparedToLastMonth: "+12% from last month",

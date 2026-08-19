@@ -1,7 +1,10 @@
 "use client";
 
-import type { SessionContext, WorkspaceMember } from "@haloai/contracts";
-import { WorkspaceCollaborationSnapshotSchema } from "@haloai/contracts";
+import type { SessionContext } from "@haloai/contracts";
+import {
+  WorkspaceCollaborationSnapshotSchema,
+  WorkspaceOrganizationOverviewSchema,
+} from "@haloai/contracts";
 import { useEffect, useMemo, useState } from "react";
 import { notify } from "@/components/toast-host";
 import { AdminSectionContent, type AdminLiveStats } from "./admin-section-content";
@@ -27,26 +30,33 @@ export function AdminSectionPage({ section }: { section: AdminSection }) {
           nextSession.workspaces.find((item) => item.id === remembered) ??
           nextSession.workspaces[0];
         if (!workspace) {
-          setLive({ memberCount: 0, agents: [] });
+          setLive({ memberCount: 0, departmentCount: 0, agents: [] });
           return;
         }
 
         const [membersResult, snapshotResult] = await Promise.allSettled([
-          apiFetch<{ members: WorkspaceMember[] }>(`/v1/workspaces/${workspace.id}/members`),
+          apiFetch<unknown>(`/v1/workspaces/${workspace.id}/organization`),
           apiFetch<unknown>(`/v1/workspaces/${workspace.id}/collaboration`),
         ]);
         if (cancelled) return;
 
-        const members = membersResult.status === "fulfilled" ? membersResult.value.members : [];
+        const organization =
+          membersResult.status === "fulfilled"
+            ? WorkspaceOrganizationOverviewSchema.parse(membersResult.value)
+            : null;
         const agents =
           snapshotResult.status === "fulfilled"
             ? WorkspaceCollaborationSnapshotSchema.parse(snapshotResult.value).participants.filter(
                 (actor) => actor.kind === "agent",
               )
             : [];
-        setLive({ memberCount: members.length, agents });
+        setLive({
+          memberCount: organization?.members.length ?? 0,
+          departmentCount: organization?.departments.length ?? 0,
+          agents,
+        });
       } catch {
-        if (!cancelled) setLive({ memberCount: 0, agents: [] });
+        if (!cancelled) setLive({ memberCount: 0, departmentCount: 0, agents: [] });
       }
     }
 

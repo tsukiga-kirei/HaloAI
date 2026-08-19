@@ -31,6 +31,9 @@ export const SystemTenantSchema = z
     defaultLocale: LocaleSchema,
     timeZone: z.string().min(1).max(64),
     memberCount: z.number().int().min(0),
+    departmentCount: z.number().int().min(0),
+    defaultAdministratorName: z.string().min(1).max(120),
+    defaultAdministratorEmail: z.email().max(320),
     createdAt: z.iso.datetime({ offset: true }),
   })
   .strict();
@@ -49,6 +52,22 @@ export const UpdateSystemTenantInputSchema = z
     status: z.enum(["active", "suspended", "archived"]),
     defaultLocale: LocaleSchema,
     timeZone: z.string().trim().min(1).max(64),
+  })
+  .strict();
+
+export const CreateSystemTenantInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80),
+    slug: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(2)
+      .max(63)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    defaultLocale: LocaleSchema,
+    timeZone: z.string().trim().min(1).max(64),
+    defaultAdministratorEmail: z.string().trim().toLowerCase().max(320).pipe(z.email()),
   })
   .strict();
 
@@ -160,6 +179,7 @@ export type SystemOverview = z.infer<typeof SystemOverviewSchema>;
 export type SystemTenant = z.infer<typeof SystemTenantSchema>;
 export type SystemTenantPage = z.infer<typeof SystemTenantPageSchema>;
 export type UpdateSystemTenantInput = z.infer<typeof UpdateSystemTenantInputSchema>;
+export type CreateSystemTenantInput = z.infer<typeof CreateSystemTenantInputSchema>;
 export type PlatformModelApiFormat = z.infer<typeof PlatformModelApiFormatSchema>;
 export type SystemModel = z.infer<typeof SystemModelSchema>;
 export type SystemModelPage = z.infer<typeof SystemModelPageSchema>;

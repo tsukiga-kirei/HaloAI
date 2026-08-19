@@ -23,6 +23,9 @@ export interface PlatformTenantRow {
   readonly defaultLocale: string;
   readonly timeZone: string;
   readonly memberCount: number;
+  readonly departmentCount: number;
+  readonly defaultAdministratorName: string;
+  readonly defaultAdministratorEmail: string;
   readonly createdAt: Date;
 }
 
@@ -61,6 +64,9 @@ interface TenantFunctionRow {
   default_locale: string;
   time_zone: string;
   member_count: string | number;
+  department_count: string | number;
+  default_administrator_name: string;
+  default_administrator_email: string;
   created_at: Date | string;
   total_count: string | number;
 }
@@ -135,12 +141,43 @@ export class SystemAdministrationRepository {
         defaultLocale: row.default_locale,
         timeZone: row.time_zone,
         memberCount: asNumber(row.member_count),
+        departmentCount: asNumber(row.department_count),
+        defaultAdministratorName: row.default_administrator_name,
+        defaultAdministratorEmail: row.default_administrator_email,
         createdAt: row.created_at instanceof Date ? row.created_at : new Date(row.created_at),
       })),
       page,
       pageSize,
       total: rows[0] ? asNumber(rows[0].total_count) : 0,
     };
+  }
+
+  async createTenant(
+    userId: string,
+    input: {
+      name: string;
+      slug: string;
+      defaultLocale: "zh-CN" | "en-US";
+      timeZone: string;
+      defaultAdministratorEmail: string;
+    },
+  ): Promise<string> {
+    assertUuid(userId, "userId");
+    const rows = await this.client.connection<{ workspace_id: string | null }[]>`
+      select haloai_system_create_tenant(
+        ${userId}::uuid,
+        ${input.name},
+        ${input.slug},
+        ${input.defaultLocale},
+        ${input.timeZone},
+        ${input.defaultAdministratorEmail}
+      ) as workspace_id
+    `;
+    const id = rows[0]?.workspace_id;
+    if (!id) {
+      throw new PersistenceError("not_found", "默认管理员账户不存在或无权创建租户");
+    }
+    return id;
   }
 
   async updateTenant(

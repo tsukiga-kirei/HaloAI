@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { and, count, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import type { DatabaseClient } from "../client";
 import { PersistenceError } from "../errors";
 import {
@@ -8,6 +8,7 @@ import {
   actors,
   humanActors,
   workspaceInvitations,
+  workspaceDepartments,
   workspaceMemberships,
   workspaces,
 } from "../schema/index";
@@ -44,8 +45,24 @@ export interface WorkspaceMember {
   readonly name: string;
   readonly email: string;
   readonly role: WorkspaceRole;
+  readonly departmentId: string | null;
+  readonly departmentName: string | null;
+  readonly jobTitle: string;
   readonly status: "invited" | "active" | "suspended" | "left";
   readonly joinedAt: Date | null;
+}
+
+export interface WorkspaceDepartment {
+  readonly id: string;
+  readonly parentId: string | null;
+  readonly name: string;
+  readonly code: string;
+  readonly description: string;
+  readonly managerActorId: string | null;
+  readonly managerName: string | null;
+  readonly status: "active" | "disabled";
+  readonly sortOrder: number;
+  readonly memberCount: number;
 }
 
 interface MembershipFunctionRow {
@@ -65,6 +82,8 @@ interface InvitationFunctionRow {
   workspace_id: string;
   email: string;
   requested_role: AssignableWorkspaceRole;
+  department_id: string | null;
+  job_title: string;
   invited_by_actor_id: string;
   expires_at: Date;
   accepted_by_user_id: string | null;
@@ -78,8 +97,11 @@ interface WorkspaceMemberFunctionRow {
   member_name: string;
   member_email: string;
   role_key: WorkspaceRole;
+  department_id: string | null;
+  department_name: string | null;
+  job_title: string;
   membership_status: WorkspaceMember["status"];
-  joined_at: Date | null;
+  joined_at: Date | string | null;
 }
 
 const builtInRoles: ReadonlyArray<{
@@ -234,12 +256,16 @@ export class WorkspaceOnboardingRepository {
     principal: MembershipContext;
     email: string;
     role: AssignableWorkspaceRole;
+    departmentId?: string | null | undefined;
+    jobTitle?: string;
     requestId: string;
   }): Promise<{
     id: string;
     workspaceId: string;
     email: string;
     role: AssignableWorkspaceRole;
+    departmentId: string | null;
+    jobTitle: string;
     expiresAt: Date;
     token: string;
   }> {
@@ -266,6 +292,8 @@ export class WorkspaceOnboardingRepository {
           workspaceId: input.principal.workspaceId,
           email,
           requestedRole: input.role,
+          departmentId: input.departmentId ?? null,
+          jobTitle: input.jobTitle?.trim() ?? "",
           tokenDigest: invitationDigest(token),
           invitedByActorId: input.principal.actorId,
           expiresAt,
@@ -277,6 +305,8 @@ export class WorkspaceOnboardingRepository {
       workspaceId: input.principal.workspaceId,
       email,
       role: input.role,
+      departmentId: input.departmentId ?? null,
+      jobTitle: input.jobTitle?.trim() ?? "",
       expiresAt,
       token,
     };
@@ -348,6 +378,14 @@ export class WorkspaceOnboardingRepository {
           }
           if (!lockedInvitation.acceptedAt) {
             await transaction
+              .update(workspaceMemberships)
+              .set({
+                departmentId: invitation.department_id,
+                jobTitle: invitation.job_title,
+                updatedAt: now,
+              })
+              .where(eq(workspaceMemberships.id, membership.id));
+            await transaction
               .update(workspaceInvitations)
               .set({ acceptedByUserId: input.user.id, acceptedAt: now, updatedAt: now })
               .where(eq(workspaceInvitations.id, lockedInvitation.id));
@@ -385,6 +423,8 @@ export class WorkspaceOnboardingRepository {
           humanActorId: actorId,
           status: "active",
           isOwner: false,
+          departmentId: invitation.department_id,
+          jobTitle: invitation.job_title,
           invitedByActorId: invitation.invited_by_actor_id,
           joinedAt: now,
         });
@@ -447,9 +487,216 @@ export class WorkspaceOnboardingRepository {
       name: row.member_name,
       email: row.member_email,
       role: row.role_key,
+      departmentId: row.department_id,
+      departmentName: row.department_name,
+      jobTitle: row.job_title,
       status: row.membership_status,
-      joinedAt: row.joined_at,
+      // postgres.js 对 SECURITY DEFINER 函数返回的 timestamptz 可能保留为字符串；
+      // Repository 在边界统一恢复为 Date，避免 API 层因驱动表示差异崩溃。
+      joinedAt: row.joined_at === null ? null : new Date(row.joined_at),
     }));
+  }
+
+  async listDepartments(
+    principal: MembershipContext,
+    requestId: string,
+  ): Promise<WorkspaceDepartment[]> {
+    if (principal.role !== "owner" && principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "当前成员无权查看组织架构");
+    }
+    return withWorkspaceTransaction(
+      this.client.db,
+      { workspaceId: principal.workspaceId, actorId: principal.actorId, requestId },
+      async (transaction) => {
+        const rows = await transaction
+          .select({
+            id: workspaceDepartments.id,
+            parentId: workspaceDepartments.parentId,
+            name: workspaceDepartments.name,
+            code: workspaceDepartments.code,
+            description: workspaceDepartments.description,
+            managerActorId: workspaceDepartments.managerActorId,
+            managerName: actors.displayName,
+            status: workspaceDepartments.status,
+            sortOrder: workspaceDepartments.sortOrder,
+          })
+          .from(workspaceDepartments)
+          .leftJoin(
+            actors,
+            and(
+              eq(actors.workspaceId, workspaceDepartments.workspaceId),
+              eq(actors.id, workspaceDepartments.managerActorId),
+            ),
+          )
+          .where(eq(workspaceDepartments.workspaceId, principal.workspaceId))
+          .orderBy(asc(workspaceDepartments.sortOrder), asc(workspaceDepartments.name));
+        const counts = await transaction
+          .select({ departmentId: workspaceMemberships.departmentId, value: count() })
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, principal.workspaceId),
+              eq(workspaceMemberships.status, "active"),
+            ),
+          )
+          .groupBy(workspaceMemberships.departmentId);
+        const countByDepartment = new Map(counts.map((item) => [item.departmentId, item.value]));
+        return rows.map((row) => ({
+          ...row,
+          status: row.status === "disabled" ? "disabled" : "active",
+          memberCount: countByDepartment.get(row.id) ?? 0,
+        }));
+      },
+    );
+  }
+
+  async saveDepartment(input: {
+    principal: MembershipContext;
+    departmentId?: string;
+    name: string;
+    code: string;
+    description: string;
+    parentId: string | null;
+    managerActorId: string | null;
+    status: "active" | "disabled";
+    sortOrder: number;
+    requestId: string;
+  }): Promise<string> {
+    if (input.principal.role !== "owner" && input.principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "当前成员无权维护组织架构");
+    }
+    const departmentId = input.departmentId ?? randomUUID();
+    if (input.departmentId) assertUuid(input.departmentId, "departmentId");
+    if (input.parentId) assertUuid(input.parentId, "parentId");
+    if (input.managerActorId) assertUuid(input.managerActorId, "managerActorId");
+    try {
+      await withWorkspaceTransaction(
+        this.client.db,
+        {
+          workspaceId: input.principal.workspaceId,
+          actorId: input.principal.actorId,
+          requestId: input.requestId,
+        },
+        async (transaction) => {
+          if (input.parentId) {
+            if (input.parentId === departmentId) {
+              throw new PersistenceError("invalid_context", "部门不能成为自己的上级");
+            }
+            const [parent] = await transaction
+              .select({ id: workspaceDepartments.id, parentId: workspaceDepartments.parentId })
+              .from(workspaceDepartments)
+              .where(
+                and(
+                  eq(workspaceDepartments.workspaceId, input.principal.workspaceId),
+                  eq(workspaceDepartments.id, input.parentId),
+                ),
+              );
+            if (!parent) throw new PersistenceError("not_found", "上级部门不存在");
+            if (parent.parentId) {
+              throw new PersistenceError("invalid_context", "当前阶段部门最多支持两级");
+            }
+          }
+          if (input.managerActorId) {
+            const [manager] = await transaction
+              .select({ id: workspaceMemberships.id })
+              .from(workspaceMemberships)
+              .where(
+                and(
+                  eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+                  eq(workspaceMemberships.humanActorId, input.managerActorId),
+                  eq(workspaceMemberships.status, "active"),
+                ),
+              );
+            if (!manager) throw new PersistenceError("not_found", "部门负责人不是当前空间成员");
+          }
+          const values = {
+            workspaceId: input.principal.workspaceId,
+            name: input.name,
+            code: input.code,
+            description: input.description,
+            parentId: input.parentId,
+            managerActorId: input.managerActorId,
+            status: input.status,
+            sortOrder: input.sortOrder,
+            updatedAt: new Date(),
+          } as const;
+          if (input.departmentId) {
+            const [updated] = await transaction
+              .update(workspaceDepartments)
+              .set(values)
+              .where(
+                and(
+                  eq(workspaceDepartments.workspaceId, input.principal.workspaceId),
+                  eq(workspaceDepartments.id, input.departmentId),
+                ),
+              )
+              .returning({ id: workspaceDepartments.id });
+            if (!updated) throw new PersistenceError("not_found", "部门不存在");
+          } else {
+            await transaction.insert(workspaceDepartments).values({ id: departmentId, ...values });
+          }
+        },
+      );
+      return departmentId;
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new PersistenceError("conflict", "部门编码已被使用", { cause: error });
+      }
+      throw error;
+    }
+  }
+
+  async updateMemberOrganization(input: {
+    principal: MembershipContext;
+    membershipId: string;
+    departmentId: string | null;
+    jobTitle: string;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner" && input.principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "当前成员无权调整组织归属");
+    }
+    assertUuid(input.membershipId, "membershipId");
+    if (input.departmentId) assertUuid(input.departmentId, "departmentId");
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        if (input.departmentId) {
+          const [department] = await transaction
+            .select({ id: workspaceDepartments.id })
+            .from(workspaceDepartments)
+            .where(
+              and(
+                eq(workspaceDepartments.workspaceId, input.principal.workspaceId),
+                eq(workspaceDepartments.id, input.departmentId),
+                eq(workspaceDepartments.status, "active"),
+              ),
+            );
+          if (!department) throw new PersistenceError("not_found", "部门不存在或已停用");
+        }
+        const [updated] = await transaction
+          .update(workspaceMemberships)
+          .set({
+            departmentId: input.departmentId,
+            jobTitle: input.jobTitle.trim(),
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+              eq(workspaceMemberships.id, input.membershipId),
+              eq(workspaceMemberships.status, "active"),
+            ),
+          )
+          .returning({ id: workspaceMemberships.id });
+        if (!updated) throw new PersistenceError("not_found", "成员不存在");
+      },
+    );
   }
 
   async updateMemberRole(input: {

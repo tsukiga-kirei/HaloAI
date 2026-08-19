@@ -53,6 +53,8 @@ export const CreateWorkspaceInvitationInputSchema = z
   .object({
     email: z.string().trim().toLowerCase().max(320).pipe(z.email()),
     role: AssignableWorkspaceRoleSchema.default("member"),
+    departmentId: UuidSchema.nullable().optional(),
+    jobTitle: z.string().trim().max(120).default(""),
   })
   .strict();
 
@@ -77,6 +79,9 @@ export const WorkspaceMemberSchema = z
     name: z.string().min(1).max(120),
     email: z.email().max(320),
     role: WorkspaceRoleSchema,
+    departmentId: UuidSchema.nullable(),
+    departmentName: z.string().min(1).max(200).nullable(),
+    jobTitle: z.string().max(120),
     status: z.enum(["invited", "active", "suspended", "left"]),
     joinedAt: z.iso.datetime({ offset: true }).nullable(),
   })
@@ -88,6 +93,8 @@ export const WorkspaceInvitationCreatedSchema = z
     workspaceId: UuidSchema,
     email: z.email().max(320),
     role: AssignableWorkspaceRoleSchema,
+    departmentId: UuidSchema.nullable(),
+    jobTitle: z.string().max(120),
     expiresAt: z.iso.datetime({ offset: true }),
     /** 仅本地开发可返回，生产环境必须通过受控邮件通道投递。 */
     token: z.string().optional(),

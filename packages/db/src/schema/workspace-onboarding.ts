@@ -11,7 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { lifecycleColumns, workspacePolicy } from "./common";
-import { actors, users, workspaces } from "./identity";
+import { actors, users, workspaceDepartments, workspaces } from "./identity";
 
 /**
  * 邀请只保存随机令牌的 SHA-256 摘要。原始令牌只出现在一次性投递链接中，
@@ -26,6 +26,8 @@ export const workspaceInvitations = pgTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     email: text("email").notNull(),
     requestedRole: varchar("requested_role", { length: 32 }).notNull(),
+    departmentId: uuid("department_id"),
+    jobTitle: varchar("job_title", { length: 120 }).notNull().default(""),
     tokenDigest: text("token_digest").notNull(),
     invitedByActorId: uuid("invited_by_actor_id").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
@@ -41,6 +43,11 @@ export const workspaceInvitations = pgTable(
       name: "workspace_invitations_inviter_fk",
       columns: [table.workspaceId, table.invitedByActorId],
       foreignColumns: [actors.workspaceId, actors.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "workspace_invitations_department_fk",
+      columns: [table.workspaceId, table.departmentId],
+      foreignColumns: [workspaceDepartments.workspaceId, workspaceDepartments.id],
     }).onDelete("restrict"),
     uniqueIndex("workspace_invitations_token_digest_unique").on(table.tokenDigest),
     index("workspace_invitations_email_idx").on(table.email, table.expiresAt),

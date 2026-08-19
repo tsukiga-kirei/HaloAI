@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CreateSystemTenantInputSchema,
   SaveSystemModelInputSchema,
   SystemModelSchema,
   SystemPageQuerySchema,
@@ -7,6 +8,22 @@ import {
 } from "../src";
 
 describe("系统管理契约", () => {
+  it("校验租户创建和默认管理员邮箱", () => {
+    expect(
+      CreateSystemTenantInputSchema.parse({
+        name: " 产品空间 ",
+        slug: "Product-Space",
+        defaultLocale: "zh-CN",
+        timeZone: "Asia/Shanghai",
+        defaultAdministratorEmail: " Owner@Example.com ",
+      }),
+    ).toMatchObject({
+      name: "产品空间",
+      slug: "product-space",
+      defaultAdministratorEmail: "owner@example.com",
+    });
+  });
+
   it("限制服务端分页范围", () => {
     expect(SystemPageQuerySchema.parse({}).pageSize).toBe(10);
     expect(SystemPageQuerySchema.safeParse({ page: 0, pageSize: 10 }).success).toBe(false);

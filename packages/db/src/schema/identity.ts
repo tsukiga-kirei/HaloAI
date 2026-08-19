@@ -4,6 +4,7 @@ import {
   check,
   foreignKey,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -118,6 +119,49 @@ export const humanActors = pgTable(
 );
 
 /**
+ * Department 只表达租户内的组织归属，不承载访问授权。负责人必须是同一工作空间的 Actor，
+ * 上级部门也必须留在同一租户；服务层另外限制层级深度，避免形成无法维护的无限组织树。
+ */
+export const workspaceDepartments = pgTable(
+  "workspace_departments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id"),
+    name: text("name").notNull(),
+    code: varchar("code", { length: 64 }).notNull(),
+    description: text("description").notNull().default(""),
+    managerActorId: uuid("manager_actor_id"),
+    status: varchar("status", { length: 16 }).notNull().default("active"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    ...lifecycleColumns(),
+  },
+  (table) => [
+    uniqueIndex("workspace_departments_workspace_id_unique").on(table.workspaceId, table.id),
+    uniqueIndex("workspace_departments_workspace_code_unique").on(table.workspaceId, table.code),
+    foreignKey({
+      name: "workspace_departments_parent_fk",
+      columns: [table.workspaceId, table.parentId],
+      foreignColumns: [table.workspaceId, table.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "workspace_departments_manager_fk",
+      columns: [table.workspaceId, table.managerActorId],
+      foreignColumns: [actors.workspaceId, actors.id],
+    }).onDelete("restrict"),
+    index("workspace_departments_tree_idx").on(table.workspaceId, table.parentId, table.sortOrder),
+    check("workspace_departments_status_check", sql`${table.status} in ('active', 'disabled')`),
+    check(
+      "workspace_departments_parent_self_check",
+      sql`${table.parentId} is null or ${table.parentId} <> ${table.id}`,
+    ),
+    workspacePolicy("workspace_departments_tenant", table.workspaceId),
+  ],
+);
+
+/**
  * 工作空间必须始终存在至少一个 active Owner。该条件涉及多行并发，不能用普通 CHECK；
  * Owner 转移必须锁定工作空间，在同一事务内完成，并由 deferred trigger 阻止最后 Owner 离开。
  */
@@ -131,6 +175,8 @@ export const workspaceMemberships = pgTable(
     humanActorId: uuid("human_actor_id").notNull(),
     status: membershipStatus("status").notNull().default("invited"),
     isOwner: boolean("is_owner").notNull().default(false),
+    departmentId: uuid("department_id"),
+    jobTitle: varchar("job_title", { length: 120 }).notNull().default(""),
     invitedByActorId: uuid("invited_by_actor_id"),
     joinedAt: timestamp("joined_at", { withTimezone: true, mode: "date" }),
     suspendedAt: timestamp("suspended_at", { withTimezone: true, mode: "date" }),
@@ -147,6 +193,11 @@ export const workspaceMemberships = pgTable(
       name: "workspace_memberships_inviter_fk",
       columns: [table.workspaceId, table.invitedByActorId],
       foreignColumns: [actors.workspaceId, actors.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "workspace_memberships_department_fk",
+      columns: [table.workspaceId, table.departmentId],
+      foreignColumns: [workspaceDepartments.workspaceId, workspaceDepartments.id],
     }).onDelete("restrict"),
     uniqueIndex("workspace_memberships_workspace_id_unique").on(table.workspaceId, table.id),
     uniqueIndex("workspace_memberships_actor_unique").on(table.workspaceId, table.humanActorId),

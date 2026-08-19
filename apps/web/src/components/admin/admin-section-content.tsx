@@ -2,6 +2,7 @@ import {
   Activity,
   ArrowUpRight,
   Bot,
+  Building2,
   Check,
   CircleAlert,
   Database,
@@ -21,6 +22,7 @@ import type { CollaborationActor } from "@haloai/contracts";
 
 export interface AdminLiveStats {
   memberCount: number;
+  departmentCount: number;
   agents: readonly CollaborationActor[];
 }
 
@@ -104,17 +106,17 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
           tone="violet"
         />
         <HaloMetricCard
-          icon={<Bot size={20} />}
-          label={dictionary.aiCollaborators}
-          value={String(agentCount)}
+          icon={<Building2 size={20} />}
+          label={dictionary.departments}
+          value={String(live?.departmentCount ?? 0)}
           detail={dictionary.availableNow}
           tone="blue"
         />
         <HaloMetricCard
-          icon={<Activity size={20} />}
-          label={dictionary.monthlyRuns}
-          value="0"
-          detail={dictionary.metricUnavailable}
+          icon={<Bot size={20} />}
+          label={dictionary.aiCollaborators}
+          value={String(agentCount)}
+          detail={dictionary.availableNow}
           tone="mint"
         />
         <HaloMetricCard
@@ -165,7 +167,7 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
 }
 
 function Members({ props }: { props: AdminSectionContentProps }) {
-  return <LiveMembers dictionary={props.dictionary} />;
+  return <LiveMembers />;
 }
 
 function Agents({ props }: { props: AdminSectionContentProps }) {

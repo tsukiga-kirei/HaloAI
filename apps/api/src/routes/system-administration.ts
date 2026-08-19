@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  CreateSystemTenantInputSchema,
   SaveSystemModelInputSchema,
   SetSystemModelAllocationInputSchema,
   SystemPageQuerySchema,
@@ -78,6 +79,17 @@ export async function registerSystemAdministrationRoutes(
       })),
     };
   });
+
+  app.post(
+    "/v1/system/tenants",
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const session = await requireSystemAdministrator(auth, repository, request);
+      const input = CreateSystemTenantInputSchema.parse(request.body);
+      const id = await repository.createTenant(session.user.id, input);
+      return reply.status(201).send({ id });
+    },
+  );
 
   app.patch<{ Params: { workspaceId: string } }>(
     "/v1/system/tenants/:workspaceId",

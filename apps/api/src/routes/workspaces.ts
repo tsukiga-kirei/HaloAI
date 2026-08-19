@@ -2,6 +2,8 @@ import {
   AcceptWorkspaceInvitationInputSchema,
   CreateWorkspaceInputSchema,
   CreateWorkspaceInvitationInputSchema,
+  SaveWorkspaceDepartmentInputSchema,
+  UpdateWorkspaceMemberOrganizationInputSchema,
   UpdateWorkspaceMemberRoleInputSchema,
 } from "@haloai/contracts";
 import { WorkspaceOnboardingRepository } from "@haloai/db";
@@ -80,10 +82,90 @@ export async function registerWorkspaceRoutes(
           workspaceId: invitation.workspaceId,
           email: invitation.email,
           role: invitation.role,
+          departmentId: invitation.departmentId,
+          jobTitle: invitation.jobTitle,
           expiresAt: invitation.expiresAt.toISOString(),
           token: config.EXPOSE_DEVELOPMENT_INVITE_TOKENS ? invitation.token : undefined,
         },
       });
+    },
+  );
+
+  app.get<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/organization",
+    async (request) => {
+      const session = await requireSession(auth, request);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      const [members, departments, workspaces] = await Promise.all([
+        repository.listMembers(session.user.id, principal, request.id),
+        repository.listDepartments(principal, request.id),
+        repository.listWorkspacesForUser(session.user.id),
+      ]);
+      const workspace = workspaces.find((item) => item.id === principal.workspaceId);
+      if (!workspace) throw new Error("workspace context disappeared");
+      return {
+        workspace: { id: workspace.id, name: workspace.name, slug: workspace.slug },
+        members: members.map((member) => ({
+          ...member,
+          joinedAt: member.joinedAt?.toISOString() ?? null,
+        })),
+        departments,
+      };
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/departments",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      const input = SaveWorkspaceDepartmentInputSchema.parse(request.body);
+      const id = await repository.saveDepartment({ principal, ...input, requestId: request.id });
+      return reply.status(201).send({ id });
+    },
+  );
+
+  app.patch<{ Params: { workspaceId: string; departmentId: string } }>(
+    "/v1/workspaces/:workspaceId/departments/:departmentId",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      const input = SaveWorkspaceDepartmentInputSchema.parse(request.body);
+      await repository.saveDepartment({
+        principal,
+        departmentId: request.params.departmentId,
+        ...input,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.patch<{ Params: { workspaceId: string; membershipId: string } }>(
+    "/v1/workspaces/:workspaceId/members/:membershipId/organization",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      const input = UpdateWorkspaceMemberOrganizationInputSchema.parse(request.body);
+      await repository.updateMemberOrganization({
+        principal,
+        membershipId: request.params.membershipId,
+        ...input,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
     },
   );
 

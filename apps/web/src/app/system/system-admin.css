@@ -181,6 +181,18 @@
   gap: 12px;
 }
 
+.system-tenant-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.system-tenant-toolbar-row > .system-toolbar {
+  min-width: 0;
+  flex: 1;
+}
+
 .system-search {
   display: grid;
   width: min(100%, 520px);
@@ -294,6 +306,54 @@
 .system-catalog-card > .system-table-action {
   grid-column: 1 / -1;
   justify-self: start;
+}
+
+.system-tenant-administrator {
+  grid-column: 1 / -1;
+  display: grid;
+  min-height: 54px;
+  padding: 9px 10px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+.system-tenant-administrator > span:first-child {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.system-tenant-administrator > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.system-tenant-administrator strong,
+.system-tenant-administrator em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.system-tenant-administrator strong {
+  color: var(--text);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.system-tenant-administrator em {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: normal;
 }
 
 .system-catalog-state {
@@ -685,6 +745,13 @@
   .system-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+  .system-tenant-toolbar-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .system-tenant-toolbar-row > .admin-primary-button {
+    width: 100%;
   }
   .system-search {
     width: 100%;
