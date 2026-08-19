@@ -47,6 +47,29 @@ export const SystemTenantPageSchema = z
   })
   .strict();
 
+export const SystemTenantMemberSchema = z
+  .object({
+    membershipId: UuidSchema,
+    actorId: UuidSchema,
+    name: z.string().min(1).max(120),
+    email: z.email().max(320),
+    role: z.enum(["owner", "admin", "member", "guest"]),
+    status: z.enum(["invited", "active", "suspended", "left"]),
+    departmentName: z.string().min(1).max(200).nullable(),
+    jobTitle: z.string().max(120),
+    joinedAt: z.iso.datetime({ offset: true }).nullable(),
+  })
+  .strict();
+
+export const SystemTenantMemberPageSchema = z
+  .object({
+    items: z.array(SystemTenantMemberSchema),
+    page: z.number().int().min(1),
+    pageSize: z.number().int().min(1).max(100),
+    total: z.number().int().min(0),
+  })
+  .strict();
+
 export const UpdateSystemTenantInputSchema = z
   .object({
     status: z.enum(["active", "suspended", "archived"]),
@@ -69,6 +92,39 @@ export const CreateSystemTenantInputSchema = z
     timeZone: z.string().trim().min(1).max(64),
     defaultAdministratorEmail: z.string().trim().toLowerCase().max(320).pipe(z.email()),
   })
+  .strict();
+
+export const CreateSystemTenantResultSchema = z.discriminatedUnion("status", [
+  z
+    .object({
+      status: z.literal("created"),
+      id: UuidSchema,
+    })
+    .strict(),
+  z
+    .object({
+      status: z.literal("activation_required"),
+      invitationId: UuidSchema,
+      expiresAt: z.iso.datetime({ offset: true }),
+      activationToken: z.string().min(32).optional(),
+    })
+    .strict(),
+]);
+
+export const SystemTenantInvitationInfoSchema = z
+  .object({
+    tenantName: z.string().min(1).max(80),
+    administratorEmail: z.email().max(320),
+    expiresAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const AcceptSystemTenantInvitationInputSchema = z
+  .object({ token: z.string().min(32).max(512) })
+  .strict();
+
+export const AcceptSystemTenantInvitationResultSchema = z
+  .object({ workspaceId: UuidSchema })
   .strict();
 
 export const PlatformModelApiFormatSchema = z.enum([
@@ -178,8 +234,12 @@ export type SystemPageQuery = z.infer<typeof SystemPageQuerySchema>;
 export type SystemOverview = z.infer<typeof SystemOverviewSchema>;
 export type SystemTenant = z.infer<typeof SystemTenantSchema>;
 export type SystemTenantPage = z.infer<typeof SystemTenantPageSchema>;
+export type SystemTenantMember = z.infer<typeof SystemTenantMemberSchema>;
+export type SystemTenantMemberPage = z.infer<typeof SystemTenantMemberPageSchema>;
 export type UpdateSystemTenantInput = z.infer<typeof UpdateSystemTenantInputSchema>;
 export type CreateSystemTenantInput = z.infer<typeof CreateSystemTenantInputSchema>;
+export type CreateSystemTenantResult = z.infer<typeof CreateSystemTenantResultSchema>;
+export type SystemTenantInvitationInfo = z.infer<typeof SystemTenantInvitationInfoSchema>;
 export type PlatformModelApiFormat = z.infer<typeof PlatformModelApiFormatSchema>;
 export type SystemModel = z.infer<typeof SystemModelSchema>;
 export type SystemModelPage = z.infer<typeof SystemModelPageSchema>;

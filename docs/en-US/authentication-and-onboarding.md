@@ -32,6 +32,7 @@ The transaction generates server-owned UUIDs before setting the PostgreSQL works
 - An invitation binds a normalized email, target workspace, and requested role. A different authenticated email is rejected.
 - Acceptance creates or restores the Human Actor, Membership, and built-in role assignment in one transaction.
 - Repeated acceptance returns an idempotent result. Expired, revoked, and email-mismatched tokens use one non-enumerating error.
+- System-level tenant-administrator activation invitations use a separate table from workspace-member invitations. Their tokens are also stored only as digests, bound to an email, expire after 72 hours, and are single use. An unregistered email never receives a generated default password; the invitee sets a password through the authentication component. The workspace is created only after activation succeeds so an ownerless partial tenant cannot exist.
 
 ## 5. Roles and Owner protection
 
@@ -56,6 +57,7 @@ The login page shows a workspace dropdown for collaborator and workspace-admin p
 - Cross-origin mutations are rejected.
 - A user can create a first workspace and becomes its only Owner.
 - An Owner can invite a member; wrong email, expired tokens, and replay fail safely.
+- Creating a tenant for an unregistered administrator returns a pending-activation result. The workspace and Owner are created only after the invitee sets a password and activates the invitation. Production responses and logs never contain the raw activation token.
 - The final Owner cannot be demoted, suspended, or removed.
 - A signed-out session becomes invalid immediately.
 - Authentication settings display the server's effective expiration and renewal intervals instead of a non-functional frontend default. System-administrator authority is never derived from a Workspace role.

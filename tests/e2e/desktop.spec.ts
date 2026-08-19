@@ -87,7 +87,8 @@ test.describe("桌面工作台", () => {
   });
 
   test("发送消息后只持久化人类发言，不请求演示模型", async ({ page }) => {
-    const requestText = "请把今天的讨论整理成可执行结论";
+    // 本地数据库会跨 Playwright 进程保留消息，使用唯一正文避免重跑时命中旧记录。
+    const requestText = `请把今天的讨论整理成可执行结论-${Date.now()}`;
     const demoAgentRequests: string[] = [];
     page.on("request", (request) => {
       if (request.url().endsWith("/api/demo-agent")) demoAgentRequests.push(request.url());
@@ -104,7 +105,9 @@ test.describe("桌面工作台", () => {
       .fill(requestText);
     await page.getByRole("button", { name: "发送", exact: true }).click();
 
-    await expect(page.getByText(requestText, { exact: true })).toBeVisible();
+    await expect(page.locator(".message-bubble p").filter({ hasText: requestText })).toHaveText(
+      requestText,
+    );
     const response = await responsePromise;
     expect(response.ok()).toBe(true);
     expect(demoAgentRequests).toEqual([]);
@@ -179,14 +182,14 @@ test.describe("桌面工作台", () => {
     await page.goto("/admin/overview");
     await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
 
-    await page.getByRole("link", { name: "成员与角色" }).click();
+    await page.getByRole("link", { name: "组织与成员" }).click();
     await expect(page).toHaveURL(/\/admin\/members$/);
-    await expect(page.getByRole("heading", { level: 1, name: "成员与访问角色" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "组织与成员" })).toBeVisible();
 
     await page.getByRole("button", { name: "个人设置" }).click();
     await page.getByRole("menuitem", { name: "切换语言" }).click();
     await expect(
-      page.getByRole("heading", { level: 1, name: "Members and access roles" }),
+      page.getByRole("heading", { level: 1, name: "Organization & members" }),
     ).toBeVisible();
     await page.getByRole("menuitem", { name: "Change theme" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -205,22 +208,64 @@ test.describe("桌面工作台", () => {
 
     await page.getByRole("link", { name: "租户" }).click();
     await expect(page).toHaveURL(/\/system\/tenants$/);
-    await expect(page.getByRole("heading", { level: 1, name: "租户目录" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "租户管理" })).toBeVisible();
+    await page.getByRole("button", { name: "查看成员" }).first().click();
+    const tenantMembers = page.getByRole("dialog", { name: "租户成员组织" });
+    await expect(tenantMembers.getByText("owner@haloai.dev", { exact: true })).toBeVisible();
+    await tenantMembers.getByRole("button", { name: "关闭" }).click();
 
     await page.getByRole("link", { name: "模型" }).click();
     await expect(page).toHaveURL(/\/system\/models$/);
-    await expect(page.getByRole("heading", { level: 1, name: "平台模型" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "模型管理" })).toBeVisible();
 
     await page.getByRole("link", { name: "健康" }).click();
     await expect(page).toHaveURL(/\/system\/health$/);
     await expect(page.getByRole("heading", { level: 1, name: "平台健康" })).toBeVisible();
 
-    await page.getByRole("link", { name: "策略" }).click();
-    await expect(page).toHaveURL(/\/system\/policy$/);
-    await expect(page.getByRole("heading", { level: 1, name: "全局策略" })).toBeVisible();
+    await page.getByRole("link", { name: "系统设置" }).click();
+    await expect(page).toHaveURL(/\/system\/settings$/);
+    await expect(page.getByRole("heading", { level: 1, name: "系统设置" })).toBeVisible();
+  });
 
-    await page.getByRole("link", { name: "审计记录" }).click();
-    await expect(page).toHaveURL(/\/system\/audit$/);
-    await expect(page.getByRole("heading", { level: 1, name: "审计记录" })).toBeVisible();
+  test("未注册默认管理员自行设置密码后激活租户", async ({ page, context }) => {
+    await context.clearCookies();
+    const token = "tenant-activation-token-for-browser-verification";
+    await page.route(`**/v1/system/tenant-invitations/${token}`, async (route) => {
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          tenantName: "新产品空间",
+          administratorEmail: "new-owner@example.com",
+          expiresAt: "2026-08-22T00:00:00.000Z",
+        }),
+      });
+    });
+    await page.route("**/v1/session", async (route) => {
+      await route.fulfill({ status: 401, contentType: "application/json", body: "{}" });
+    });
+    await page.route("**/api/auth/sign-up/email", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+    await page.route("**/v1/system/tenant-invitations/accept", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ workspaceId: "00000000-0000-4000-8000-000000000901" }),
+      });
+    });
+
+    await page.goto(`/tenant-activate/${token}`);
+    await expect(page.getByText(/系统不会生成默认密码/)).toBeVisible();
+    await expect(page.getByLabel("管理员邮箱")).toHaveValue("new-owner@example.com");
+    await page.getByLabel("姓名").fill("新管理员");
+    await page.getByLabel("设置密码").fill("owner-password-2026");
+    const signUpRequest = page.waitForRequest("**/api/auth/sign-up/email");
+    await page.getByRole("button", { name: "注册并激活租户" }).click();
+    expect((await signUpRequest).postDataJSON()).toMatchObject({
+      email: "new-owner@example.com",
+      name: "新管理员",
+      password: "owner-password-2026",
+    });
+    await expect(page.getByText("租户已创建，正在进入工作空间…")).toBeVisible();
   });
 });

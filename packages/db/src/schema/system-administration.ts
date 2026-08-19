@@ -5,6 +5,7 @@ import {
   integer,
   pgTable,
   text,
+  timestamp,
   uniqueIndex,
   uuid,
   varchar,
@@ -32,6 +33,47 @@ export const systemAdministrators = pgTable(
     ...lifecycleColumns(),
   },
   (table) => [index("system_administrators_status_idx").on(table.status)],
+);
+
+/**
+ * 未注册默认管理员只产生平台级激活邀请，不提前创建工作空间。令牌只保存摘要；受邀人完成
+ * 注册或登录后，SECURITY DEFINER 函数才原子地建立带 active Owner 的完整租户。
+ */
+export const systemTenantInvitations = pgTable(
+  "system_tenant_invitations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tokenDigest: text("token_digest").notNull(),
+    tenantName: text("tenant_name").notNull(),
+    tenantSlug: varchar("tenant_slug", { length: 63 }).notNull(),
+    defaultLocale: varchar("default_locale", { length: 16 }).notNull(),
+    timeZone: varchar("time_zone", { length: 64 }).notNull(),
+    administratorEmail: text("administrator_email").notNull(),
+    invitedByUserId: uuid("invited_by_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedByUserId: uuid("accepted_by_user_id").references(() => users.id, {
+      onDelete: "restrict",
+    }),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    ...lifecycleColumns(),
+  },
+  (table) => [
+    uniqueIndex("system_tenant_invitations_token_digest_unique").on(table.tokenDigest),
+    uniqueIndex("system_tenant_invitations_pending_slug_unique")
+      .on(table.tenantSlug)
+      .where(sql`${table.acceptedAt} is null and ${table.revokedAt} is null`),
+    index("system_tenant_invitations_email_expires_idx").on(
+      table.administratorEmail,
+      table.expiresAt,
+    ),
+    check(
+      "system_tenant_invitations_acceptance_check",
+      sql`(${table.acceptedAt} is null and ${table.acceptedByUserId} is null) or (${table.acceptedAt} is not null and ${table.acceptedByUserId} is not null)`,
+    ),
+  ],
 );
 
 /**

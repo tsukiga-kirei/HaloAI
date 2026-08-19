@@ -1,11 +1,22 @@
 "use client";
 
 import {
+  CreateSystemTenantResultSchema,
   SystemTenantPageSchema,
   type SystemTenant,
   type SystemTenantPage,
 } from "@haloai/contracts";
-import { Building2, Globe2, Languages, Mail, Plus, ShieldCheck, UserRoundCog } from "lucide-react";
+import {
+  Building2,
+  Copy,
+  Globe2,
+  Languages,
+  Mail,
+  Plus,
+  ShieldCheck,
+  UserRoundCog,
+  UsersRound,
+} from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { notify, notifyError } from "@/components/toast-host";
 import { HaloCatalog } from "@/components/ui/halo-catalog";
@@ -21,6 +32,7 @@ import {
   SystemSectionState,
   SystemStatusBadge,
 } from "./system-section-primitives";
+import { SystemTenantMembersDialog } from "./system-tenant-members-dialog";
 
 export function SystemTenantsSection() {
   const { dictionary, locale } = useSystemAdminDictionary();
@@ -36,6 +48,8 @@ export function SystemTenantsSection() {
   const [timeZone, setTimeZone] = useState("UTC");
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [viewingMembers, setViewingMembers] = useState<SystemTenant | null>(null);
+  const [activationLink, setActivationLink] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newAdministratorEmail, setNewAdministratorEmail] = useState("");
@@ -91,7 +105,7 @@ export function SystemTenantsSection() {
     event.preventDefault();
     setSaving(true);
     try {
-      await apiFetch<{ id: string }>("/v1/system/tenants", {
+      const payload = await apiFetch<unknown>("/v1/system/tenants", {
         method: "POST",
         body: JSON.stringify({
           name: newName,
@@ -101,10 +115,20 @@ export function SystemTenantsSection() {
           timeZone: newTimeZone,
         }),
       });
-      notify(dictionary.tenantCreated);
-      setCreating(false);
-      setPage(1);
-      await load();
+      const result = CreateSystemTenantResultSchema.parse(payload);
+      if (result.status === "created") {
+        notify(dictionary.tenantCreated);
+        setCreating(false);
+        setPage(1);
+        await load();
+      } else {
+        notify(dictionary.tenantActivationCreated);
+        setActivationLink(
+          result.activationToken
+            ? `${window.location.origin}/tenant-activate/${result.activationToken}`
+            : null,
+        );
+      }
     } catch {
       notifyError(dictionary.loadError, "system-tenant-create-error");
     } finally {
@@ -145,6 +169,7 @@ export function SystemTenantsSection() {
             setNewAdministratorEmail("");
             setNewLocale(locale);
             setNewTimeZone("Asia/Shanghai");
+            setActivationLink(null);
             setCreating(true);
           }}
         >
@@ -197,13 +222,22 @@ export function SystemTenantsSection() {
             <SystemStatusBadge tone={tenant.status === "active" ? "success" : "warning"}>
               {dictionary[tenant.status]}
             </SystemStatusBadge>
-            <button
-              type="button"
-              className="system-table-action"
-              onClick={() => openTenant(tenant)}
-            >
-              {dictionary.configure}
-            </button>
+            <div className="system-card-actions">
+              <button
+                type="button"
+                className="system-table-action"
+                onClick={() => setViewingMembers(tenant)}
+              >
+                <UsersRound size={14} /> {dictionary.viewMembers}
+              </button>
+              <button
+                type="button"
+                className="system-table-action"
+                onClick={() => openTenant(tenant)}
+              >
+                {dictionary.configure}
+              </button>
+            </div>
           </article>
         ))}
       </HaloCatalog>
@@ -215,7 +249,10 @@ export function SystemTenantsSection() {
         description={dictionary.createTenantDescription}
         icon={<Plus size={18} />}
         closeLabel={dictionary.close}
-        onClose={() => setCreating(false)}
+        onClose={() => {
+          setCreating(false);
+          setActivationLink(null);
+        }}
       >
         <form className="system-form" noValidate onSubmit={(event) => void createTenant(event)}>
           <SystemFormField icon={<Building2 size={16} />} label={dictionary.name}>
@@ -235,7 +272,11 @@ export function SystemTenantsSection() {
               onChange={(event) => setNewSlug(event.target.value.toLowerCase())}
             />
           </SystemFormField>
-          <SystemFormField icon={<Mail size={16} />} label={dictionary.administratorEmail}>
+          <SystemFormField
+            icon={<Mail size={16} />}
+            label={dictionary.administratorEmail}
+            hint={dictionary.administratorEmailHint}
+          >
             <input
               required
               type="email"
@@ -244,6 +285,19 @@ export function SystemTenantsSection() {
               onChange={(event) => setNewAdministratorEmail(event.target.value)}
             />
           </SystemFormField>
+          {activationLink ? (
+            <div className="system-activation-link">
+              <strong>{dictionary.activationLink}</strong>
+              <code>{activationLink}</code>
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => void navigator.clipboard.writeText(activationLink)}
+              >
+                <Copy size={15} /> {dictionary.copyActivationLink}
+              </button>
+            </div>
+          ) : null}
           <SystemFormField icon={<Languages size={16} />} label={dictionary.locale}>
             <HaloChoicePills
               value={newLocale}
@@ -267,7 +321,10 @@ export function SystemTenantsSection() {
             <button
               type="button"
               className="admin-secondary-button"
-              onClick={() => setCreating(false)}
+              onClick={() => {
+                setCreating(false);
+                setActivationLink(null);
+              }}
             >
               {dictionary.cancel}
             </button>
@@ -277,6 +334,8 @@ export function SystemTenantsSection() {
           </footer>
         </form>
       </HaloDialog>
+
+      <SystemTenantMembersDialog tenant={viewingMembers} onClose={() => setViewingMembers(null)} />
 
       <HaloDialog
         open={editing !== null}

@@ -138,6 +138,13 @@ export function LoginForm() {
     nextWorkspaces = workspaces,
     nextSelectedId = selectedWorkspaceId,
   ): void {
+    const requestedNext = searchParams.get("next");
+    // 邮箱绑定的一次性邀请本身就是后续工作空间上下文。受邀人可能尚未加入任何空间，
+    // 登录成功后必须先回到邀请页，不能错误地被普通零空间逻辑送去初始化向导。
+    if (requestedNext?.startsWith("/invite/") || requestedNext?.startsWith("/tenant-activate/")) {
+      enterWorkspace();
+      return;
+    }
     if (portal !== "system_admin") {
       if (nextWorkspaces.length === 0) {
         router.replace("/onboarding" as Route);

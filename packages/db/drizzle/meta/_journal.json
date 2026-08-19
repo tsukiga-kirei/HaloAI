@@ -57,6 +57,13 @@
       "when": 1787118369851,
       "tag": "0007_striped_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787121517104,
+      "tag": "0008_cool_warbound",
+      "breakpoints": true
     }
   ]
 }

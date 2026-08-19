@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import {
+  AcceptSystemTenantInvitationInputSchema,
   CreateSystemTenantInputSchema,
   SaveSystemModelInputSchema,
   SetSystemModelAllocationInputSchema,
@@ -54,6 +55,31 @@ export async function registerSystemAdministrationRoutes(
   config: ApiConfig,
   sessionPolicy: SessionPolicy,
 ): Promise<void> {
+  app.get<{ Params: { token: string } }>(
+    "/v1/system/tenant-invitations/:token",
+    { config: { rateLimit: { max: 30, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const invitation = await repository.getTenantInvitation(request.params.token);
+      reply.header("cache-control", "no-store");
+      return { ...invitation, expiresAt: invitation.expiresAt.toISOString() };
+    },
+  );
+
+  app.post(
+    "/v1/system/tenant-invitations/accept",
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
+    async (request) => {
+      const session = await requireSession(auth, request);
+      const input = AcceptSystemTenantInvitationInputSchema.parse(request.body);
+      const workspaceId = await repository.acceptTenantInvitation({
+        userId: session.user.id,
+        email: session.user.email,
+        token: input.token,
+      });
+      return { workspaceId };
+    },
+  );
+
   app.get("/v1/system/access", async (request, reply) => {
     await requireSystemAdministrator(auth, repository, request);
     reply.header("cache-control", "no-store");
@@ -80,14 +106,43 @@ export async function registerSystemAdministrationRoutes(
     };
   });
 
+  app.get<{ Params: { workspaceId: string } }>(
+    "/v1/system/tenants/:workspaceId/members",
+    async (request, reply) => {
+      const session = await requireSystemAdministrator(auth, repository, request);
+      const query = SystemPageQuerySchema.parse(request.query);
+      const page = await repository.listTenantMembers(
+        session.user.id,
+        request.params.workspaceId,
+        query,
+      );
+      reply.header("cache-control", "no-store");
+      return {
+        ...page,
+        items: page.items.map((member) => ({
+          ...member,
+          joinedAt: member.joinedAt?.toISOString() ?? null,
+        })),
+      };
+    },
+  );
+
   app.post(
     "/v1/system/tenants",
     { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const session = await requireSystemAdministrator(auth, repository, request);
       const input = CreateSystemTenantInputSchema.parse(request.body);
-      const id = await repository.createTenant(session.user.id, input);
-      return reply.status(201).send({ id });
+      const result = await repository.createTenant(session.user.id, input);
+      if (result.status === "created") return reply.status(201).send(result);
+      return reply.status(202).send({
+        status: result.status,
+        invitationId: result.invitationId,
+        expiresAt: result.expiresAt.toISOString(),
+        activationToken: config.EXPOSE_DEVELOPMENT_INVITE_TOKENS
+          ? result.activationToken
+          : undefined,
+      });
     },
   );
 

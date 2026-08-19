@@ -1,3 +1,4 @@
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { count, desc, eq, ilike, or } from "drizzle-orm";
 import type { DatabaseClient } from "../client";
 import { PersistenceError } from "../errors";
@@ -71,6 +72,30 @@ interface TenantFunctionRow {
   total_count: string | number;
 }
 
+interface TenantMemberFunctionRow {
+  membership_id: string;
+  actor_id: string;
+  member_name: string;
+  member_email: string;
+  role_key: "owner" | "admin" | "member" | "guest";
+  membership_status: "invited" | "active" | "suspended" | "left";
+  department_name: string | null;
+  job_title: string;
+  joined_at: Date | string | null;
+  total_count: string | number;
+}
+
+interface PreparedTenantFunctionRow {
+  workspace_id: string | null;
+  invitation_id: string | null;
+}
+
+interface TenantInvitationFunctionRow {
+  tenant_name: string;
+  administrator_email: string;
+  expires_at: Date | string;
+}
+
 interface AllocationFunctionRow {
   allocation_id: string;
   model_id: string;
@@ -88,6 +113,10 @@ function normalizePage(request: PageRequest): { page: number; pageSize: number; 
   const page = Math.max(1, Math.floor(request.page));
   const pageSize = Math.max(1, Math.min(100, Math.floor(request.pageSize)));
   return { page, pageSize, offset: (page - 1) * pageSize };
+}
+
+function invitationDigest(token: string): string {
+  return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
 /**
@@ -152,6 +181,43 @@ export class SystemAdministrationRepository {
     };
   }
 
+  async listTenantMembers(userId: string, workspaceId: string, request: PageRequest) {
+    assertUuid(userId, "userId");
+    assertUuid(workspaceId, "workspaceId");
+    const { page, pageSize, offset } = normalizePage(request);
+    const query = request.query?.trim() ?? "";
+    const rows = await this.client.connection<TenantMemberFunctionRow[]>`
+      select * from haloai_system_list_tenant_members(
+        ${userId}::uuid,
+        ${workspaceId}::uuid,
+        ${query},
+        ${pageSize},
+        ${offset}
+      )
+    `;
+    return {
+      items: rows.map((row) => ({
+        membershipId: row.membership_id,
+        actorId: row.actor_id,
+        name: row.member_name,
+        email: row.member_email,
+        role: row.role_key,
+        status: row.membership_status,
+        departmentName: row.department_name,
+        jobTitle: row.job_title,
+        joinedAt:
+          row.joined_at === null
+            ? null
+            : row.joined_at instanceof Date
+              ? row.joined_at
+              : new Date(row.joined_at),
+      })),
+      page,
+      pageSize,
+      total: rows[0] ? asNumber(rows[0].total_count) : 0,
+    };
+  }
+
   async createTenant(
     userId: string,
     input: {
@@ -161,23 +227,83 @@ export class SystemAdministrationRepository {
       timeZone: string;
       defaultAdministratorEmail: string;
     },
-  ): Promise<string> {
+  ): Promise<
+    | { status: "created"; id: string }
+    | {
+        status: "activation_required";
+        invitationId: string;
+        expiresAt: Date;
+        activationToken: string;
+      }
+  > {
     assertUuid(userId, "userId");
-    const rows = await this.client.connection<{ workspace_id: string | null }[]>`
-      select haloai_system_create_tenant(
+    const invitationId = randomUUID();
+    const activationToken = randomBytes(32).toString("base64url");
+    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+    const rows = await this.client.connection<PreparedTenantFunctionRow[]>`
+      select * from haloai_system_prepare_tenant(
         ${userId}::uuid,
         ${input.name},
         ${input.slug},
         ${input.defaultLocale},
         ${input.timeZone},
-        ${input.defaultAdministratorEmail}
+        ${input.defaultAdministratorEmail},
+        ${invitationId}::uuid,
+        ${invitationDigest(activationToken)},
+        ${expiresAt}
+      )
+    `;
+    const result = rows[0];
+    if (result?.workspace_id) return { status: "created", id: result.workspace_id };
+    if (result?.invitation_id) {
+      return {
+        status: "activation_required",
+        invitationId: result.invitation_id,
+        expiresAt,
+        activationToken,
+      };
+    }
+    throw new PersistenceError("access_denied", "无权创建租户");
+  }
+
+  async getTenantInvitation(token: string): Promise<{
+    tenantName: string;
+    administratorEmail: string;
+    expiresAt: Date;
+  }> {
+    const rows = await this.client.connection<TenantInvitationFunctionRow[]>`
+      select * from haloai_system_resolve_tenant_invitation(${invitationDigest(token)})
+    `;
+    const invitation = rows[0];
+    if (!invitation) throw new PersistenceError("invitation_invalid", "激活邀请不存在或已失效");
+    return {
+      tenantName: invitation.tenant_name,
+      administratorEmail: invitation.administrator_email,
+      expiresAt:
+        invitation.expires_at instanceof Date
+          ? invitation.expires_at
+          : new Date(invitation.expires_at),
+    };
+  }
+
+  async acceptTenantInvitation(input: {
+    userId: string;
+    email: string;
+    token: string;
+  }): Promise<string> {
+    assertUuid(input.userId, "userId");
+    const rows = await this.client.connection<{ workspace_id: string | null }[]>`
+      select haloai_system_accept_tenant_invitation(
+        ${input.userId}::uuid,
+        ${input.email},
+        ${invitationDigest(input.token)}
       ) as workspace_id
     `;
-    const id = rows[0]?.workspace_id;
-    if (!id) {
-      throw new PersistenceError("not_found", "默认管理员账户不存在或无权创建租户");
+    const workspaceId = rows[0]?.workspace_id;
+    if (!workspaceId) {
+      throw new PersistenceError("invitation_invalid", "激活邀请不存在、已过期或邮箱不匹配");
     }
-    return id;
+    return workspaceId;
   }
 
   async updateTenant(

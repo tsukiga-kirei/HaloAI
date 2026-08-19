@@ -34,6 +34,7 @@ export interface SystemAdminDictionary {
   timeZone: string;
   createdAt: string;
   configure: string;
+  viewMembers: string;
   active: string;
   suspended: string;
   archived: string;
@@ -49,6 +50,23 @@ export interface SystemAdminDictionary {
   administratorEmail: string;
   departmentsCount: string;
   tenantCreated: string;
+  tenantActivationCreated: string;
+  administratorEmailHint: string;
+  activationLink: string;
+  copyActivationLink: string;
+  tenantMembersTitle: string;
+  searchTenantMembers: string;
+  emptyTenantMembers: string;
+  accessRole: string;
+  department: string;
+  jobTitle: string;
+  joinedAt: string;
+  owner: string;
+  admin: string;
+  member: string;
+  guest: string;
+  invited: string;
+  left: string;
   save: string;
   cancel: string;
   saved: string;
@@ -136,6 +154,7 @@ const zhCN: SystemAdminDictionary = {
   timeZone: "时区",
   createdAt: "创建时间",
   configure: "配置",
+  viewMembers: "查看成员",
   active: "运行中",
   suspended: "已暂停",
   archived: "已归档",
@@ -146,11 +165,29 @@ const zhCN: SystemAdminDictionary = {
   pageSize: "每页 {size} 条",
   editTenant: "租户配置",
   createTenant: "创建租户",
-  createTenantDescription: "建立工作空间并指定首位负责人。管理员账号需已完成注册。",
+  createTenantDescription:
+    "建立工作空间并指定首位负责人。未注册邮箱进入待激活状态，由本人设置密码。",
   defaultAdministrator: "默认管理员",
   administratorEmail: "管理员邮箱",
   departmentsCount: "{count} 个部门",
   tenantCreated: "租户已创建",
+  tenantActivationCreated: "管理员激活邀请已创建",
+  administratorEmailHint: "已有账户会立即成为 Owner；未注册人员通过激活链接自行设置密码。",
+  activationLink: "一次性激活链接",
+  copyActivationLink: "复制激活链接",
+  tenantMembersTitle: "租户成员组织",
+  searchTenantMembers: "搜索姓名、邮箱、部门或岗位",
+  emptyTenantMembers: "暂无符合条件的成员",
+  accessRole: "访问角色",
+  department: "部门",
+  jobTitle: "岗位",
+  joinedAt: "加入时间",
+  owner: "所有者",
+  admin: "管理员",
+  member: "成员",
+  guest: "访客",
+  invited: "待加入",
+  left: "已离开",
   save: "保存",
   cancel: "取消",
   saved: "租户配置已保存",
@@ -243,6 +280,7 @@ const enUS: SystemAdminDictionary = {
   timeZone: "Time zone",
   createdAt: "Created",
   configure: "Configure",
+  viewMembers: "View members",
   active: "Active",
   suspended: "Suspended",
   archived: "Archived",
@@ -254,11 +292,29 @@ const enUS: SystemAdminDictionary = {
   editTenant: "Tenant configuration",
   createTenant: "Create tenant",
   createTenantDescription:
-    "Create a workspace and assign its first owner. The administrator account must already be registered.",
+    "Create a workspace and assign its first owner. Unregistered emails remain pending until the invitee sets a password.",
   defaultAdministrator: "Default administrator",
   administratorEmail: "Administrator email",
   departmentsCount: "{count} departments",
   tenantCreated: "Tenant created",
+  tenantActivationCreated: "Administrator activation invitation created",
+  administratorEmailHint:
+    "An existing account becomes Owner immediately. A new user sets their own password through the activation link.",
+  activationLink: "One-time activation link",
+  copyActivationLink: "Copy activation link",
+  tenantMembersTitle: "Tenant members",
+  searchTenantMembers: "Search name, email, department, or job title",
+  emptyTenantMembers: "No members match the current filters",
+  accessRole: "Access role",
+  department: "Department",
+  jobTitle: "Job title",
+  joinedAt: "Joined",
+  owner: "Owner",
+  admin: "Admin",
+  member: "Member",
+  guest: "Guest",
+  invited: "Invited",
+  left: "Left",
   save: "Save",
   cancel: "Cancel",
   saved: "Tenant configuration saved",

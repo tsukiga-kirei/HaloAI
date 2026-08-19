@@ -434,6 +434,29 @@
   margin: 0 0 24px;
   color: #6b7080;
 }
+.activationCard {
+  width: min(100%, 520px);
+  text-align: left;
+}
+.activationCard > .statusIcon {
+  margin-inline: auto;
+}
+.activationCard > h1,
+.activationCard > p {
+  text-align: center;
+}
+.activationForm,
+.activationSession {
+  display: grid;
+  gap: 16px;
+}
+.activationSession > strong {
+  color: var(--text-soft);
+  text-align: center;
+}
+.activationForm .textLink {
+  justify-self: center;
+}
 .statusCard button,
 .primaryButton {
   display: inline-flex;
