@@ -68,7 +68,7 @@ Before chat orchestration, model providers, and Agent Runs are connected, collab
 - Activity reads the same workspace audit events. Members without `audit.read` see a permission empty state instead of sample data.
 - These surfaces must not trigger model calls, tool calls, or external writes. Phase boundaries appear only in empty states or toasts after a user action, never as a persistent banner.
 
-The visual hierarchy continues to use HaloAI semantic tokens. Reference products inform information architecture, spacing, and interaction density only; their branding, color systems, and AI permission models are not copied.
+The visual hierarchy continues to use HaloAI semantic tokens.
 
 ## 5. Completion criteria
 

@@ -9,7 +9,7 @@
 - 邮箱和密码由成熟认证组件处理，密码使用内存硬化哈希并仅保存在 credential Account 中。
 - 浏览器只接收 `HttpOnly`、`SameSite=Lax` Cookie；会话令牌禁止进入 `localStorage`、URL、日志或错误响应。登录页经 Web 同源转发认证与会话请求，避免浏览器把 3000/3100 分端口或 `localhost` 与 `127.0.0.1` 混用当成第三方 Cookie 拒绝。
 - 会话保存在 PostgreSQL，默认 7 天到期、每天滑动续期，退出和安全事件可以立即撤销。这里的“续期”是轮换可撤销的不透明会话 Cookie，不是把 access token 或 refresh token 暴露给浏览器脚本。
-- AuraOA 的 access/refresh JWT 适合 Bearer API 客户端，但其浏览器实现把令牌放入 `localStorage`，不采用这一点。Agentum 把短期访问令牌留在内存，并把可轮换刷新令牌放入限定 `/api/auth` 的 HttpOnly Cookie。HaloAI 当前只有同源 Web/BFF 客户端，继续使用数据库会话 Cookie可以减少两套令牌、刷新竞态和 XSS 可读凭据；当原生客户端、第三方 API 或跨域资源服务器成为真实需求时，再在 AuthGateway 后引入 access/refresh 协议。
+- 当前只有同源 Web/BFF 客户端，继续使用数据库会话 Cookie，不向浏览器脚本暴露 access token 或 refresh token，也不把令牌放入 `localStorage`。这样可以避免两套令牌、刷新竞态和 XSS 可读凭据；当原生客户端、第三方 API 或跨域资源服务器成为真实需求时，再在 AuthGateway 后引入 access/refresh 协议。
 - 认证 Origin 与 CORS 使用显式白名单；禁止关闭 CSRF 或 Origin 检查。
 - 认证数据库角色只访问 User、Account、Session 与 Verification 表，不能读取工作空间正文。
 - 注册、登录和邀请接受返回稳定错误码，不泄露邮箱是否已存在或邀请属于哪个工作空间。

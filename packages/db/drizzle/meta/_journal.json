@@ -64,6 +64,13 @@
       "when": 1787121517104,
       "tag": "0008_cool_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787281532029,
+      "tag": "0009_high_wrecking_crew",
+      "breakpoints": true
     }
   ]
 }

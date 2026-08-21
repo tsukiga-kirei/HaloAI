@@ -69,9 +69,6 @@ export type Capability =
   | "approval.review"
   | "audit.read";
 
-/** 兼容 Foundation 早期调用点；新代码应使用 Capability。 */
-export type Permission = Capability;
-
 export interface AgentBudget {
   maxInputTokens: number;
   maxOutputTokens: number;
