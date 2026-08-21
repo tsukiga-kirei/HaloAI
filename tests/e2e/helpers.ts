@@ -16,6 +16,11 @@ export async function openChineseWorkspace(page: Page): Promise<void> {
     } catch {
       // about:blank 等无存储上下文无需处理，进入应用源后脚本会再次执行。
     }
+    // Next 开发浮层即使看不见也会铺一层 nextjs-portal，挡住抽屉右上角关闭。
+    const style = document.createElement("style");
+    style.textContent =
+      "nextjs-portal { display: none !important; pointer-events: none !important; }";
+    document.documentElement.appendChild(style);
   });
   await page.goto("/login");
   await expect(page.getByRole("combobox", { name: "选择工作区" })).toBeVisible();

@@ -271,6 +271,8 @@ pnpm check        # 检查文档、格式、类型、单元测试和构建
 pnpm check:all    # 在 check 基础上追加浏览器端到端验收
 ```
 
+GitHub 上有两条独立门禁：`pnpm check` 对应「文档、格式、类型、测试与构建」；浏览器旅程是另一条「桌面、平板与手机端到端验收」。编辑器不报错不等于第二条已通过。`apps/web/next-env.d.ts` 由 Next 自动生成，不要提交。
+
 ### 生产 Compose
 
 生产部署使用独立的 `compose.prod.yaml`，默认启动 TLS Gateway、Web、API、Worker、一次性迁移任务和 PostgreSQL。先在部署主机准备密钥文件，再校验、构建和启动：

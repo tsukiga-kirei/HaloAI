@@ -15,3 +15,6 @@ logs/
 Thumbs.db
 .idea/
 .vscode/
+# Next 16 在 next dev 与 next build 之间改写路由类型路径，跟踪会反复弄脏工作树。
+# 类型检查前由 `next typegen` 重新生成，不要提交。
+apps/web/next-env.d.ts

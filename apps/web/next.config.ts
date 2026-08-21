@@ -49,6 +49,8 @@ function loadApiOriginEnv(): void {
 
 loadApiOriginEnv();
 const apiOrigin = resolveApiOrigin();
+const disableDevIndicators =
+  process.env.PLAYWRIGHT === "true" || process.env.CI === "true" || process.env.CI === "1";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -57,10 +59,8 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@haloai/core", "@haloai/contracts", "@haloai/agent-runtime"],
   poweredByHeader: false,
   typedRoutes: true,
-  // 开发指示器默认贴底边，会挡住手机底栏的房间/工作台。
-  devIndicators: {
-    position: "top-right",
-  },
+  // 开发指示器默认贴底边会挡住手机底栏；验收时必须关掉，否则 nextjs-portal 会拦住抽屉右上角关闭。
+  devIndicators: disableDevIndicators ? false : { position: "top-right" },
   // 本地端到端验收固定使用回环 IP；显式允许该来源，避免开发服务器只返回未水合的 HTML。
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   async rewrites() {

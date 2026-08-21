@@ -4,6 +4,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 const apiOrigin = process.env.PLAYWRIGHT_API_URL ?? "http://127.0.0.1:3100";
 const sharedEnv = {
   ...process.env,
+  PLAYWRIGHT: "true",
   API_HOST: "127.0.0.1",
   API_PORT: "3100",
   API_WEB_ORIGIN: baseURL,

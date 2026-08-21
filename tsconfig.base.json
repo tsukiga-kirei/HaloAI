@@ -17,5 +17,8 @@
     "verbatimModuleSyntax": true,
     "noEmit": true,
     "allowImportingTsExtensions": false
+  },
+  "typeAcquisition": {
+    "enable": false
   }
 }

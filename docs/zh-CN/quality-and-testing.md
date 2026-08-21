@@ -462,6 +462,15 @@ Fault Injection 在每个耐久边界终止进程或中断依赖：Transaction S
 
 ### 18.1 Pipeline 阶段
 
+当前 GitHub 工作流是两条独立的 Commit Check，都是合并门禁。本地 `pnpm check` 只覆盖第一条里的静态质量部分，不跑浏览器。
+
+| GitHub Check                         | 本地对应                                                                                          | 证明什么                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 文档、格式、类型、测试与构建         | `pnpm infra:up`、`pnpm db:migrate`、`pnpm db:test:integration`、`pnpm check`                      | 中英文文档配对、Prettier、类型、Vitest 单元测试、各包构建。不启动浏览器。                         |
+| 桌面、平板与手机端到端验收           | `DEMO_MODE=true pnpm test:e2e`（CI 还会 `playwright install` 并写入演示数据）                     | 在真实 Chromium 里走登录、三栏、后台与系统管理。Linux 无头浏览器与开发指示器都会影响点击。        |
+
+`pnpm check` 通过不能代表 GitHub 全绿。端到端会启动 `next dev`；开发指示器挂在右上角时，`nextjs-portal` 会截走抽屉关闭按钮。Playwright 进程必须关闭该指示器。完整本地对齐用 `pnpm check:all`。`apps/web/next-env.d.ts` 由 `next typegen` / `next dev` / `next build` 生成，不纳入版本库。
+
 | 阶段              | 强制检查                                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------------------------- |
 | Change Validation | Format、Lint、Type、生成树干净、单元/不变量/属性、目录/Schema 对齐、变更代码覆盖率                            |
