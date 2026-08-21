@@ -1,12 +1,23 @@
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { createServiceLogger, safeErrorFields, type HaloLogLevel } from "@haloai/logger";
 import postgres from "postgres";
 import { shouldApplyDevdata } from "./devdata-policy";
+
+/**
+ * 本地虚拟数据与结构迁移分表记录。日志只写修订文件名，不写 SQL 或口令。
+ */
+const logger = createServiceLogger({
+  service: "db-seed",
+  environment: process.env.NODE_ENV === "production" ? "production" : "development",
+  level: (process.env.LOG_LEVEL as HaloLogLevel | undefined) ?? "info",
+  logDirectory: process.env.LOG_DIR,
+});
 
 const databaseUrl = process.env.DATABASE_ADMIN_URL;
 if (!databaseUrl) throw new Error("写入虚拟数据前必须设置 DATABASE_ADMIN_URL");
 if (!shouldApplyDevdata()) {
-  console.log("DEMO_MODE 未开启，跳过虚拟数据。");
+  logger.info("DEMO_MODE 未开启，跳过虚拟数据");
   process.exit(0);
 }
 
@@ -35,7 +46,7 @@ try {
       SELECT id FROM haloai_devdata_revisions WHERE id = ${file}
     `;
     if (applied.length > 0) {
-      console.log(`虚拟数据已存在，跳过 ${file}`);
+      logger.debug({ revision: file }, "虚拟数据已存在，跳过");
       continue;
     }
 
@@ -44,10 +55,13 @@ try {
       await transaction.unsafe(sql);
       await transaction`INSERT INTO haloai_devdata_revisions (id) VALUES (${file})`;
     });
-    console.log(`已写入虚拟数据 ${file}`);
+    logger.info({ revision: file }, "已写入虚拟数据");
   }
 
-  console.log("HaloAI 本地虚拟数据准备完成。");
+  logger.info("HaloAI 本地虚拟数据准备完成");
+} catch (error) {
+  logger.fatal(safeErrorFields(error), "HaloAI 虚拟数据写入失败");
+  process.exitCode = 1;
 } finally {
   await connection.end({ timeout: 5 });
 }

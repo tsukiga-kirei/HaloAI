@@ -192,6 +192,8 @@ export interface AdminDictionary {
   auditLoading: string;
   auditPreviousPage: string;
   auditNextPage: string;
+  pageSummary: string;
+  pageSize: string;
   modelsLoading: string;
   securityReadOnly: string;
   securitySessionLifetime: string;
@@ -426,6 +428,8 @@ const zhCN: AdminDictionary = {
   auditLoading: "正在读取审计记录…",
   auditPreviousPage: "上一页",
   auditNextPage: "下一页",
+  pageSummary: "第 {page} / {pages} 页，共 {total} 条",
+  pageSize: "每页 {size} 条",
   modelsLoading: "正在读取本空间已分配的模型…",
   securityReadOnly: "这些边界由平台强制执行，空间管理不能在此关闭。",
   securitySessionLifetime: "登录有效期 {value}",
@@ -667,6 +671,8 @@ const enUS: AdminDictionary = {
   auditLoading: "Loading the audit log…",
   auditPreviousPage: "Previous page",
   auditNextPage: "Next page",
+  pageSummary: "Page {page} of {pages} · {total} items",
+  pageSize: "{size} per page",
   modelsLoading: "Loading models allocated to this workspace…",
   securityReadOnly: "These boundaries are enforced by the platform and cannot be turned off here.",
   securitySessionLifetime: "Sign-in lifetime {value}",

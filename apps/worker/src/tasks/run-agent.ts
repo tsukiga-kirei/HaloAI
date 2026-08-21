@@ -1,5 +1,7 @@
 import type { Task } from "graphile-worker";
 import { z } from "zod";
+import { diagnosticFields } from "@haloai/logger";
+import { getWorkerLogger } from "../logger";
 
 const runAgentPayloadSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -13,7 +15,16 @@ const runAgentPayloadSchema = z.object({
  */
 export const runAgentTask: Task = async (rawPayload, helpers) => {
   const payload = runAgentPayloadSchema.parse(rawPayload);
-  helpers.logger.info(`已领取 Agent Run ${payload.runId}，尝试次数 ${payload.attempt}`);
+  getWorkerLogger().info(
+    diagnosticFields({
+      workspaceId: payload.workspaceId,
+      runId: payload.runId,
+      attempt: payload.attempt,
+      jobId: helpers.job.id,
+      taskIdentifier: helpers.job.task_identifier,
+    }),
+    "已领取 Agent Run",
+  );
 
   // Foundation 阶段不调用模型；后续由 AgentRuntimePort 驱动状态机并写入递增事件序列。
 };

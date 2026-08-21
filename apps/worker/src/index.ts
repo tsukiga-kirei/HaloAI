@@ -1,16 +1,10 @@
 import { run } from "graphile-worker";
-import { createServiceLogger } from "@haloai/logger";
 import { readWorkerConfig } from "./config";
-import { createGraphileLogger } from "./logger";
+import { createGraphileLogger, createWorkerLogger } from "./logger";
 import { taskList } from "./tasks";
 
 const config = readWorkerConfig();
-const logger = createServiceLogger({
-  service: "worker",
-  environment: config.NODE_ENV,
-  level: config.LOG_LEVEL,
-  logDirectory: config.LOG_DIR,
-});
+const logger = createWorkerLogger(config);
 
 const runner = await run({
   connectionString: config.DATABASE_URL,

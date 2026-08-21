@@ -1,16 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
-import { HaloChoicePills } from "./halo-choice-pills";
-
-interface PaginationLabels {
-  readonly previous: string;
-  readonly next: string;
-  readonly summary: string;
-  readonly pageSize: string;
-  readonly loading: string;
-}
+import { HaloPagination, type HaloPaginationLabels } from "./halo-pagination";
 
 /**
  * 系统目录用卡片网格承载跨租户列表。分页条与容器边缘保持内边距；每页数量用药丸，
@@ -35,9 +26,8 @@ export function HaloCatalog({
   onPageSizeChange: (pageSize: number) => void;
   loading: boolean;
   empty: ReactNode;
-  labels: PaginationLabels;
+  labels: HaloPaginationLabels & { readonly loading: string };
 }) {
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const hasItems = !loading && total > 0;
 
   return (
@@ -49,41 +39,15 @@ export function HaloCatalog({
       ) : (
         <div className="system-catalog-state">{empty}</div>
       )}
-      <footer className="system-pagination">
-        <span>
-          {labels.summary
-            .replace("{page}", String(page))
-            .replace("{pages}", String(pageCount))
-            .replace("{total}", String(total))}
-        </span>
-        <div className="system-pagination-actions">
-          <HaloChoicePills
-            value={String(pageSize)}
-            ariaLabel={labels.pageSize.replace("{size}", String(pageSize))}
-            onChange={(value) => onPageSizeChange(Number(value))}
-            options={[10, 20, 50].map((size) => ({
-              value: String(size),
-              label: labels.pageSize.replace("{size}", String(size)),
-            }))}
-          />
-          <button
-            type="button"
-            aria-label={labels.previous}
-            disabled={page <= 1}
-            onClick={() => onPageChange(Math.max(1, page - 1))}
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <button
-            type="button"
-            aria-label={labels.next}
-            disabled={page >= pageCount}
-            onClick={() => onPageChange(Math.min(pageCount, page + 1))}
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </footer>
+      <HaloPagination
+        className="is-inset"
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        labels={labels}
+      />
     </section>
   );
 }

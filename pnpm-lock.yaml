@@ -225,6 +225,9 @@ importers:
 
   packages/db:
     dependencies:
+      '@haloai/logger':
+        specifier: workspace:*
+        version: link:../logger
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@types/pg@8.21.0)(kysely@0.29.5)(pg@8.23.0)(postgres@3.4.9)

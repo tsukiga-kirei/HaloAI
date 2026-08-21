@@ -26,9 +26,11 @@ import { users, workspaces } from "./identity";
 export const systemAdministrators = pgTable(
   "system_administrators",
   {
+    /** 平台管理员对应的登录用户；不能由 Workspace Owner 隐式推导。 */
     userId: uuid("user_id")
       .primaryKey()
       .references(() => users.id, { onDelete: "cascade" }),
+    /** active 才允许进入系统后台；suspended 立即拒绝跨租户目录。 */
     status: systemAdministratorStatus("status").notNull().default("active"),
     ...lifecycleColumns(),
   },
@@ -86,11 +88,13 @@ export const platformModels = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     provider: varchar("provider", { length: 120 }).notNull(),
+    /** 远端请求契约，禁止用一个兼容接口字段掩盖不同协议。 */
     apiFormat: platformModelApiFormat("api_format").notNull(),
     remoteModelId: varchar("remote_model_id", { length: 200 }).notNull(),
     baseUrl: text("base_url"),
     contextWindow: integer("context_window"),
     status: platformModelStatus("status").notNull().default("active"),
+    /** API Key 密文；与 IV、标签、密钥版本必须同时为空或同时存在。 */
     secretCiphertext: text("secret_ciphertext"),
     secretIv: varchar("secret_iv", { length: 64 }),
     secretTag: varchar("secret_tag", { length: 64 }),
@@ -145,7 +149,9 @@ export const workspaceModelAllocations = pgTable(
 export const systemSettings = pgTable(
   "system_settings",
   {
+    /** 平台设置键，例如默认语言与会话寿命；空键非法。 */
     key: varchar("key", { length: 80 }).primaryKey(),
+    /** 已生效的设置值；环境变量不能覆盖这里的记录。 */
     value: text("value").notNull(),
     ...lifecycleColumns(),
   },

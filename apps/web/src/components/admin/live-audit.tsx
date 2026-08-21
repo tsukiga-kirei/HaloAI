@@ -12,6 +12,7 @@ import { notify, notifyError } from "@/components/toast-host";
 import { AdminPageHeader } from "./admin-page-header";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
+import { HaloPagination } from "@/components/ui/halo-pagination";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
 import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import type { AdminDictionary } from "@/lib/admin-i18n";
@@ -42,12 +43,12 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
   const [items, setItems] = useState<WorkspaceAuditEvent[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [query, setQuery] = useState("");
   const [appliedQuery, setAppliedQuery] = useState("");
   const [outcome, setOutcome] = useState<AuditOutcome | "all">("all");
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<WorkspaceAuditEvent | null>(null);
-  const pageSize = 20;
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -84,7 +85,7 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
     } finally {
       setLoading(false);
     }
-  }, [appliedQuery, dictionary.auditLoadError, outcome, page]);
+  }, [appliedQuery, dictionary.auditLoadError, outcome, page, pageSize]);
 
   useEffect(() => {
     void load();
@@ -101,8 +102,6 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
       })[value],
     [dictionary],
   );
-
-  const pageCount = Math.max(1, Math.ceil(total / pageSize));
 
   async function exportLog(): Promise<void> {
     const payload = JSON.stringify({ exportedAt: new Date().toISOString(), total, items }, null, 2);
@@ -198,31 +197,19 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
               </button>
             ))}
           </div>
-          {pageCount > 1 ? (
-            <footer className="system-pagination">
-              <span>
-                {page} / {pageCount} · {total}
-              </span>
-              <div className="system-pagination-actions">
-                <button
-                  type="button"
-                  disabled={page <= 1}
-                  aria-label={dictionary.auditPreviousPage}
-                  onClick={() => setPage((current) => current - 1)}
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  disabled={page >= pageCount}
-                  aria-label={dictionary.auditNextPage}
-                  onClick={() => setPage((current) => current + 1)}
-                >
-                  →
-                </button>
-              </div>
-            </footer>
-          ) : null}
+          <HaloPagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            labels={{
+              previous: dictionary.auditPreviousPage,
+              next: dictionary.auditNextPage,
+              summary: dictionary.pageSummary,
+              pageSize: dictionary.pageSize,
+            }}
+          />
         </section>
       )}
       <HaloDialog

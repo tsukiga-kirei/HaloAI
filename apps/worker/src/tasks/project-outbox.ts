@@ -1,5 +1,7 @@
 import type { Task } from "graphile-worker";
 import { z } from "zod";
+import { diagnosticFields } from "@haloai/logger";
+import { getWorkerLogger } from "../logger";
 
 const projectOutboxPayloadSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -12,5 +14,13 @@ const projectOutboxPayloadSchema = z.object({
  */
 export const projectOutboxTask: Task = async (rawPayload, helpers) => {
   const payload = projectOutboxPayloadSchema.parse(rawPayload);
-  helpers.logger.info(`准备投影 Outbox 事件 ${payload.outboxEventId}`);
+  getWorkerLogger().info(
+    diagnosticFields({
+      workspaceId: payload.workspaceId,
+      jobId: helpers.job.id,
+      taskIdentifier: helpers.job.task_identifier,
+      outboxEventId: payload.outboxEventId,
+    }),
+    "准备投影 Outbox 事件",
+  );
 };

@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { safeErrorFields } from "@haloai/logger";
+import { diagnosticFields, diagnosticRequestPath, safeErrorFields } from "@haloai/logger";
 import { ZodError } from "zod";
 import { PersistenceError } from "@haloai/db";
 import { HttpError } from "./http-error";
@@ -18,7 +18,16 @@ interface SafeErrorBody {
  * 受控服务端日志，避免 SQL、路径、供应商响应或敏感参数通过错误页泄露给浏览器。
  */
 export function handleError(error: Error, request: FastifyRequest, reply: FastifyReply): void {
+  const requestContext = diagnosticFields({
+    requestId: request.id,
+    method: request.method,
+    path: diagnosticRequestPath(request.url),
+  });
+
   if (error instanceof HttpError) {
+    if (error.status >= 500) {
+      request.log.error({ ...requestContext, errorCode: error.code }, "请求处理失败");
+    }
     reply.status(error.status).send({
       error: { code: error.code, messageKey: error.messageKey, requestId: request.id },
     });
@@ -27,6 +36,9 @@ export function handleError(error: Error, request: FastifyRequest, reply: Fastif
 
   if (error instanceof PersistenceError) {
     const mapped = mapPersistenceError(error);
+    if (mapped.status >= 500) {
+      request.log.error({ ...requestContext, errorCode: mapped.code }, "请求处理失败");
+    }
     reply.status(mapped.status).send({
       error: { code: mapped.code, messageKey: mapped.messageKey, requestId: request.id },
     });
@@ -48,7 +60,7 @@ export function handleError(error: Error, request: FastifyRequest, reply: Fastif
     return;
   }
 
-  request.log.error(safeErrorFields(error), "请求处理失败");
+  request.log.error({ ...requestContext, ...safeErrorFields(error) }, "请求处理失败");
   const body: SafeErrorBody = {
     error: {
       code: "INTERNAL_ERROR",

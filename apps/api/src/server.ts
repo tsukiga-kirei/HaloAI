@@ -13,6 +13,7 @@ import { createServiceLogger } from "@haloai/logger";
 import Fastify, { type FastifyBaseLogger, type FastifyInstance, LogController } from "fastify";
 import type { ApiConfig } from "./config";
 import { handleError } from "./errors";
+import { registerRequestLogging } from "./request-logging";
 import { registerDemoEventRoutes } from "./routes/demo-events";
 import { registerHealthRoutes } from "./routes/health";
 import { registerAuthRoutes } from "./routes/auth";
@@ -66,7 +67,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     loggerInstance: logger as FastifyBaseLogger,
     trustProxy: false,
     requestIdHeader: "x-request-id",
-    logController: new LogController({ disableRequestLogging: config.NODE_ENV === "test" }),
+    logController: new LogController({ disableRequestLogging: true }),
   });
 
   await app.register(helmet, {
@@ -84,6 +85,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     await Promise.all([applicationDatabase.close(), authenticationDatabase.close()]);
   });
 
+  registerRequestLogging(app);
   app.setErrorHandler(handleError);
   await registerHealthRoutes(app);
   await registerDemoEventRoutes(app);

@@ -18,8 +18,6 @@ import {
 } from "@tanstack/react-table";
 import {
   Building2,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   LoaderCircle,
   Mail,
@@ -36,6 +34,7 @@ import { AdminPageHeader } from "./admin-page-header";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
+import { HaloPagination } from "@/components/ui/halo-pagination";
 import { HaloSelect } from "@/components/ui/halo-select";
 import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
@@ -118,6 +117,7 @@ export function LiveMembers() {
   }, [load]);
 
   const filteredMembers = useMemo(() => {
+    // 先按当前空间已授权快照过滤部门和检索，再交给表格分页；分页不得扩大可见范围。
     const normalized = query.trim().toLocaleLowerCase(locale);
     return members.filter((member) => {
       const inDepartment =
@@ -522,10 +522,7 @@ export function LiveMembers() {
             {roots
               .flatMap((root) => [root, ...departments.filter((item) => item.parentId === root.id)])
               .map((department) => (
-                <div
-                  className="organization-tree-row"
-                  key={department.id}
-                >
+                <div className="organization-tree-row" key={department.id}>
                   <button
                     type="button"
                     className={`organization-tree-item${selectedDepartment === department.id ? " is-active" : ""}`}
@@ -608,44 +605,22 @@ export function LiveMembers() {
               </table>
             </div>
           )}
-          <footer className="organization-pagination">
-            <span>
-              {dictionary.pageSummary
-                .replace("{page}", String(pagination.pageIndex + 1))
-                .replace("{pages}", String(Math.max(1, table.getPageCount())))
-                .replace("{total}", String(filteredMembers.length))}
-            </span>
-            <div className="organization-page-sizes">
-              {[10, 20, 50].map((size) => (
-                <button
-                  type="button"
-                  className={pagination.pageSize === size ? "is-active" : ""}
-                  key={size}
-                  onClick={() => table.setPageSize(size)}
-                >
-                  {dictionary.pageSize.replace("{size}", String(size))}
-                </button>
-              ))}
-            </div>
-            <div>
-              <button
-                type="button"
-                disabled={!table.getCanPreviousPage()}
-                aria-label={dictionary.previousPage}
-                onClick={() => table.previousPage()}
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                type="button"
-                disabled={!table.getCanNextPage()}
-                aria-label={dictionary.nextPage}
-                onClick={() => table.nextPage()}
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </footer>
+          <HaloPagination
+            page={pagination.pageIndex + 1}
+            pageSize={pagination.pageSize}
+            total={filteredMembers.length}
+            onPageChange={(nextPage) => table.setPageIndex(nextPage - 1)}
+            onPageSizeChange={(size) => {
+              table.setPageSize(size);
+              table.setPageIndex(0);
+            }}
+            labels={{
+              previous: dictionary.previousPage,
+              next: dictionary.nextPage,
+              summary: dictionary.pageSummary,
+              pageSize: dictionary.pageSize,
+            }}
+          />
         </section>
       </div>
 

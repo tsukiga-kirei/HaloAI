@@ -13,6 +13,10 @@ export interface ServiceLoggerOptions {
   writeToStdout?: boolean | undefined;
 }
 
+/**
+ * 只按字段名脱敏。值模式扫描会误伤 UUID 与摘要，真正的正文/密钥禁止进入日志对象。
+ * 同时覆盖驼峰和蛇形，避免适配器或 HTTP 头换一种命名就漏网。
+ */
 const redactedPaths = [
   "password",
   "secret",
@@ -22,6 +26,28 @@ const redactedPaths = [
   "apiKey",
   "authorization",
   "cookie",
+  "setCookie",
+  "clientSecret",
+  "privateKey",
+  "databaseUrl",
+  "connectionString",
+  "encryptionKey",
+  "modelSecret",
+  "secretCiphertext",
+  "ciphertext",
+  "prompt",
+  "systemPrompt",
+  "api_key",
+  "access_token",
+  "refresh_token",
+  "client_secret",
+  "private_key",
+  "database_url",
+  "connection_string",
+  "encryption_key",
+  "model_secret",
+  "secret_ciphertext",
+  "system_prompt",
   "*.password",
   "*.secret",
   "*.token",
@@ -30,9 +56,32 @@ const redactedPaths = [
   "*.apiKey",
   "*.authorization",
   "*.cookie",
+  "*.setCookie",
+  "*.clientSecret",
+  "*.privateKey",
+  "*.databaseUrl",
+  "*.connectionString",
+  "*.encryptionKey",
+  "*.modelSecret",
+  "*.secretCiphertext",
+  "*.ciphertext",
+  "*.prompt",
+  "*.systemPrompt",
+  "*.api_key",
+  "*.access_token",
+  "*.refresh_token",
+  "*.client_secret",
+  "*.private_key",
+  "*.database_url",
+  "*.connection_string",
+  "*.encryption_key",
+  "*.model_secret",
+  "*.secret_ciphertext",
+  "*.system_prompt",
   "headers.authorization",
   "headers.cookie",
   "headers['set-cookie']",
+  "headers.set-cookie",
   "req.headers.authorization",
   "req.headers.cookie",
   "req.headers['set-cookie']",
@@ -40,6 +89,22 @@ const redactedPaths = [
   "request.headers.cookie",
   "request.headers['set-cookie']",
 ] as const;
+
+export interface DiagnosticContext {
+  requestId?: string;
+  method?: string;
+  path?: string;
+  statusCode?: number;
+  durationMs?: number;
+  workspaceId?: string;
+  actorId?: string;
+  runId?: string;
+  jobId?: string | number;
+  documentId?: string;
+  taskIdentifier?: string;
+  outboxEventId?: string;
+  attempt?: number;
+}
 
 /**
  * 各应用由 pnpm 在自己的包目录启动。相对日志目录必须锚定仓库根，否则同一个 LOG_DIR 会悄悄
@@ -64,6 +129,33 @@ function resolveLogDirectory(directory: string): string {
     return directory;
   }
   return path.resolve(findWorkspaceRoot(process.cwd()), directory);
+}
+
+/** 查询串可能携带 ticket 或令牌，诊断日志只保留路径。 */
+export function diagnosticRequestPath(url: string): string {
+  const pathOnly = url.split("?")[0] ?? "/";
+  return pathOnly.length > 180 ? pathOnly.slice(0, 180) : pathOnly;
+}
+
+/**
+ * 只复制已审查的关联字段。调用方不得把请求体、Cookie、提示词或异常原文塞进这个对象。
+ */
+export function diagnosticFields(context: DiagnosticContext): Record<string, string | number> {
+  const fields: Record<string, string | number> = {};
+  if (context.requestId) fields.requestId = context.requestId;
+  if (context.method) fields.method = context.method;
+  if (context.path) fields.path = diagnosticRequestPath(context.path);
+  if (context.statusCode !== undefined) fields.statusCode = context.statusCode;
+  if (context.durationMs !== undefined) fields.durationMs = context.durationMs;
+  if (context.workspaceId) fields.workspaceId = context.workspaceId;
+  if (context.actorId) fields.actorId = context.actorId;
+  if (context.runId) fields.runId = context.runId;
+  if (context.jobId !== undefined) fields.jobId = context.jobId;
+  if (context.documentId) fields.documentId = context.documentId;
+  if (context.taskIdentifier) fields.taskIdentifier = context.taskIdentifier;
+  if (context.outboxEventId) fields.outboxEventId = context.outboxEventId;
+  if (context.attempt !== undefined) fields.attempt = context.attempt;
+  return fields;
 }
 
 /**
@@ -103,6 +195,15 @@ export function createServiceLogger(options: ServiceLoggerOptions): Logger {
       redact: {
         paths: [...redactedPaths],
         censor: "[REDACTED]",
+      },
+      serializers: {
+        err: (error: unknown) => safeErrorFields(error),
+        req: (request: { id?: string; method?: string; url?: string }) => ({
+          requestId: request.id,
+          method: request.method,
+          path: diagnosticRequestPath(request.url ?? "/"),
+        }),
+        res: (reply: { statusCode?: number }) => ({ statusCode: reply.statusCode }),
       },
     },
     pino.multistream(streams),

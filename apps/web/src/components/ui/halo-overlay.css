@@ -451,6 +451,56 @@
   color: var(--accent);
 }
 
+.halo-pagination {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.halo-pagination.is-inset {
+  margin: 4px 16px 16px;
+}
+.halo-pagination-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.halo-pagination-actions > button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-soft);
+}
+.halo-pagination-actions > button:disabled {
+  opacity: 0.38;
+}
+
+@media (max-width: 767px) {
+  .halo-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .halo-pagination.is-inset {
+    margin: 8px 12px 12px;
+  }
+  .halo-pagination-actions {
+    justify-content: space-between;
+  }
+}
+
 .halo-badge {
   display: inline-flex;
   min-height: 22px;

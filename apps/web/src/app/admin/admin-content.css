@@ -163,10 +163,7 @@
 }
 
 .organization-heading-actions,
-.organization-summary,
-.organization-pagination,
-.organization-pagination > div,
-.organization-page-sizes {
+.organization-summary {
   display: flex;
   align-items: center;
 }
@@ -477,43 +474,8 @@
   gap: 4px;
 }
 
-.organization-pagination {
-  min-height: 64px;
-  padding: 10px 16px;
-  justify-content: flex-end;
-  gap: 12px;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.organization-pagination > div,
-.organization-page-sizes {
-  gap: 4px;
-}
-
-.organization-pagination button {
-  display: inline-flex;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0 9px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text-soft);
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.organization-pagination button.is-active {
-  border-color: var(--halo-border);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.organization-pagination button:disabled {
-  opacity: 0.42;
+.organization-members .halo-pagination {
+  margin-top: 12px;
 }
 
 .organization-form {
@@ -553,16 +515,11 @@
   .organization-layout {
     grid-template-columns: 220px minmax(0, 1fr);
   }
-
-  .organization-page-sizes {
-    display: none;
-  }
 }
 
 @media (max-width: 760px) {
   .organization-heading,
-  .organization-toolbar,
-  .organization-pagination {
+  .organization-toolbar {
     align-items: stretch;
     flex-direction: column;
   }
@@ -660,15 +617,6 @@
 
   .organization-table td:last-child {
     text-align: start;
-  }
-
-  .organization-pagination {
-    padding: 14px 16px;
-  }
-
-  .organization-pagination > div:last-child,
-  .organization-pagination > div:last-child button {
-    width: 100%;
   }
 }
 
@@ -1188,39 +1136,8 @@ button.admin-table-row:focus-visible {
   white-space: nowrap;
 }
 
-.system-pagination {
-  display: flex;
-  min-height: 72px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 4px 16px 16px;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 12px;
-}
-.system-pagination-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.system-pagination-actions > button {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--text-soft);
-}
-.system-pagination-actions > button:disabled {
-  opacity: 0.38;
+.admin-table-panel .halo-pagination {
+  margin-top: 12px;
 }
 
 .admin-table.is-audit .admin-table-row {

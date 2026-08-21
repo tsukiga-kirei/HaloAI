@@ -1,11 +1,33 @@
+import { createServiceLogger, diagnosticFields, type ServiceLogger } from "@haloai/logger";
 import { Logger as GraphileLogger, type LogFunctionFactory, type LogLevel } from "graphile-worker";
-import type { ServiceLogger } from "@haloai/logger";
+import type { WorkerConfig } from "./config";
 
 interface GraphileLogScope {
   label?: string;
   workerId?: string;
   taskIdentifier?: string;
   jobId?: string;
+}
+
+let workerLogger: ServiceLogger | undefined;
+
+export function createWorkerLogger(
+  config: Pick<WorkerConfig, "NODE_ENV" | "LOG_LEVEL" | "LOG_DIR">,
+): ServiceLogger {
+  workerLogger = createServiceLogger({
+    service: "worker",
+    environment: config.NODE_ENV,
+    level: config.LOG_LEVEL,
+    logDirectory: config.LOG_DIR,
+  });
+  return workerLogger;
+}
+
+export function getWorkerLogger(): ServiceLogger {
+  if (!workerLogger) {
+    throw new Error("Worker 诊断日志尚未初始化");
+  }
+  return workerLogger;
 }
 
 /**
@@ -16,7 +38,13 @@ export function createGraphileLogger(logger: ServiceLogger): GraphileLogger {
   const factory: LogFunctionFactory =
     (scope: Partial<GraphileLogScope>) =>
     (level: LogLevel, message: string): void => {
-      const fields = { component: "graphile-worker", ...scope };
+      const fields = {
+        component: "graphile-worker",
+        ...diagnosticFields({
+          ...(scope.jobId ? { jobId: scope.jobId } : {}),
+          ...(scope.taskIdentifier ? { taskIdentifier: scope.taskIdentifier } : {}),
+        }),
+      };
       switch (level) {
         case "error":
           logger.error(fields, message);

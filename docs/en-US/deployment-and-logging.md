@@ -29,7 +29,9 @@ time, level, service, environment, msg
 
 When request or job context exists, logs should add correlation fields such as `requestId`, `runId`, `workspaceId`, `jobId`, and `traceId`. They must not record full request bodies, cookies, authorization headers, session tokens, database URLs, passwords, model keys, tool credentials, complete prompts, or document content.
 
-The shared logger must redact common secret field names. Exception logs keep stable error types and codes by default; additional fields require review confirming that they cannot carry tenant content or credentials. User responses continue to expose only stable error codes and request IDs.
+The shared logger must redact common secret field names in both camelCase and snake_case. Exception objects serialize only a stable error type and code, never `message` or `stack`. User responses continue to expose only stable error codes and request IDs.
+
+Request logs record `requestId`, method, path (query string stripped), status, and duration. A path `workspaceId` may be added as a correlation field. They must not record request bodies, cookies, Authorization headers, or full URL queries. Levels: health checks and high-frequency disconnects are `debug`; successful requests and lifecycle events are `info`; 4xx is `warn`; unhandled failures and persistence errors are `error`; process-ending failures are `fatal`.
 
 ## 4. Storage and rotation
 

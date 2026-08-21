@@ -13,7 +13,7 @@ import {
   type onTokenSyncPayload,
   type onUpgradePayload,
 } from "@hocuspocus/server";
-import { createServiceLogger, type ServiceLogger } from "@haloai/logger";
+import { createServiceLogger, safeErrorFields, type ServiceLogger } from "@haloai/logger";
 import { encodeStateAsUpdate } from "yjs";
 import {
   assertContextOwnsDocument,
@@ -41,10 +41,6 @@ export interface CollaborationService {
   listen(): Promise<void>;
   close(): Promise<void>;
   readonly server: Server;
-}
-
-function safeErrorName(error: unknown): string {
-  return error instanceof Error ? "adapter_error" : "unknown_failure";
 }
 
 async function withTimeout<T>(operation: Promise<T>, timeoutMs: number): Promise<T> {
@@ -131,6 +127,15 @@ export function createCollaborationService(
        */
       if (data.request.headers.origin !== config.WEB_ORIGIN) {
         data.socket.destroy();
+        logger.warn(
+          {
+            origin:
+              typeof data.request.headers.origin === "string"
+                ? data.request.headers.origin.slice(0, 180)
+                : "missing",
+          },
+          "协作连接 Origin 被拒绝",
+        );
         return Promise.reject();
       }
     },
@@ -176,6 +181,15 @@ export function createCollaborationService(
       data.connectionConfig.readOnly = authorized.readOnly;
       data.connection.readOnly = authorized.readOnly;
       data.connection.context = authorized.context;
+      logger.debug(
+        {
+          actorId: authorized.context.grant.actorId,
+          workspaceId: authorized.context.grant.workspaceId,
+          documentId: authorized.context.grant.documentId,
+          access: authorized.context.grant.access,
+        },
+        "协作文档票据已续期",
+      );
       return authorized.context;
     },
 
@@ -223,7 +237,7 @@ export function createCollaborationService(
       } catch (error) {
         logger.error(
           {
-            errorName: safeErrorName(error),
+            ...safeErrorFields(error),
             workspaceId: document.workspaceId,
             documentId: document.documentId,
           },
@@ -288,7 +302,7 @@ export function createCollaborationService(
          */
         logger.error(
           {
-            errorName: safeErrorName(error),
+            ...safeErrorFields(error),
             workspaceId: document.workspaceId,
             documentId: document.documentId,
           },
@@ -300,13 +314,12 @@ export function createCollaborationService(
 
     async onDisconnect(data: onDisconnectPayload<CollaborationConnectionContext>): Promise<void> {
       const document = parseDocumentName(data.documentName);
-      logger.info(
+      logger.debug(
         {
           workspaceId: document.workspaceId,
           documentId: document.documentId,
           actorId: data.context.grant.actorId,
           remainingClients: data.clientsCount,
-          socketId: data.socketId,
         },
         "协作文档连接已断开",
       );

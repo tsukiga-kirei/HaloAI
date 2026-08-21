@@ -29,7 +29,9 @@ time, level, service, environment, msg
 
 请求或任务上下文存在时，应增加 `requestId`、`runId`、`workspaceId`、`jobId`、`traceId` 等可关联字段，但不得记录完整请求正文、Cookie、Authorization、会话 Token、数据库 URL、密码、模型密钥、工具凭据、完整提示词或文档内容。
 
-统一 Logger 必须按字段名屏蔽常见秘密。异常日志默认只保存稳定错误类型和错误码；只有经过审查、确认不携带租户内容或凭据的字段才能追加。用户响应继续只包含稳定错误码与请求 ID。
+统一 Logger 必须按字段名屏蔽常见秘密，包括驼峰与蛇形命名。异常对象只序列化稳定错误类型和错误码，不写入 message 或 stack。用户响应继续只包含稳定错误码与请求 ID。
+
+请求日志只记录 `requestId`、方法、路径（去掉查询串）、状态码和耗时；路径上的 `workspaceId` 可作为关联字段。禁止记录请求体、Cookie、Authorization 或完整 URL 查询。级别约定：健康检查与高频断开为 `debug`，成功请求与生命周期为 `info`，4xx 为 `warn`，未处理异常与持久化失败为 `error`，进程无法继续为 `fatal`。
 
 ## 4. 保存与轮转
 
