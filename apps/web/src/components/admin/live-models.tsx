@@ -53,16 +53,8 @@ export function LiveModels({ dictionary }: { dictionary: AdminDictionary }) {
   }, [dictionary.emptyModelCatalog]);
 
   const extras = [
-    {
-      icon: <Database size={21} />,
-      title: dictionary.integrationStorage,
-      description: dictionary.integrationStorageDetail,
-    },
-    {
-      icon: <KeyRound size={21} />,
-      title: dictionary.integrationMcp,
-      description: dictionary.integrationMcpDetail,
-    },
+    { icon: <Database size={21} />, title: dictionary.integrationStorage },
+    { icon: <KeyRound size={21} />, title: dictionary.integrationMcp },
   ] as const;
 
   return (
@@ -70,7 +62,6 @@ export function LiveModels({ dictionary }: { dictionary: AdminDictionary }) {
       <AdminPageHeader
         kicker={dictionary.navGroupGovernance}
         title={dictionary.integrationsTitle}
-        description={dictionary.workspaceModelsIntro}
       />
       {loading ? (
         <p className="halo-loading-copy">{dictionary.modelsLoading}</p>
@@ -122,10 +113,7 @@ export function LiveModels({ dictionary }: { dictionary: AdminDictionary }) {
           {extras.map((item) => (
             <article className="admin-integration-row" key={item.title}>
               <span className="admin-integration-icon">{item.icon}</span>
-              <span>
-                <h2>{item.title}</h2>
-                <p>{item.description}</p>
-              </span>
+              <h2>{item.title}</h2>
               <span className="admin-status-badge is-muted">{dictionary.notConnected}</span>
             </article>
           ))}

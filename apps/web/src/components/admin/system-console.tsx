@@ -45,40 +45,20 @@ function chromeFrom(
   section: SystemSection,
   dictionary: SystemAdminDictionary,
   admin: AdminDictionary,
-): { kicker: string; title: string; description: string } {
+): { kicker: string; title: string } {
   if (section === "tenants") {
-    return {
-      kicker: admin.navGroupCatalog,
-      title: dictionary.tenantsTitle,
-      description: dictionary.tenantsDescription,
-    };
+    return { kicker: admin.navGroupCatalog, title: dictionary.tenantsTitle };
   }
   if (section === "models") {
-    return {
-      kicker: admin.navGroupCatalog,
-      title: dictionary.modelsTitle,
-      description: dictionary.modelsDescription,
-    };
+    return { kicker: admin.navGroupCatalog, title: dictionary.modelsTitle };
   }
   if (section === "health") {
-    return {
-      kicker: admin.navGroupOperations,
-      title: dictionary.healthTitle,
-      description: dictionary.healthDescription,
-    };
+    return { kicker: admin.navGroupOperations, title: dictionary.healthTitle };
   }
   if (section === "settings") {
-    return {
-      kicker: admin.navGroupOperations,
-      title: dictionary.settingsTitle,
-      description: dictionary.settingsDescription,
-    };
+    return { kicker: admin.navGroupOperations, title: dictionary.settingsTitle };
   }
-  return {
-    kicker: admin.navGroupPlatform,
-    title: dictionary.overviewTitle,
-    description: dictionary.overviewDescription,
-  };
+  return { kicker: admin.navGroupPlatform, title: dictionary.overviewTitle };
 }
 
 /**
@@ -106,11 +86,7 @@ export function SystemConsole({ children }: { children: ReactNode }) {
         const chrome = chromeFrom(section, dictionary, adminDictionary);
         return (
           <div className="system-console" ref={contentRef}>
-            <AdminPageHeader
-              kicker={chrome.kicker}
-              title={chrome.title}
-              description={chrome.description}
-            />
+            <AdminPageHeader kicker={chrome.kicker} title={chrome.title} />
             {children}
           </div>
         );

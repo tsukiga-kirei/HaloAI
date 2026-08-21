@@ -446,7 +446,6 @@ export function LiveMembers() {
       <AdminPageHeader
         kicker={dictionary.sectionGroup}
         title={dictionary.title}
-        description={dictionary.description}
         actions={
           <>
             <button
@@ -494,67 +493,82 @@ export function LiveMembers() {
       <div className="organization-layout">
         <aside className="organization-tree admin-panel">
           <div className="organization-tree-heading">
-            <div>
-              <h2>{dictionary.departments}</h2>
-              <p>{dictionary.departmentCount.replace("{count}", String(departments.length))}</p>
-            </div>
+            <h2>
+              {dictionary.departments}
+              <span>{departments.length}</span>
+            </h2>
             <button
               type="button"
+              className="icon-button tiny"
               aria-label={dictionary.addDepartment}
               onClick={() => openDepartment()}
             >
-              <Plus size={17} />
+              <Plus size={16} />
             </button>
           </div>
-          <button
-            type="button"
-            className={`organization-tree-item${selectedDepartment === null ? " is-active" : ""}`}
-            onClick={() => setSelectedDepartment(null)}
-          >
-            <UsersRound size={16} />
-            <span>{dictionary.allMembers}</span>
-            <strong>{members.length}</strong>
-          </button>
-          {roots
-            .flatMap((root) => [root, ...departments.filter((item) => item.parentId === root.id)])
-            .map((department) => (
-              <div className="organization-tree-row" key={department.id}>
-                <button
-                  type="button"
-                  className={`organization-tree-item${department.parentId ? " is-child" : ""}${selectedDepartment === department.id ? " is-active" : ""}`}
-                  onClick={() => setSelectedDepartment(department.id)}
+          <div className="organization-tree-list">
+            <div className="organization-tree-row">
+              <button
+                type="button"
+                className={`organization-tree-item${selectedDepartment === null ? " is-active" : ""}`}
+                onClick={() => setSelectedDepartment(null)}
+              >
+                <UsersRound size={16} />
+                <span>{dictionary.allMembers}</span>
+                <strong>{members.length}</strong>
+              </button>
+              <span className="organization-tree-edit-slot" aria-hidden="true" />
+            </div>
+            {roots
+              .flatMap((root) => [root, ...departments.filter((item) => item.parentId === root.id)])
+              .map((department) => (
+                <div
+                  className="organization-tree-row"
+                  key={department.id}
                 >
-                  <Building2 size={16} />
-                  <span>{department.name}</span>
-                  <strong>{department.memberCount}</strong>
-                </button>
-                <button
-                  type="button"
-                  className="organization-tree-edit"
-                  aria-label={`${dictionary.editDepartment} · ${department.name}`}
-                  onClick={() => openDepartment(department)}
-                >
-                  <Pencil size={14} />
-                </button>
-              </div>
-            ))}
-          <button
-            type="button"
-            className={`organization-tree-item${selectedDepartment === "unassigned" ? " is-active" : ""}`}
-            onClick={() => setSelectedDepartment("unassigned")}
-          >
-            <Building2 size={16} />
-            <span>{dictionary.unassigned}</span>
-            <strong>{unassignedCount}</strong>
-          </button>
+                  <button
+                    type="button"
+                    className={`organization-tree-item${selectedDepartment === department.id ? " is-active" : ""}`}
+                    aria-level={department.parentId ? 2 : 1}
+                    onClick={() => setSelectedDepartment(department.id)}
+                  >
+                    <Building2 size={16} />
+                    <span>{department.name}</span>
+                    <strong>{department.memberCount}</strong>
+                  </button>
+                  <span className="organization-tree-edit-slot">
+                    <button
+                      type="button"
+                      className="organization-tree-edit"
+                      aria-label={`${dictionary.editDepartment} · ${department.name}`}
+                      onClick={() => openDepartment(department)}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </span>
+                </div>
+              ))}
+            <div className="organization-tree-row">
+              <button
+                type="button"
+                className={`organization-tree-item${selectedDepartment === "unassigned" ? " is-active" : ""}`}
+                onClick={() => setSelectedDepartment("unassigned")}
+              >
+                <Building2 size={16} />
+                <span>{dictionary.unassigned}</span>
+                <strong>{unassignedCount}</strong>
+              </button>
+              <span className="organization-tree-edit-slot" aria-hidden="true" />
+            </div>
+          </div>
         </aside>
 
         <section className="organization-members admin-panel">
           <div className="organization-toolbar">
-            <div>
-              <h2>{dictionary.member}</h2>
-              <p>{dictionary.membersCount.replace("{count}", String(filteredMembers.length))}</p>
-            </div>
+            <h2>
+              {dictionary.member}
+              <span>{filteredMembers.length}</span>
+            </h2>
             <label className="organization-search">
               <Search size={17} />
               <input

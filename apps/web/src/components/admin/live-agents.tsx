@@ -23,7 +23,6 @@ export function LiveAgents({
       <AdminPageHeader
         kicker={dictionary.navGroupPeople}
         title={dictionary.agentsTitle}
-        description={dictionary.agentReadOnly}
         actions={
           <button
             type="button"
@@ -87,7 +86,6 @@ export function LiveAgents({
               <dt>{dictionary.agentAssignedModel}</dt>
               <dd>{dictionary.notAssigned}</dd>
             </div>
-            <p className="document-empty-copy">{dictionary.agentReadOnly}</p>
           </dl>
         ) : null}
       </HaloDialog>

@@ -28,6 +28,7 @@ import { HaloMetricCard, type HaloMetricTone } from "@/components/ui/halo-metric
 import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { labelAuditAction } from "@/lib/audit-action-i18n";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
 import { WorkspaceDocumentsView } from "./workspace-documents-view";
@@ -313,7 +314,9 @@ function ActivityView({ dictionary }: WorkspaceViewProps) {
         <ul className="workspace-activity-list">
           {events.map((event) => (
             <li key={event.id}>
-              <code>{event.action}</code>
+              <span className="admin-activity-action">
+                {labelAuditAction(event.action, locale)}
+              </span>
               <span>{event.actorName ?? event.resourceType}</span>
               <small>{formatRelativeTime(event.occurredAt, locale)}</small>
             </li>

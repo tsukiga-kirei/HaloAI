@@ -5,6 +5,7 @@ import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { labelAuditAction } from "@/lib/audit-action-i18n";
 import type { Locale } from "@/lib/i18n";
 import { AdminPageHeader } from "./admin-page-header";
 import { LiveAgents } from "./live-agents";
@@ -34,11 +35,7 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
   const events = live?.recentAudit ?? [];
   return (
     <>
-      <AdminPageHeader
-        kicker={dictionary.navGroupSpace}
-        title={dictionary.overviewTitle}
-        description={dictionary.overviewDescription}
-      />
+      <AdminPageHeader kicker={dictionary.navGroupSpace} title={dictionary.overviewTitle} />
       <section className="admin-metrics" aria-label={dictionary.overviewTitle}>
         <HaloMetricCard
           icon={<UsersRound size={20} />}
@@ -73,27 +70,19 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
       <div className="admin-overview-grid">
         <section className="admin-panel admin-governance-panel">
           <div className="admin-panel-heading">
-            <div>
-              <h2>{dictionary.governanceHealth}</h2>
-              <p>{dictionary.governanceDescription}</p>
-            </div>
+            <h2>{dictionary.governanceHealth}</h2>
           </div>
           <div className="admin-governance-list">
-            {[
-              [dictionary.identityStatus, dictionary.identityStatusDetail],
-              [dictionary.aiPolicyStatus, dictionary.aiPolicyStatusDetail],
-              [dictionary.retentionStatus, dictionary.retentionStatusDetail],
-            ].map(([label, detail]) => (
-              <div className="admin-governance-item" key={label}>
-                <span className="admin-governance-check">
-                  <Check size={15} />
-                </span>
-                <span>
+            {[dictionary.identityStatus, dictionary.aiPolicyStatus, dictionary.retentionStatus].map(
+              (label) => (
+                <div className="admin-governance-item" key={label}>
+                  <span className="admin-governance-check">
+                    <Check size={15} />
+                  </span>
                   <strong>{label}</strong>
-                  <small>{detail}</small>
-                </span>
-              </div>
-            ))}
+                </div>
+              ),
+            )}
           </div>
         </section>
 
@@ -107,7 +96,9 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
             <ul className="admin-activity-list">
               {events.map((event) => (
                 <li key={event.id}>
-                  <code>{event.action}</code>
+                  <span className="admin-activity-action">
+                    {labelAuditAction(event.action, locale)}
+                  </span>
                   <span>{event.actorName ?? dictionary.auditSystem}</span>
                   <small>{formatRelativeTime(event.occurredAt, locale)}</small>
                 </li>

@@ -57,7 +57,6 @@ export function LiveSecurity({ dictionary }: { dictionary: AdminDictionary }) {
     {
       icon: <LockKeyhole size={22} />,
       title: dictionary.securitySession,
-      description: dictionary.securitySessionDetail,
       details: snapshot
         ? [
             dictionary.securitySessionLifetime.replace("{value}", lifetime),
@@ -71,24 +70,18 @@ export function LiveSecurity({ dictionary }: { dictionary: AdminDictionary }) {
     {
       icon: <ShieldCheck size={22} />,
       title: dictionary.securityApproval,
-      description: dictionary.securityApprovalDetail,
-      details: [dictionary.securityReadOnly],
+      details: [],
     },
     {
       icon: <Database size={22} />,
       title: dictionary.securityRls,
-      description: dictionary.securityRlsDetail,
-      details: [dictionary.securityReadOnly],
+      details: [],
     },
-  ] as const;
+  ];
 
   return (
     <>
-      <AdminPageHeader
-        kicker={dictionary.navGroupGovernance}
-        title={dictionary.securityTitle}
-        description={dictionary.securityReadOnly}
-      />
+      <AdminPageHeader kicker={dictionary.navGroupGovernance} title={dictionary.securityTitle} />
       <section className="admin-security-grid">
         {items.map((item) => (
           <article className="admin-security-card" key={item.title}>
@@ -97,7 +90,6 @@ export function LiveSecurity({ dictionary }: { dictionary: AdminDictionary }) {
               <span className="admin-status-badge is-success">{dictionary.enforced}</span>
             </div>
             <h2>{item.title}</h2>
-            <p>{item.description}</p>
             {item.details.map((detail) => (
               <small key={detail} className="admin-security-meta">
                 {detail}

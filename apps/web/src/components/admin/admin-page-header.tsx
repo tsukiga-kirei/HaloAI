@@ -1,17 +1,16 @@
 import type { ReactNode } from "react";
 
 /**
- * 管理画布页头与侧栏分区对齐：kicker 是分组名，标题是当前页，说明只占一行。
+ * 管理画布页头与侧栏分区对齐：kicker 是分组名，标题是当前页。
+ * 产品介绍句不放在页头，空态和抽屉说明除外。
  */
 export function AdminPageHeader({
   kicker,
   title,
-  description,
   actions,
 }: {
   kicker: string;
   title: string;
-  description?: string;
   actions?: ReactNode;
 }) {
   return (
@@ -19,7 +18,6 @@ export function AdminPageHeader({
       <div>
         <span className="admin-page-kicker">{kicker}</span>
         <h1>{title}</h1>
-        {description ? <p>{description}</p> : null}
       </div>
       {actions ? <div className="admin-section-heading-actions">{actions}</div> : null}
     </header>

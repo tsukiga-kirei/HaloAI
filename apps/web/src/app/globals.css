@@ -165,8 +165,11 @@ button,
 a {
   -webkit-tap-highlight-color: transparent;
 }
+/* 未声明背景的按钮会走系统 buttonface 灰底，列表/树会被铺成一排灰胶囊。 */
 button {
+  appearance: none;
   border: 0;
+  background: transparent;
   cursor: pointer;
 }
 button:disabled {
@@ -472,20 +475,18 @@ a {
 .recent-room-card button {
   grid-column: 1 / -1;
   display: inline-flex;
-  min-height: 38px;
+  min-height: 32px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 6px;
   align-self: end;
-  padding: 0 10px;
-  border-radius: var(--r-control);
-  background: var(--surface-muted);
-  color: var(--text-soft);
-  font-size: 11px;
-  font-weight: 700;
+  padding: 0;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 650;
 }
 .recent-room-card button:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 .workspace-overview-split {
   display: grid;
@@ -804,6 +805,7 @@ a {
 .workspace-activity-list li:first-child {
   border-block-start: 0;
 }
+.workspace-activity-list .admin-activity-action,
 .workspace-activity-list code {
   overflow: hidden;
   color: var(--text);

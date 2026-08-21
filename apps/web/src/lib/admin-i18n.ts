@@ -33,7 +33,6 @@ export interface AdminDictionary {
   navSecurity: string;
   navAudit: string;
   overviewTitle: string;
-  overviewDescription: string;
   membersTitle: string;
   agentsTitle: string;
   integrationsTitle: string;
@@ -52,13 +51,9 @@ export interface AdminDictionary {
   availableNow: string;
   requiresReview: string;
   governanceHealth: string;
-  governanceDescription: string;
   identityStatus: string;
-  identityStatusDetail: string;
   aiPolicyStatus: string;
-  aiPolicyStatusDetail: string;
   retentionStatus: string;
-  retentionStatusDetail: string;
   recentActivity: string;
   activityMember: string;
   activityAgent: string;
@@ -181,7 +176,6 @@ export interface AdminDictionary {
   notAssigned: string;
   apiReady: string;
   apiUnavailable: string;
-  auditDescription: string;
   auditSearchPlaceholder: string;
   auditAllOutcomes: string;
   auditOutcomeSucceeded: string;
@@ -272,7 +266,6 @@ const zhCN: AdminDictionary = {
   navSecurity: "安全策略",
   navAudit: "审计记录",
   overviewTitle: "工作空间总览",
-  overviewDescription: "查看本空间的成员、部门和近期治理活动。",
   membersTitle: "成员与访问角色",
   agentsTitle: "AI 协作者",
   integrationsTitle: "本空间可用模型",
@@ -291,13 +284,9 @@ const zhCN: AdminDictionary = {
   availableNow: "运行正常",
   requiresReview: "需要负责人处理",
   governanceHealth: "治理状态",
-  governanceDescription: "关键边界都应能被团队理解，而不只是藏在技术配置中。",
   identityStatus: "成员身份",
-  identityStatusDetail: "成员身份与访问角色由服务端成员资格决定，不能在登录页自选。",
   aiPolicyStatus: "AI 发布策略",
-  aiPolicyStatusDetail: "外部写入、公开发布和权限变更默认需要人工确认。",
   retentionStatus: "保留与删除",
-  retentionStatusDetail: "删除与保留策略由服务端强制执行，不能只依赖界面开关。",
   recentActivity: "最近管理动态",
   activityMember: "林岚邀请了一位项目审阅者",
   activityAgent: "Nova 发布了版本 v4",
@@ -421,7 +410,6 @@ const zhCN: AdminDictionary = {
   notAssigned: "未分配",
   apiReady: "可用",
   apiUnavailable: "不可用",
-  auditDescription: "只追加的治理事件。导出与列表都不包含密钥、完整请求或模型原文。",
   auditSearchPlaceholder: "搜索动作、对象或执行人",
   auditAllOutcomes: "全部结果",
   auditOutcomeSucceeded: "成功",
@@ -512,7 +500,6 @@ const enUS: AdminDictionary = {
   navSecurity: "Security policy",
   navAudit: "Audit log",
   overviewTitle: "Workspace overview",
-  overviewDescription: "Review members, departments, and recent governance activity.",
   membersTitle: "Members and access roles",
   agentsTitle: "AI collaborators",
   integrationsTitle: "Models available here",
@@ -531,17 +518,9 @@ const enUS: AdminDictionary = {
   availableNow: "Operating normally",
   requiresReview: "Owner action required",
   governanceHealth: "Governance health",
-  governanceDescription:
-    "Key boundaries should be understandable to the team, not hidden in technical configuration.",
   identityStatus: "Member identity",
-  identityStatusDetail:
-    "Member identity and access roles come from server-side membership, not the sign-in form.",
   aiPolicyStatus: "AI publishing policy",
-  aiPolicyStatusDetail:
-    "External writes, public publishing, and permission changes require human confirmation by default.",
   retentionStatus: "Retention and deletion",
-  retentionStatusDetail:
-    "Retention and deletion are enforced on the server, not by interface toggles alone.",
   recentActivity: "Recent administration activity",
   activityMember: "Mina invited a project reviewer",
   activityAgent: "Nova published version v4",
@@ -671,8 +650,6 @@ const enUS: AdminDictionary = {
   notAssigned: "Not assigned",
   apiReady: "Ready",
   apiUnavailable: "Unavailable",
-  auditDescription:
-    "Append-only governance events. Exports and lists never include secrets, full requests, or model text.",
   auditSearchPlaceholder: "Search action, object, or actor",
   auditAllOutcomes: "All outcomes",
   auditOutcomeSucceeded: "Succeeded",

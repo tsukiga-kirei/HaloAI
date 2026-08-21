@@ -1,45 +1,22 @@
-/* 系统管理使用与工作台相同的语义令牌，以紧凑目录和一致卡片密度承载平台数据。 */
+/* 系统管理与空间管理共用 1200px 画布、同一页头与指标卡，不再另做更宽或更小的一套。 */
 .system-console {
-  width: min(100%, 1280px);
-  margin-inline: auto;
+  width: 100%;
+  max-width: 1200px;
 }
 
 .system-console .admin-section-heading {
   max-width: none;
-  margin-bottom: 16px;
-}
-
-.system-console .admin-section-heading h1 {
-  font-size: 20px;
-  font-weight: 600;
 }
 
 .system-section-stack {
   display: grid;
-  gap: 16px;
-}
-
-.system-metrics {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-
-.system-metrics .halo-metric-card {
-  min-height: 136px;
-  padding: 16px;
-}
-
-.system-metrics .halo-metric-icon {
-  width: 34px;
-  height: 34px;
-  margin-bottom: 9px;
+  gap: 22px;
 }
 
 .system-overview-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .system-preview-card,
@@ -54,7 +31,7 @@
 }
 
 .system-preview-card {
-  padding: 18px;
+  padding: 16px 18px;
 }
 
 .system-preview-card.is-status {
@@ -77,9 +54,9 @@
   gap: 8px;
   margin: 0;
   color: var(--text);
-  font-size: 14px;
-  font-weight: 720;
-  letter-spacing: -0.01em;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
 }
 
 .system-preview-card header a {
@@ -292,8 +269,9 @@
   overflow: hidden;
   margin: 0;
   color: var(--text);
-  font-size: 16px;
-  font-weight: 720;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -917,9 +895,6 @@
   .system-metrics,
   .system-auth-grid {
     grid-template-columns: 1fr;
-  }
-  .system-metrics .halo-metric-card {
-    min-height: 126px;
   }
   .system-form-grid {
     grid-template-columns: 1fr;

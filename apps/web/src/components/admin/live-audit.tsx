@@ -17,6 +17,7 @@ import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch } from "@/lib/api-client";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { labelAuditAction } from "@/lib/audit-action-i18n";
 import { useShellPreferences } from "@/lib/shell-preferences";
 
 const outcomes: ReadonlyArray<AuditOutcome | "all"> = [
@@ -146,7 +147,6 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
       <AdminPageHeader
         kicker={dictionary.navGroupGovernance}
         title={dictionary.auditTitle}
-        description={dictionary.auditDescription}
         actions={
           <button type="button" className="admin-primary-button" onClick={() => void exportLog()}>
             <ArrowUpRight size={17} />
@@ -182,8 +182,7 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
                 onClick={() => setSelected(event)}
               >
                 <span data-label={dictionary.auditEvent}>
-                  <code>{event.action}</code>
-                  <small>{event.resourceType}</small>
+                  <strong>{labelAuditAction(event.action, locale)}</strong>
                 </span>
                 <span data-label={dictionary.auditActor}>
                   {event.actorName ?? dictionary.auditSystem}
@@ -236,6 +235,7 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
             <div>
               <dt>{dictionary.auditEvent}</dt>
               <dd>
+                <strong>{labelAuditAction(selected.action, locale)}</strong>
                 <code>{selected.action}</code>
               </dd>
             </div>
