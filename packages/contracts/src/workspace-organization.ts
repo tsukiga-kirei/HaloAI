@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LocaleSchema } from "./primitives";
 import { WorkspaceMemberSchema } from "./authentication";
 
 const UuidSchema = z.uuid();
@@ -53,9 +54,42 @@ export const UpdateWorkspaceMemberOrganizationInputSchema = z
   })
   .strict();
 
+export const UpdateWorkspaceSettingsInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80),
+    timeZone: z.string().trim().min(1).max(64),
+    defaultLocale: LocaleSchema,
+  })
+  .strict();
+
+export const TransferWorkspaceOwnershipInputSchema = z
+  .object({
+    targetMembershipId: UuidSchema,
+  })
+  .strict();
+
+export const ArchiveWorkspaceInputSchema = z
+  .object({
+    reason: z.string().trim().max(500).optional(),
+  })
+  .strict();
+
+export const BatchUpdateMemberDepartmentInputSchema = z
+  .object({
+    membershipIds: z.array(UuidSchema).min(1).max(100),
+    departmentId: UuidSchema.nullable(),
+  })
+  .strict();
+
 export type WorkspaceDepartment = z.infer<typeof WorkspaceDepartmentSchema>;
 export type WorkspaceOrganizationOverview = z.infer<typeof WorkspaceOrganizationOverviewSchema>;
 export type SaveWorkspaceDepartmentInput = z.infer<typeof SaveWorkspaceDepartmentInputSchema>;
 export type UpdateWorkspaceMemberOrganizationInput = z.infer<
   typeof UpdateWorkspaceMemberOrganizationInputSchema
+>;
+export type UpdateWorkspaceSettingsInput = z.infer<typeof UpdateWorkspaceSettingsInputSchema>;
+export type TransferWorkspaceOwnershipInput = z.infer<typeof TransferWorkspaceOwnershipInputSchema>;
+export type ArchiveWorkspaceInput = z.infer<typeof ArchiveWorkspaceInputSchema>;
+export type BatchUpdateMemberDepartmentInput = z.infer<
+  typeof BatchUpdateMemberDepartmentInputSchema
 >;

@@ -3,6 +3,7 @@ import type { Capability } from "@haloai/core";
 export const adminSections = [
   "overview",
   "members",
+  "roles",
   "agents",
   "integrations",
   "security",
@@ -14,6 +15,7 @@ export type AdminSection = (typeof adminSections)[number];
 const sectionCapabilities: Record<AdminSection, Capability> = {
   overview: "workspace.manage",
   members: "member.manage",
+  roles: "workspace.manage",
   agents: "agent.profile.create",
   integrations: "workspace.manage",
   security: "workspace.security.manage",

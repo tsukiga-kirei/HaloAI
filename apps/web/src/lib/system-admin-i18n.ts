@@ -119,6 +119,49 @@ export interface SystemAdminDictionary {
   simplifiedChinese: string;
   english: string;
   formatLabels: Record<PlatformModelApiFormat, string>;
+  administratorsTitle: string;
+  administratorsTab: string;
+  addAdministrator: string;
+  administratorAdded: string;
+  administratorStatusUpdated: string;
+  adminEmail: string;
+  adminName: string;
+  adminStatus: string;
+  adminActions: string;
+  suspendAdmin: string;
+  restoreAdmin: string;
+  tenantQuota: string;
+  tenantQuotaTitle: string;
+  maxMembers: string;
+  maxStorage: string;
+  maxMonthlyBudget: string;
+  quotaSaved: string;
+  detailedHealthTitle: string;
+  databaseStatus: string;
+  dbLatency: string;
+  connectionPool: string;
+  redisStatus: string;
+  redisLatency: string;
+  workerStatus: string;
+  activeJobs: string;
+  storageStatus: string;
+  storageWritable: string;
+  healthy: string;
+  degraded: string;
+  unhealthy: string;
+  announcementsTitle: string;
+  announcementsTab: string;
+  createAnnouncement: string;
+  announcementTitle: string;
+  announcementContent: string;
+  announcementLevel: string;
+  announcementActive: string;
+  announcementCreated: string;
+  announcementDeleted: string;
+  deleteAnnouncement: string;
+  levelInfo: string;
+  levelWarning: string;
+  levelCritical: string;
 }
 
 const zhCN: SystemAdminDictionary = {
@@ -245,6 +288,49 @@ const zhCN: SystemAdminDictionary = {
     anthropic_messages: "Anthropic Messages",
     google_generate_content: "Google Generate Content",
   },
+  administratorsTitle: "平台管理员",
+  administratorsTab: "管理员",
+  addAdministrator: "添加管理员",
+  administratorAdded: "平台管理员已添加",
+  administratorStatusUpdated: "管理员状态已更新",
+  adminEmail: "管理员邮箱",
+  adminName: "姓名",
+  adminStatus: "状态",
+  adminActions: "操作",
+  suspendAdmin: "停用",
+  restoreAdmin: "启用",
+  tenantQuota: "资源配额",
+  tenantQuotaTitle: "租户资源配额",
+  maxMembers: "最大成员数",
+  maxStorage: "存储空间上限 (字节)",
+  maxMonthlyBudget: "月度预算上限 (微美分)",
+  quotaSaved: "配额设置已保存",
+  detailedHealthTitle: "深度基础设施监控",
+  databaseStatus: "数据库连接状态",
+  dbLatency: "数据库响应延迟",
+  connectionPool: "连接池连接数",
+  redisStatus: "Redis 缓存状态",
+  redisLatency: "Redis 响应延迟",
+  workerStatus: "异步任务 Worker 状态",
+  activeJobs: "活跃任务数",
+  storageStatus: "对象存储状态",
+  storageWritable: "可写入性",
+  healthy: "健康正常",
+  degraded: "性能降级",
+  unhealthy: "异常故障",
+  announcementsTitle: "系统公告与维护通知",
+  announcementsTab: "公告通知",
+  createAnnouncement: "发布新公告",
+  announcementTitle: "公告标题",
+  announcementContent: "公告内容",
+  announcementLevel: "重要等级",
+  announcementActive: "是否立即展示",
+  announcementCreated: "系统公告已发布",
+  announcementDeleted: "系统公告已删除",
+  deleteAnnouncement: "删除公告",
+  levelInfo: "普通通知",
+  levelWarning: "维护预警",
+  levelCritical: "紧急故障",
 };
 
 const enUS: SystemAdminDictionary = {
@@ -375,6 +461,49 @@ const enUS: SystemAdminDictionary = {
     anthropic_messages: "Anthropic Messages",
     google_generate_content: "Google Generate Content",
   },
+  administratorsTitle: "Platform Administrators",
+  administratorsTab: "Administrators",
+  addAdministrator: "Add Administrator",
+  administratorAdded: "Administrator added",
+  administratorStatusUpdated: "Administrator status updated",
+  adminEmail: "Admin email",
+  adminName: "Name",
+  adminStatus: "Status",
+  adminActions: "Actions",
+  suspendAdmin: "Suspend",
+  restoreAdmin: "Activate",
+  tenantQuota: "Resource Quota",
+  tenantQuotaTitle: "Tenant Resource Quota",
+  maxMembers: "Max members",
+  maxStorage: "Max storage (bytes)",
+  maxMonthlyBudget: "Monthly budget cap (microcents)",
+  quotaSaved: "Quota saved",
+  detailedHealthTitle: "Deep Infrastructure Health",
+  databaseStatus: "Database connection",
+  dbLatency: "Database latency",
+  connectionPool: "Connection pool",
+  redisStatus: "Redis cache status",
+  redisLatency: "Redis latency",
+  workerStatus: "Background worker status",
+  activeJobs: "Active jobs",
+  storageStatus: "Object storage status",
+  storageWritable: "Writable",
+  healthy: "Healthy",
+  degraded: "Degraded",
+  unhealthy: "Unhealthy",
+  announcementsTitle: "System Announcements",
+  announcementsTab: "Announcements",
+  createAnnouncement: "Post Announcement",
+  announcementTitle: "Title",
+  announcementContent: "Content",
+  announcementLevel: "Severity level",
+  announcementActive: "Active now",
+  announcementCreated: "Announcement posted",
+  announcementDeleted: "Announcement deleted",
+  deleteAnnouncement: "Delete",
+  levelInfo: "Info",
+  levelWarning: "Warning",
+  levelCritical: "Critical",
 };
 
 export const systemAdminDictionaries: Record<Locale, SystemAdminDictionary> = {

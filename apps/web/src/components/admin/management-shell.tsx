@@ -219,9 +219,12 @@ export function ManagementShell({
           title: dictionary.accountAndSecurity,
           description: dictionary.accountDescription,
           tabProfile: dictionary.accountTabProfile,
+          tabSecurity: dictionary.accountTabSecurity,
           tabSession: dictionary.accountTabSession,
           email: dictionary.accountEmail,
           displayName: dictionary.accountDisplayName,
+          language: dictionary.accountLanguage,
+          timeZone: dictionary.accountTimeZone,
           workspace: dictionary.accountWorkspace,
           role: dictionary.accountRole,
           sessionProtected: dictionary.accountSessionProtected,
@@ -230,15 +233,38 @@ export function ManagementShell({
           nameRequired: dictionary.accountNameRequired,
           save: dictionary.save,
           cancel: dictionary.cancel,
+          currentPassword: dictionary.accountCurrentPassword,
+          newPassword: dictionary.accountNewPassword,
+          confirmPassword: dictionary.accountConfirmPassword,
+          passwordLengthHint: dictionary.accountPasswordLengthHint,
+          passwordMismatch: dictionary.accountPasswordMismatch,
+          passwordChanged: dictionary.accountPasswordChanged,
+          passwordChangeError: dictionary.accountPasswordChangeError,
+          currentPasswordRequired: dictionary.accountCurrentPasswordRequired,
+          newPasswordRequired: dictionary.accountNewPasswordRequired,
+          changePasswordButton: dictionary.accountChangePasswordButton,
           owner: dictionary.accessOwner,
           admin: dictionary.accessAdmin,
           member: dictionary.accessMember,
           guest: dictionary.accessGuest,
         }}
-        onSaved={(name) => {
+        onSaved={(name, newLocale, newTimeZone) => {
           setSession((current) =>
-            current ? { ...current, user: { ...current.user, name } } : current,
+            current
+              ? {
+                  ...current,
+                  user: {
+                    ...current.user,
+                    name,
+                    locale: newLocale ?? current.user.locale,
+                    timeZone: newTimeZone ?? current.user.timeZone,
+                  },
+                }
+              : current,
           );
+          if (newLocale && newLocale !== locale) {
+            setLocale(newLocale);
+          }
         }}
       />
     </div>

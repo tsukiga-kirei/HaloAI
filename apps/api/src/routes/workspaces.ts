@@ -1,10 +1,14 @@
 import {
   AcceptWorkspaceInvitationInputSchema,
+  ArchiveWorkspaceInputSchema,
+  BatchUpdateMemberDepartmentInputSchema,
   CreateWorkspaceInputSchema,
   CreateWorkspaceInvitationInputSchema,
   SaveWorkspaceDepartmentInputSchema,
+  TransferWorkspaceOwnershipInputSchema,
   UpdateWorkspaceMemberOrganizationInputSchema,
   UpdateWorkspaceMemberRoleInputSchema,
+  UpdateWorkspaceSettingsInputSchema,
 } from "@haloai/contracts";
 import { WorkspaceOnboardingRepository } from "@haloai/db";
 import type { FastifyInstance } from "fastify";
@@ -28,15 +32,19 @@ export async function registerWorkspaceRoutes(
 ): Promise<void> {
   app.get("/v1/session", async (request, reply) => {
     const session = await requireSession(auth, request);
-    const workspaces = await repository.listWorkspacesForUser(session.user.id);
+    const [workspaces, profile] = await Promise.all([
+      repository.listWorkspacesForUser(session.user.id),
+      repository.getUserProfile(session.user.id),
+    ]);
     reply.header("cache-control", "no-store");
     return {
       user: {
         id: session.user.id,
-        name: session.user.name,
-        email: session.user.email,
+        name: profile?.name ?? session.user.name,
+        email: profile?.email ?? session.user.email,
         image: session.user.image ?? null,
-        locale: "zh-CN",
+        locale: profile?.preferredLocale ?? "zh-CN",
+        timeZone: profile?.timeZone ?? "Asia/Shanghai",
       },
       workspaces,
     };
@@ -197,6 +205,97 @@ export async function registerWorkspaceRoutes(
         principal,
         membershipId: request.params.membershipId,
         role: input.role,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.patch<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/settings",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const input = UpdateWorkspaceSettingsInputSchema.parse(request.body);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      await repository.updateWorkspaceSettings({
+        principal,
+        name: input.name,
+        timeZone: input.timeZone,
+        defaultLocale: input.defaultLocale,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/transfer-ownership",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const input = TransferWorkspaceOwnershipInputSchema.parse(request.body);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      await repository.transferWorkspaceOwnership({
+        principal,
+        targetMembershipId: input.targetMembershipId,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/archive",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const input = ArchiveWorkspaceInputSchema.parse(request.body ?? {});
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      await repository.archiveWorkspace({
+        principal,
+        reason: input.reason,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/unarchive",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      await repository.unarchiveWorkspace({
+        principal,
+        requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.patch<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/members/batch-department",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const input = BatchUpdateMemberDepartmentInputSchema.parse(request.body);
+      const principal = await repository.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      await repository.batchUpdateMemberDepartment({
+        principal,
+        membershipIds: input.membershipIds,
+        departmentId: input.departmentId,
         requestId: request.id,
       });
       return reply.status(204).send();

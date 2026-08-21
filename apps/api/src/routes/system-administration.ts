@@ -1,12 +1,16 @@
 import { randomUUID } from "node:crypto";
 import {
   AcceptSystemTenantInvitationInputSchema,
+  AddSystemAdministratorInputSchema,
+  CreateSystemAnnouncementInputSchema,
   CreateSystemTenantInputSchema,
   SaveSystemModelInputSchema,
   SetSystemModelAllocationInputSchema,
   SystemPageQuerySchema,
+  UpdateSystemAdministratorStatusInputSchema,
   UpdateSystemSettingsInputSchema,
   UpdateSystemTenantInputSchema,
+  UpdateSystemTenantQuotaInputSchema,
 } from "@haloai/contracts";
 import type { SystemAdministrationRepository } from "@haloai/db";
 import type { FastifyInstance, FastifyRequest } from "fastify";
@@ -255,4 +259,113 @@ export async function registerSystemAdministrationRoutes(
       return reply.status(204).send();
     },
   );
+
+  // === 平台管理员管理 ===
+  app.get("/v1/system/administrators", async (request, reply) => {
+    await requireSystemAdministrator(auth, repository, request);
+    reply.header("cache-control", "no-store");
+    const admins = await repository.listAdministrators();
+    return {
+      items: admins.map((admin) => ({
+        ...admin,
+        createdAt: admin.createdAt.toISOString(),
+        lastActiveAt: admin.lastActiveAt ? admin.lastActiveAt.toISOString() : null,
+      })),
+    };
+  });
+
+  app.post("/v1/system/administrators", async (request, reply) => {
+    await requireSystemAdministrator(auth, repository, request);
+    const input = AddSystemAdministratorInputSchema.parse(request.body);
+    const admin = await repository.addAdministrator({ email: input.email });
+    return reply.status(201).send({ administrator: admin });
+  });
+
+  app.patch<{ Params: { userId: string } }>(
+    "/v1/system/administrators/:userId/status",
+    async (request, reply) => {
+      await requireSystemAdministrator(auth, repository, request);
+      const input = UpdateSystemAdministratorStatusInputSchema.parse(request.body);
+      await repository.updateAdministratorStatus({
+        targetUserId: request.params.userId,
+        status: input.status,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  // === 租户配额 ===
+  app.get<{ Params: { tenantId: string } }>(
+    "/v1/system/tenants/:tenantId/quota",
+    async (request, reply) => {
+      await requireSystemAdministrator(auth, repository, request);
+      reply.header("cache-control", "no-store");
+      const quota = await repository.getTenantQuota(request.params.tenantId);
+      return { quota };
+    },
+  );
+
+  app.patch<{ Params: { tenantId: string } }>(
+    "/v1/system/tenants/:tenantId/quota",
+    async (request, reply) => {
+      await requireSystemAdministrator(auth, repository, request);
+      const input = UpdateSystemTenantQuotaInputSchema.parse(request.body);
+      const quota = await repository.updateTenantQuota({
+        tenantId: request.params.tenantId,
+        ...input,
+      });
+      return { quota };
+    },
+  );
+
+  // === 深度健康检查 ===
+  app.get("/v1/system/health/detailed", async (request, reply) => {
+    await requireSystemAdministrator(auth, repository, request);
+    reply.header("cache-control", "no-store");
+    const health = await repository.getDetailedHealth();
+    return {
+      ...health,
+      timestamp: health.timestamp.toISOString(),
+    };
+  });
+
+  // === 系统公告与维护通知 ===
+  app.get("/v1/system/announcements", async (request, reply) => {
+    reply.header("cache-control", "no-store");
+    const list = await repository.listAnnouncements();
+    return {
+      items: list.map((item) => ({
+        ...item,
+        startsAt: item.startsAt.toISOString(),
+        expiresAt: item.expiresAt ? item.expiresAt.toISOString() : null,
+        createdAt: item.createdAt.toISOString(),
+      })),
+    };
+  });
+
+  app.post("/v1/system/announcements", async (request, reply) => {
+    await requireSystemAdministrator(auth, repository, request);
+    const input = CreateSystemAnnouncementInputSchema.parse(request.body);
+    const created = await repository.createAnnouncement({
+      title: input.title,
+      content: input.content,
+      level: input.level,
+      active: input.active,
+      expiresAt: input.expiresAt,
+    });
+    return reply.status(201).send({
+      announcement: {
+        ...created,
+        startsAt: created.startsAt.toISOString(),
+        expiresAt: created.expiresAt ? created.expiresAt.toISOString() : null,
+        createdAt: created.createdAt.toISOString(),
+      },
+    });
+  });
+
+  app.delete<{ Params: { id: string } }>("/v1/system/announcements/:id", async (request, reply) => {
+    await requireSystemAdministrator(auth, repository, request);
+    await repository.deleteAnnouncement(request.params.id);
+    return reply.status(204).send();
+  });
 }

@@ -1,6 +1,14 @@
 "use client";
 
-import { Bot, Boxes, LayoutDashboard, ScrollText, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  Bot,
+  Boxes,
+  LayoutDashboard,
+  ScrollText,
+  Shield,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
@@ -18,6 +26,7 @@ const navigation: ReadonlyArray<ManagementNavSection> = [
     titleKey: "navGroupPeople",
     items: [
       { href: "/admin/members" as Route, icon: UsersRound, labelKey: "navMembers" },
+      { href: "/admin/roles" as Route, icon: Shield, labelKey: "navRoles" },
       { href: "/admin/agents" as Route, icon: Bot, labelKey: "navAgents" },
     ],
   },

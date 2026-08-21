@@ -49,9 +49,36 @@ An AI actor MUST NOT obtain, copy, simulate, or refresh a human login session. A
 | Auditor         | Read-only audit and compliance export; content access requires a separate grant                                                                         |
 | Agent Member    | Messaging and artifact actions within an explicitly delegated scope                                                                                     |
 
-Built-in roles are templates over capabilities. Custom roles MUST be capability sets, not page paths or UI menu definitions. A principal MUST NOT assign capabilities it does not hold, except through a separately authorized administrative workflow.
+Built-in roles are templates over capabilities. Custom roles MUST be composed of sets drawn from the 21 granular capabilities, not page paths or UI menu definitions. A principal MUST NOT assign capabilities it does not hold, except through a separately authorized administrative workflow.
 
-Platform operations are a separate identity domain from these workspace roles. System administrators maintain the full model catalog, provider secret references, and which models are allocated to which tenants. A Workspace Owner is never treated as a system administrator because they own a tenant.
+### 2.3 Capability Matrix Definition
+
+| Category    | Capability Key (`CapabilityKey`) | Purpose and Boundary                                                        |
+| ----------- | -------------------------------- | --------------------------------------------------------------------------- |
+| Workspace   | `workspace.read`                 | View basic workspace information, members, and available capabilities       |
+| Workspace   | `workspace.manage`               | Manage workspace settings, organizational structure, and roles              |
+| Workspace   | `workspace.security.manage`      | Manage session security policies, access controls, and sensitive parameters |
+| Member      | `member.invite`                  | Invite new members to join the workspace                                    |
+| Member      | `member.manage`                  | Adjust member roles, departments, and activation status                     |
+| AI          | `agent.profile.read`             | View AI collaborator configurations, personas, and authorization bounds     |
+| AI          | `agent.profile.create`           | Create or edit AI collaborator configurations                               |
+| AI          | `agent.profile.publish`          | Publish AI collaborators to the workspace catalog                           |
+| AI          | `agent.invoke`                   | Invoke AI collaborators to run tasks in rooms or workflows                  |
+| Room        | `room.read`                      | View room discussions and collaboration history                             |
+| Room        | `room.manage`                    | Create, modify, or archive collaboration rooms                              |
+| Room        | `room.message.create`            | Post messages and discussions in collaboration rooms                        |
+| Document    | `document.read`                  | View collaborative documents and knowledge base content                     |
+| Document    | `document.edit`                  | Collaboratively edit document body content                                  |
+| Document    | `document.proposal.create`       | Submit change proposals for protected documents                             |
+| Document    | `document.proposal.review`       | Review and merge document change proposals                                  |
+| Document    | `document.publish`               | Publish documents publicly or export to external formats                    |
+| Integration | `integration.tool.read.execute`  | Execute read-only queries and information retrieval tools                   |
+| Integration | `integration.tool.write.execute` | Execute state-changing tools and external API mutations                     |
+| Security    | `approval.request`               | Submit approval requests for high-risk or sensitive actions                 |
+| Security    | `approval.review`                | Review and approve high-risk operations (human-only)                        |
+| Security    | `audit.read`                     | View immutable workspace-wide audit logs                                    |
+
+Platform operations are a separate identity domain from these workspace roles. System administrators maintain the full model catalog, provider secret references, tenant resource quotas (max members, storage bytes, and monthly microcent budgets), and platform maintenance announcements. A Workspace Owner is never treated as a system administrator because they own a tenant.
 
 ## 3. Resource and action matrix
 

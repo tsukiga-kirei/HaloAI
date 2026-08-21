@@ -85,9 +85,12 @@ export interface Dictionary {
   accountAndSecurity: string;
   accountDescription: string;
   accountTabProfile: string;
+  accountTabSecurity: string;
   accountTabSession: string;
   accountEmail: string;
   accountDisplayName: string;
+  accountLanguage: string;
+  accountTimeZone: string;
   accountWorkspace: string;
   accountRole: string;
   accountSessionProtected: string;
@@ -95,6 +98,16 @@ export interface Dictionary {
   accountSaveError: string;
   accountNameRequired: string;
   accountSave: string;
+  accountCurrentPassword: string;
+  accountNewPassword: string;
+  accountConfirmPassword: string;
+  accountPasswordLengthHint: string;
+  accountPasswordMismatch: string;
+  accountPasswordChanged: string;
+  accountPasswordChangeError: string;
+  accountCurrentPasswordRequired: string;
+  accountNewPasswordRequired: string;
+  accountChangePasswordButton: string;
   accessOwner: string;
   accessAdmin: string;
   accessMember: string;
@@ -329,19 +342,32 @@ export const dictionaries: Record<Locale, Dictionary> = {
     memberInviteFailed: "无法发送邀请，请确认邮箱和权限后重试。",
     noAllocatedModels: "本空间还没有可分配的模型。",
     accountAndSecurity: "账户与安全",
-    accountDescription: "更新显示名。邮箱与当前会话身份只读。",
-    accountTabProfile: "资料",
+    accountDescription: "更新个人资料与安全设置。邮箱与当前会话身份只读。",
+    accountTabProfile: "个人资料",
+    accountTabSecurity: "安全与密码",
     accountTabSession: "会话",
     accountEmail: "登录邮箱",
     accountDisplayName: "显示名称",
+    accountLanguage: "界面语言",
+    accountTimeZone: "时区",
     accountWorkspace: "当前工作区",
     accountRole: "当前访问角色",
     accountSessionProtected:
       "会话使用 HttpOnly Cookie，退出登录后立即失效，不会保存在浏览器存储里。",
-    accountSaved: "显示名称已更新。",
-    accountSaveError: "无法更新显示名称，请稍后重试。",
+    accountSaved: "个人资料已保存。",
+    accountSaveError: "无法保存个人资料，请稍后重试。",
     accountNameRequired: "请输入显示名称。",
     accountSave: "保存",
+    accountCurrentPassword: "当前密码",
+    accountNewPassword: "新密码",
+    accountConfirmPassword: "确认新密码",
+    accountPasswordLengthHint: "密码至少包含 10 个字符",
+    accountPasswordMismatch: "两次输入的新密码不一致",
+    accountPasswordChanged: "密码已成功修改",
+    accountPasswordChangeError: "密码修改失败，请检查当前密码是否正确",
+    accountCurrentPasswordRequired: "请输入当前密码",
+    accountNewPasswordRequired: "请输入新密码",
+    accountChangePasswordButton: "更新密码",
     accessOwner: "所有者",
     accessAdmin: "管理员",
     accessMember: "成员",
@@ -580,19 +606,33 @@ export const dictionaries: Record<Locale, Dictionary> = {
     memberInviteFailed: "Could not send the invitation. Check the email and your permissions.",
     noAllocatedModels: "No models have been allocated to this workspace yet.",
     accountAndSecurity: "Account and security",
-    accountDescription: "Update your display name. Email and session identity stay read-only.",
+    accountDescription:
+      "Update your profile and security settings. Email and session identity stay read-only.",
     accountTabProfile: "Profile",
+    accountTabSecurity: "Security",
     accountTabSession: "Session",
     accountEmail: "Sign-in email",
     accountDisplayName: "Display name",
+    accountLanguage: "Language",
+    accountTimeZone: "Time zone",
     accountWorkspace: "Current workspace",
     accountRole: "Current access role",
     accountSessionProtected:
       "The session uses an HttpOnly cookie. It is revoked on sign-out and is never stored in browser storage.",
-    accountSaved: "Display name updated.",
-    accountSaveError: "Could not update the display name. Try again shortly.",
+    accountSaved: "Profile saved.",
+    accountSaveError: "Could not save profile settings. Try again shortly.",
     accountNameRequired: "Enter a display name.",
     accountSave: "Save",
+    accountCurrentPassword: "Current password",
+    accountNewPassword: "New password",
+    accountConfirmPassword: "Confirm new password",
+    accountPasswordLengthHint: "Password must be at least 10 characters",
+    accountPasswordMismatch: "New passwords do not match",
+    accountPasswordChanged: "Password changed successfully",
+    accountPasswordChangeError: "Failed to change password. Please verify your current password.",
+    accountCurrentPasswordRequired: "Current password is required",
+    accountNewPasswordRequired: "New password is required",
+    accountChangePasswordButton: "Update password",
     accessOwner: "Owner",
     accessAdmin: "Admin",
     accessMember: "Member",

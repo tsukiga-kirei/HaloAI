@@ -8,6 +8,7 @@ const UuidSchema = z.uuid();
 export const WorkspaceAdminSectionSchema = z.enum([
   "overview",
   "members",
+  "roles",
   "agents",
   "integrations",
   "security",
@@ -25,6 +26,87 @@ export const WorkspaceAdminAccessResponseSchema = z
     allowed: z.literal(true),
     role: WorkspaceRoleSchema,
     workspaceName: z.string().min(1).max(200),
+  })
+  .strict();
+
+export const CapabilityKeySchema = z.enum([
+  "workspace.read",
+  "workspace.manage",
+  "workspace.security.manage",
+  "member.invite",
+  "member.manage",
+  "agent.profile.read",
+  "agent.profile.create",
+  "agent.profile.publish",
+  "agent.invoke",
+  "room.read",
+  "room.manage",
+  "room.message.create",
+  "document.read",
+  "document.edit",
+  "document.proposal.create",
+  "document.proposal.review",
+  "document.publish",
+  "integration.tool.read.execute",
+  "integration.tool.write.execute",
+  "approval.request",
+  "approval.review",
+  "audit.read",
+]);
+
+export const CustomRoleSchema = z
+  .object({
+    id: UuidSchema,
+    workspaceId: UuidSchema,
+    key: z.string().min(1).max(128),
+    name: z.string().min(1).max(120),
+    description: z.string().max(500),
+    status: z.enum(["active", "archived"]),
+    isBuiltIn: z.boolean(),
+    capabilities: z.array(CapabilityKeySchema),
+    createdAt: z.iso.datetime({ offset: true }),
+    updatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const CustomRoleListSchema = z
+  .object({
+    items: z.array(CustomRoleSchema),
+  })
+  .strict();
+
+export const CreateCustomRoleInputSchema = z
+  .object({
+    key: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(/^[a-z0-9_-]+$/i, "标识只能包含字母、数字、短横线与下划线"),
+    name: z.string().trim().min(1).max(120),
+    description: z.string().trim().max(500).default(""),
+    capabilities: z.array(CapabilityKeySchema).min(1),
+  })
+  .strict();
+
+export const UpdateCustomRoleInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    description: z.string().trim().max(500).optional(),
+    capabilities: z.array(CapabilityKeySchema).min(1).optional(),
+    status: z.enum(["active", "archived"]).optional(),
+  })
+  .strict();
+
+export const AssignMemberRolesInputSchema = z
+  .object({
+    roleIds: z.array(UuidSchema),
+  })
+  .strict();
+
+export const MemberRolesResponseSchema = z
+  .object({
+    roleIds: z.array(UuidSchema),
   })
   .strict();
 
@@ -114,11 +196,28 @@ export const UpdateWorkspaceMemberStatusInputSchema = z
 export const UpdateSessionProfileInputSchema = z
   .object({
     name: z.string().trim().min(1).max(120),
+    preferredLocale: LocaleSchema.optional(),
+    timeZone: z.string().trim().min(1).max(64).optional(),
+  })
+  .strict();
+
+export const ChangePasswordInputSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: z.string().min(10).max(128),
+    revokeOtherSessions: z.boolean().default(true),
   })
   .strict();
 
 export type WorkspaceAdminSection = z.infer<typeof WorkspaceAdminSectionSchema>;
 export type WorkspaceAdminAccessResponse = z.infer<typeof WorkspaceAdminAccessResponseSchema>;
+export type CapabilityKey = z.infer<typeof CapabilityKeySchema>;
+export type CustomRole = z.infer<typeof CustomRoleSchema>;
+export type CustomRoleList = z.infer<typeof CustomRoleListSchema>;
+export type CreateCustomRoleInput = z.infer<typeof CreateCustomRoleInputSchema>;
+export type UpdateCustomRoleInput = z.infer<typeof UpdateCustomRoleInputSchema>;
+export type AssignMemberRolesInput = z.infer<typeof AssignMemberRolesInputSchema>;
+export type MemberRolesResponse = z.infer<typeof MemberRolesResponseSchema>;
 export type AuditOutcome = z.infer<typeof AuditOutcomeSchema>;
 export type WorkspaceAuditQuery = z.infer<typeof WorkspaceAuditQuerySchema>;
 export type WorkspaceAuditEvent = z.infer<typeof WorkspaceAuditEventSchema>;
@@ -130,3 +229,4 @@ export type UpdateWorkspaceMemberStatusInput = z.infer<
   typeof UpdateWorkspaceMemberStatusInputSchema
 >;
 export type UpdateSessionProfileInput = z.infer<typeof UpdateSessionProfileInputSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordInputSchema>;

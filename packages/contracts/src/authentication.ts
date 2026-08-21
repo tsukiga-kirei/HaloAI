@@ -13,6 +13,7 @@ export const AuthenticatedUserSchema = z
     email: z.email().max(320),
     image: z.url().max(2048).nullable().optional(),
     locale: LocaleSchema.default("zh-CN"),
+    timeZone: z.string().max(64).default("Asia/Shanghai"),
   })
   .strict();
 

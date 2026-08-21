@@ -230,6 +230,100 @@ export const UpdateSystemSettingsInputSchema = z
     }
   });
 
+export const SystemAdministratorSchema = z
+  .object({
+    id: UuidSchema,
+    userId: UuidSchema,
+    name: z.string().min(1).max(120),
+    email: z.email().max(320),
+    status: z.enum(["active", "suspended"]),
+    createdAt: z.iso.datetime({ offset: true }),
+    lastActiveAt: z.iso.datetime({ offset: true }).nullable(),
+  })
+  .strict();
+
+export const AddSystemAdministratorInputSchema = z
+  .object({
+    email: z.string().trim().toLowerCase().max(320).pipe(z.email()),
+  })
+  .strict();
+
+export const UpdateSystemAdministratorStatusInputSchema = z
+  .object({
+    status: z.enum(["active", "suspended"]),
+  })
+  .strict();
+
+export const SystemTenantQuotaSchema = z
+  .object({
+    maxMembers: z.number().int().min(1).max(100_000).default(500),
+    maxStorageBytes: z
+      .number()
+      .int()
+      .min(0)
+      .default(10 * 1024 * 1024 * 1024),
+    maxMonthlyBudgetMicrocents: z.number().int().min(0).default(100_000_000),
+  })
+  .strict();
+
+export const UpdateSystemTenantQuotaInputSchema = z
+  .object({
+    maxMembers: z.number().int().min(1).max(100_000),
+    maxStorageBytes: z.number().int().min(0),
+    maxMonthlyBudgetMicrocents: z.number().int().min(0),
+  })
+  .strict();
+
+export const SystemDetailedHealthSchema = z
+  .object({
+    database: z.object({
+      status: z.enum(["healthy", "degraded", "unhealthy"]),
+      latencyMs: z.number().min(0),
+      connectionPool: z.object({
+        active: z.number().int().min(0),
+        idle: z.number().int().min(0),
+        total: z.number().int().min(0),
+      }),
+    }),
+    redis: z.object({
+      status: z.enum(["healthy", "unhealthy"]),
+      latencyMs: z.number().min(0),
+    }),
+    worker: z.object({
+      status: z.enum(["healthy", "unhealthy"]),
+      activeJobs: z.number().int().min(0),
+    }),
+    storage: z.object({
+      status: z.enum(["healthy", "unhealthy"]),
+      writable: z.boolean(),
+    }),
+    timestamp: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const SystemAnnouncementSchema = z
+  .object({
+    id: UuidSchema,
+    title: z.string().min(1).max(200),
+    content: z.string().min(1).max(2000),
+    level: z.enum(["info", "warning", "critical"]),
+    active: z.boolean(),
+    startsAt: z.iso.datetime({ offset: true }),
+    expiresAt: z.iso.datetime({ offset: true }).nullable(),
+    createdAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const CreateSystemAnnouncementInputSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(2000),
+    level: z.enum(["info", "warning", "critical"]).default("info"),
+    active: z.boolean().default(true),
+    expiresAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  })
+  .strict();
+
 export type SystemPageQuery = z.infer<typeof SystemPageQuerySchema>;
 export type SystemOverview = z.infer<typeof SystemOverviewSchema>;
 export type SystemTenant = z.infer<typeof SystemTenantSchema>;
@@ -245,3 +339,13 @@ export type SystemModel = z.infer<typeof SystemModelSchema>;
 export type SystemModelPage = z.infer<typeof SystemModelPageSchema>;
 export type SaveSystemModelInput = z.infer<typeof SaveSystemModelInputSchema>;
 export type SystemSettings = z.infer<typeof SystemSettingsSchema>;
+export type SystemAdministrator = z.infer<typeof SystemAdministratorSchema>;
+export type AddSystemAdministratorInput = z.infer<typeof AddSystemAdministratorInputSchema>;
+export type UpdateSystemAdministratorStatusInput = z.infer<
+  typeof UpdateSystemAdministratorStatusInputSchema
+>;
+export type SystemTenantQuota = z.infer<typeof SystemTenantQuotaSchema>;
+export type UpdateSystemTenantQuotaInput = z.infer<typeof UpdateSystemTenantQuotaInputSchema>;
+export type SystemDetailedHealth = z.infer<typeof SystemDetailedHealthSchema>;
+export type SystemAnnouncement = z.infer<typeof SystemAnnouncementSchema>;
+export type CreateSystemAnnouncementInput = z.infer<typeof CreateSystemAnnouncementInputSchema>;

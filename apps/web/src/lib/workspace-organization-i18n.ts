@@ -58,6 +58,7 @@ export interface WorkspaceOrganizationDictionary {
   organizationOverview: string;
   ownersCount: string;
   lastOwnerRequired: string;
+  customRoles: string;
   invited: string;
   suspended: string;
   left: string;
@@ -65,6 +66,29 @@ export interface WorkspaceOrganizationDictionary {
   suspendMember: string;
   restoreMember: string;
   memberStatusUpdated: string;
+  batchAssignDepartment: string;
+  batchAssignSelected: string;
+  batchAssignSuccess: string;
+  selectDepartment: string;
+  workspaceSettings: string;
+  workspaceSettingsDescription: string;
+  workspaceName: string;
+  defaultLanguage: string;
+  timeZone: string;
+  workspaceSettingsSaved: string;
+  dangerZone: string;
+  transferOwnership: string;
+  transferOwnershipDescription: string;
+  transferOwnershipConfirm: string;
+  transferOwnershipSuccess: string;
+  transferOwnershipTarget: string;
+  transferOwnershipWarning: string;
+  archiveWorkspace: string;
+  archiveWorkspaceDescription: string;
+  archiveWorkspaceConfirm: string;
+  archiveWorkspaceSuccess: string;
+  unarchiveWorkspace: string;
+  unarchiveWorkspaceSuccess: string;
 }
 
 const zhCN: WorkspaceOrganizationDictionary = {
@@ -125,6 +149,7 @@ const zhCN: WorkspaceOrganizationDictionary = {
   organizationOverview: "组织概览",
   ownersCount: "{count} 位所有者",
   lastOwnerRequired: "必须先指定另一位所有者，才能调整最后一位所有者。",
+  customRoles: "自定义角色",
   invited: "待接受邀请",
   suspended: "已停用",
   left: "已离开",
@@ -132,6 +157,29 @@ const zhCN: WorkspaceOrganizationDictionary = {
   suspendMember: "停用成员",
   restoreMember: "恢复成员",
   memberStatusUpdated: "成员状态已更新。",
+  batchAssignDepartment: "批量分配部门",
+  batchAssignSelected: "已选中 {count} 名成员",
+  batchAssignSuccess: "已成功批量调整成员部门。",
+  selectDepartment: "选择目标部门",
+  workspaceSettings: "工作空间设置",
+  workspaceSettingsDescription: "修改空间基本信息，管理所有权移交与归档状态。",
+  workspaceName: "工作空间名称",
+  defaultLanguage: "默认语言",
+  timeZone: "工作空间时区",
+  workspaceSettingsSaved: "工作空间设置已更新。",
+  dangerZone: "危险区域",
+  transferOwnership: "转让所有权",
+  transferOwnershipDescription: "将工作空间的所有者权限移交给另一位成员。转让后你将降级为管理员。",
+  transferOwnershipConfirm: "确认转让",
+  transferOwnershipSuccess: "所有权已成功转让。",
+  transferOwnershipTarget: "选择新的所有者",
+  transferOwnershipWarning: "所有者拥有最高管理权限。请确认目标成员能够承担所有者责任。",
+  archiveWorkspace: "归档工作空间",
+  archiveWorkspaceDescription: "归档后工作空间将进入只读状态，成员无法发送新消息或编辑文档。",
+  archiveWorkspaceConfirm: "确认归档",
+  archiveWorkspaceSuccess: "工作空间已归档。",
+  unarchiveWorkspace: "取消归档",
+  unarchiveWorkspaceSuccess: "工作空间已恢复活跃状态。",
 };
 
 const enUS: WorkspaceOrganizationDictionary = {
@@ -193,6 +241,7 @@ const enUS: WorkspaceOrganizationDictionary = {
   organizationOverview: "Organization overview",
   ownersCount: "{count} owners",
   lastOwnerRequired: "Assign another owner before changing the final owner.",
+  customRoles: "Custom Roles",
   invited: "Invitation pending",
   suspended: "Suspended",
   left: "Left",
@@ -200,6 +249,32 @@ const enUS: WorkspaceOrganizationDictionary = {
   suspendMember: "Suspend member",
   restoreMember: "Restore member",
   memberStatusUpdated: "Member status updated.",
+  batchAssignDepartment: "Batch assign department",
+  batchAssignSelected: "{count} members selected",
+  batchAssignSuccess: "Department assignments updated successfully.",
+  selectDepartment: "Select target department",
+  workspaceSettings: "Workspace settings",
+  workspaceSettingsDescription: "Manage workspace details, ownership handover, and archiving.",
+  workspaceName: "Workspace name",
+  defaultLanguage: "Default language",
+  timeZone: "Workspace time zone",
+  workspaceSettingsSaved: "Workspace settings saved.",
+  dangerZone: "Danger zone",
+  transferOwnership: "Transfer ownership",
+  transferOwnershipDescription:
+    "Hand over workspace ownership to another active member. You will become an admin.",
+  transferOwnershipConfirm: "Confirm transfer",
+  transferOwnershipSuccess: "Ownership transferred successfully.",
+  transferOwnershipTarget: "Select new owner",
+  transferOwnershipWarning:
+    "The owner possesses top-level permissions. Ensure the target member is trusted.",
+  archiveWorkspace: "Archive workspace",
+  archiveWorkspaceDescription:
+    "Archiving puts the workspace in read-only mode. Members cannot post messages or edit documents.",
+  archiveWorkspaceConfirm: "Confirm archive",
+  archiveWorkspaceSuccess: "Workspace archived.",
+  unarchiveWorkspace: "Unarchive workspace",
+  unarchiveWorkspaceSuccess: "Workspace restored to active status.",
 };
 
 export const workspaceOrganizationDictionaries: Record<Locale, WorkspaceOrganizationDictionary> = {

@@ -259,9 +259,12 @@ export function WorkspaceSidebar({
           title: dictionary.accountAndSecurity,
           description: dictionary.accountDescription,
           tabProfile: dictionary.accountTabProfile,
+          tabSecurity: dictionary.accountTabSecurity,
           tabSession: dictionary.accountTabSession,
           email: dictionary.accountEmail,
           displayName: dictionary.accountDisplayName,
+          language: dictionary.accountLanguage,
+          timeZone: dictionary.accountTimeZone,
           workspace: dictionary.accountWorkspace,
           role: dictionary.accountRole,
           sessionProtected: dictionary.accountSessionProtected,
@@ -270,10 +273,25 @@ export function WorkspaceSidebar({
           nameRequired: dictionary.accountNameRequired,
           save: dictionary.accountSave,
           cancel: dictionary.cancel,
+          currentPassword: dictionary.accountCurrentPassword,
+          newPassword: dictionary.accountNewPassword,
+          confirmPassword: dictionary.accountConfirmPassword,
+          passwordLengthHint: dictionary.accountPasswordLengthHint,
+          passwordMismatch: dictionary.accountPasswordMismatch,
+          passwordChanged: dictionary.accountPasswordChanged,
+          passwordChangeError: dictionary.accountPasswordChangeError,
+          currentPasswordRequired: dictionary.accountCurrentPasswordRequired,
+          newPasswordRequired: dictionary.accountNewPasswordRequired,
+          changePasswordButton: dictionary.accountChangePasswordButton,
           owner: dictionary.accessOwner,
           admin: dictionary.accessAdmin,
           member: dictionary.accessMember,
           guest: dictionary.accessGuest,
+        }}
+        onSaved={(name, newLocale) => {
+          if (newLocale && newLocale !== locale) {
+            onToggleLocale();
+          }
         }}
       />
     </aside>

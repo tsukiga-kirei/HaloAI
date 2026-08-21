@@ -1,4 +1,8 @@
 import {
+  AssignMemberRolesInputSchema,
+  ChangePasswordInputSchema,
+  CreateCustomRoleInputSchema,
+  UpdateCustomRoleInputSchema,
   UpdateSessionProfileInputSchema,
   UpdateWorkspaceMemberStatusInputSchema,
   WorkspaceAdminAccessQuerySchema,
@@ -15,12 +19,14 @@ import {
 import type { FastifyInstance } from "fastify";
 import type { HaloAuth } from "../auth";
 import { fromNodeHeaders } from "better-auth/node";
+import { HttpError } from "../http-error";
 import { requireSession } from "../session";
 import { requireWorkspaceCapability } from "../workspace-authorization";
 
 const sectionCapabilities: Record<WorkspaceAdminSection, Capability> = {
   overview: "workspace.manage",
   members: "member.manage",
+  roles: "workspace.manage",
   agents: "agent.profile.create",
   integrations: "workspace.manage",
   security: "workspace.security.manage",
@@ -45,13 +51,46 @@ export async function registerWorkspaceGovernanceRoutes(
       body: { name: input.name },
       headers: fromNodeHeaders(request.headers),
     });
-    await onboarding.updateDisplayNameForUser({
+    await onboarding.updateUserProfile({
       userId: session.user.id,
       name: input.name,
+      preferredLocale: input.preferredLocale,
+      timeZone: input.timeZone,
       requestId: request.id,
     });
-    return { user: { id: session.user.id, name: input.name, email: session.user.email } };
+    const profile = await onboarding.getUserProfile(session.user.id);
+    return {
+      user: {
+        id: session.user.id,
+        name: profile?.name ?? input.name,
+        email: session.user.email,
+        locale: profile?.preferredLocale ?? "zh-CN",
+        timeZone: profile?.timeZone ?? "Asia/Shanghai",
+      },
+    };
   });
+
+  app.post(
+    "/v1/session/change-password",
+    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } },
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const input = ChangePasswordInputSchema.parse(request.body);
+      try {
+        await auth.api.changePassword({
+          body: {
+            currentPassword: input.currentPassword,
+            newPassword: input.newPassword,
+            revokeOtherSessions: input.revokeOtherSessions,
+          },
+          headers: fromNodeHeaders(request.headers),
+        });
+        return reply.status(204).send();
+      } catch (error) {
+        throw new HttpError("validation_failed", "errors.invalidCredentials");
+      }
+    },
+  );
 
   app.get<{ Params: { workspaceId: string } }>(
     "/v1/workspaces/:workspaceId/access",
@@ -166,6 +205,138 @@ export async function registerWorkspaceGovernanceRoutes(
         membershipId: request.params.membershipId,
         status: input.status,
         requestId: request.id,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  // === 自定义角色与权限治理 ===
+  app.get<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/roles",
+    async (request) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.read");
+      const roles = await governance.listRoles({
+        principal,
+        requestId: request.id,
+      });
+      return {
+        items: roles.map((r) => ({
+          ...r,
+          createdAt: toIso(r.createdAt),
+          updatedAt: toIso(r.updatedAt),
+        })),
+      };
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/roles",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.manage");
+      const input = CreateCustomRoleInputSchema.parse(request.body);
+      const role = await governance.createRole({
+        principal,
+        requestId: request.id,
+        key: input.key,
+        name: input.name,
+        description: input.description,
+        capabilities: input.capabilities,
+      });
+      return reply.status(201).send({
+        role: {
+          ...role,
+          createdAt: toIso(role.createdAt),
+          updatedAt: toIso(role.updatedAt),
+        },
+      });
+    },
+  );
+
+  app.patch<{ Params: { workspaceId: string; roleId: string } }>(
+    "/v1/workspaces/:workspaceId/roles/:roleId",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.manage");
+      const input = UpdateCustomRoleInputSchema.parse(request.body);
+      await governance.updateRole({
+        principal,
+        requestId: request.id,
+        roleId: request.params.roleId,
+        name: input.name,
+        description: input.description,
+        capabilities: input.capabilities,
+        status: input.status,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  app.delete<{ Params: { workspaceId: string; roleId: string } }>(
+    "/v1/workspaces/:workspaceId/roles/:roleId",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.manage");
+      await governance.deleteRole({
+        principal,
+        requestId: request.id,
+        roleId: request.params.roleId,
+      });
+      return reply.status(204).send();
+    },
+  );
+
+  // === 成员自定义角色绑定 ===
+  app.get<{ Params: { workspaceId: string; actorId: string } }>(
+    "/v1/workspaces/:workspaceId/members/:actorId/roles",
+    async (request) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "member.manage");
+      const roleIds = await governance.listMemberRoles({
+        principal,
+        requestId: request.id,
+        memberActorId: request.params.actorId,
+      });
+      return { roleIds };
+    },
+  );
+
+  app.put<{ Params: { workspaceId: string; actorId: string } }>(
+    "/v1/workspaces/:workspaceId/members/:actorId/roles",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "member.manage");
+      const input = AssignMemberRolesInputSchema.parse(request.body);
+      await governance.assignMemberRoles({
+        principal,
+        requestId: request.id,
+        memberActorId: request.params.actorId,
+        roleIds: input.roleIds,
       });
       return reply.status(204).send();
     },

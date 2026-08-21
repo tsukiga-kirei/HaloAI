@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { appendAuditEvent } from "../audit-event";
 import type { DatabaseClient } from "../client";
 import { PersistenceError } from "../errors";
@@ -8,6 +8,7 @@ import {
   actorRoleAssignments,
   actors,
   humanActors,
+  users,
   workspaceInvitations,
   workspaceDepartments,
   workspaceMemberships,
@@ -957,27 +958,395 @@ export class WorkspaceOnboardingRepository {
     );
   }
 
+  async updateUserProfile(input: {
+    userId: string;
+    name?: string | undefined;
+    preferredLocale?: ("zh-CN" | "en-US") | undefined;
+    timeZone?: string | undefined;
+    requestId: string;
+  }): Promise<void> {
+    const patch: Partial<{
+      name: string;
+      preferredLocale: string;
+      timeZone: string;
+      updatedAt: Date;
+    }> = {
+      updatedAt: new Date(),
+    };
+    if (input.name !== undefined) patch.name = input.name;
+    if (input.preferredLocale !== undefined) patch.preferredLocale = input.preferredLocale;
+    if (input.timeZone !== undefined) patch.timeZone = input.timeZone;
+
+    await this.client.db.update(users).set(patch).where(eq(users.id, input.userId));
+
+    if (input.name !== undefined) {
+      const workspacesForUser = await this.listWorkspacesForUser(input.userId);
+      for (const workspace of workspacesForUser) {
+        await withWorkspaceTransaction(
+          this.client.db,
+          {
+            workspaceId: workspace.id,
+            actorId: workspace.actorId,
+            requestId: input.requestId,
+          },
+          async (transaction) => {
+            await transaction
+              .update(actors)
+              .set({ displayName: input.name!, updatedAt: new Date() })
+              .where(and(eq(actors.workspaceId, workspace.id), eq(actors.id, workspace.actorId)));
+          },
+        );
+      }
+    }
+  }
+
+  async getUserProfile(userId: string): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    preferredLocale: "zh-CN" | "en-US";
+    timeZone: string;
+  } | null> {
+    const [user] = await this.client.db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        preferredLocale: users.preferredLocale,
+        timeZone: users.timeZone,
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+    if (!user) return null;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      preferredLocale: (user.preferredLocale as "zh-CN" | "en-US") || "zh-CN",
+      timeZone: user.timeZone || "Asia/Shanghai",
+    };
+  }
+
+  async updateWorkspaceSettings(input: {
+    principal: MembershipContext;
+    name: string;
+    timeZone: string;
+    defaultLocale: string;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner" && input.principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "无权修改工作空间设置");
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        await transaction
+          .update(workspaces)
+          .set({
+            name: input.name,
+            timeZone: input.timeZone,
+            defaultLocale: input.defaultLocale,
+            updatedAt: new Date(),
+          })
+          .where(eq(workspaces.id, input.principal.workspaceId));
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "workspace.settings.updated",
+          resourceType: "workspace",
+          resourceId: input.principal.workspaceId,
+          outcome: "succeeded",
+          metadata: {
+            name: input.name,
+            timeZone: input.timeZone,
+            defaultLocale: input.defaultLocale,
+          },
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
+  async transferWorkspaceOwnership(input: {
+    principal: MembershipContext;
+    targetMembershipId: string;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner") {
+      throw new PersistenceError("access_denied", "只有工作空间所有者可以转让所有权");
+    }
+    if (input.principal.membershipId === input.targetMembershipId) {
+      return;
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        await transaction
+          .select({ id: workspaces.id })
+          .from(workspaces)
+          .where(eq(workspaces.id, input.principal.workspaceId))
+          .for("update");
+
+        const [target] = await transaction
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+              eq(workspaceMemberships.id, input.targetMembershipId),
+            ),
+          )
+          .for("update");
+        if (!target || target.status !== "active") {
+          throw new PersistenceError("not_found", "目标成员不存在或处于非活跃状态");
+        }
+
+        const [currentOwner] = await transaction
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+              eq(workspaceMemberships.id, input.principal.membershipId),
+            ),
+          )
+          .for("update");
+        if (!currentOwner) {
+          throw new PersistenceError("not_found", "当前所有者记录不存在");
+        }
+
+        // 把目标提升为 Owner
+        await transaction
+          .update(workspaceMemberships)
+          .set({ isOwner: true, updatedAt: new Date() })
+          .where(eq(workspaceMemberships.id, target.id));
+
+        // 把当前用户降级为 Admin (isOwner: false)
+        await transaction
+          .update(workspaceMemberships)
+          .set({ isOwner: false, updatedAt: new Date() })
+          .where(eq(workspaceMemberships.id, currentOwner.id));
+
+        // 调整角色的 RoleAssignment
+        const [ownerRole] = await transaction
+          .select({ id: accessRoles.id })
+          .from(accessRoles)
+          .where(
+            and(
+              eq(accessRoles.workspaceId, input.principal.workspaceId),
+              eq(accessRoles.builtIn, "owner"),
+            ),
+          );
+        const [adminRole] = await transaction
+          .select({ id: accessRoles.id })
+          .from(accessRoles)
+          .where(
+            and(
+              eq(accessRoles.workspaceId, input.principal.workspaceId),
+              eq(accessRoles.builtIn, "admin"),
+            ),
+          );
+
+        if (ownerRole && adminRole) {
+          await transaction
+            .update(actorRoleAssignments)
+            .set({ status: "revoked", revokedAt: new Date(), updatedAt: new Date() })
+            .where(
+              and(
+                eq(actorRoleAssignments.workspaceId, input.principal.workspaceId),
+                inArray(actorRoleAssignments.actorId, [
+                  target.humanActorId,
+                  currentOwner.humanActorId,
+                ]),
+                eq(actorRoleAssignments.scope, "workspace"),
+                eq(actorRoleAssignments.status, "active"),
+              ),
+            );
+
+          await transaction.insert(actorRoleAssignments).values({
+            workspaceId: input.principal.workspaceId,
+            actorId: target.humanActorId,
+            roleId: ownerRole.id,
+            scope: "workspace",
+            scopeId: input.principal.workspaceId,
+            grantedByActorId: input.principal.actorId,
+            status: "active",
+          });
+
+          await transaction.insert(actorRoleAssignments).values({
+            workspaceId: input.principal.workspaceId,
+            actorId: currentOwner.humanActorId,
+            roleId: adminRole.id,
+            scope: "workspace",
+            scopeId: input.principal.workspaceId,
+            grantedByActorId: input.principal.actorId,
+            status: "active",
+          });
+        }
+
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "workspace.ownership.transferred",
+          resourceType: "workspace",
+          resourceId: input.principal.workspaceId,
+          outcome: "succeeded",
+          metadata: {
+            previousOwnerActorId: input.principal.actorId,
+            newOwnerActorId: target.humanActorId,
+          },
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
+  async archiveWorkspace(input: {
+    principal: MembershipContext;
+    reason?: string | undefined;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner") {
+      throw new PersistenceError("access_denied", "只有工作空间所有者可以归档工作区");
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        await transaction
+          .update(workspaces)
+          .set({ status: "archived", archivedAt: new Date(), updatedAt: new Date() })
+          .where(eq(workspaces.id, input.principal.workspaceId));
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "workspace.archived",
+          resourceType: "workspace",
+          resourceId: input.principal.workspaceId,
+          outcome: "succeeded",
+          metadata: { reason: input.reason ?? null },
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
+  async unarchiveWorkspace(input: {
+    principal: MembershipContext;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner") {
+      throw new PersistenceError("access_denied", "只有工作空间所有者可以恢复工作区");
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        await transaction
+          .update(workspaces)
+          .set({ status: "active", archivedAt: null, updatedAt: new Date() })
+          .where(eq(workspaces.id, input.principal.workspaceId));
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "workspace.unarchived",
+          resourceType: "workspace",
+          resourceId: input.principal.workspaceId,
+          outcome: "succeeded",
+          metadata: {},
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
+  async batchUpdateMemberDepartment(input: {
+    principal: MembershipContext;
+    membershipIds: readonly string[];
+    departmentId: string | null;
+    requestId: string;
+  }): Promise<void> {
+    if (input.principal.role !== "owner" && input.principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "无权批量调整成员部门");
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        if (input.departmentId !== null) {
+          const [dept] = await transaction
+            .select({ id: workspaceDepartments.id })
+            .from(workspaceDepartments)
+            .where(
+              and(
+                eq(workspaceDepartments.workspaceId, input.principal.workspaceId),
+                eq(workspaceDepartments.id, input.departmentId),
+                eq(workspaceDepartments.status, "active"),
+              ),
+            );
+          if (!dept) throw new PersistenceError("not_found", "目标部门不存在或已停用");
+        }
+
+        await transaction
+          .update(workspaceMemberships)
+          .set({ departmentId: input.departmentId, updatedAt: new Date() })
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+              inArray(workspaceMemberships.id, [...input.membershipIds]),
+            ),
+          );
+
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "member.department.batch_updated",
+          resourceType: "membership",
+          resourceId: input.principal.workspaceId,
+          outcome: "succeeded",
+          metadata: { count: input.membershipIds.length, departmentId: input.departmentId },
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
   async updateDisplayNameForUser(input: {
     userId: string;
     name: string;
     requestId: string;
   }): Promise<void> {
-    const workspacesForUser = await this.listWorkspacesForUser(input.userId);
-    for (const workspace of workspacesForUser) {
-      await withWorkspaceTransaction(
-        this.client.db,
-        {
-          workspaceId: workspace.id,
-          actorId: workspace.actorId,
-          requestId: input.requestId,
-        },
-        async (transaction) => {
-          await transaction
-            .update(actors)
-            .set({ displayName: input.name, updatedAt: new Date() })
-            .where(and(eq(actors.workspaceId, workspace.id), eq(actors.id, workspace.actorId)));
-        },
-      );
-    }
+    await this.updateUserProfile({
+      userId: input.userId,
+      name: input.name,
+      requestId: input.requestId,
+    });
   }
 }

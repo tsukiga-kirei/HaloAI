@@ -9,8 +9,10 @@ import {
 import {
   Building2,
   Copy,
+  Gauge,
   Globe2,
   Languages,
+  LoaderCircle,
   Mail,
   Plus,
   ShieldCheck,
@@ -55,6 +57,13 @@ export function SystemTenantsSection() {
   const [newAdministratorEmail, setNewAdministratorEmail] = useState("");
   const [newLocale, setNewLocale] = useState<"zh-CN" | "en-US">("zh-CN");
   const [newTimeZone, setNewTimeZone] = useState("Asia/Shanghai");
+
+  // 配额管理状态
+  const [quotaTenant, setQuotaTenant] = useState<SystemTenant | null>(null);
+  const [maxMembers, setMaxMembers] = useState(500);
+  const [maxStorageBytes, setMaxStorageBytes] = useState(10 * 1024 * 1024 * 1024);
+  const [maxMonthlyBudgetMicrocents, setMaxMonthlyBudgetMicrocents] = useState(100_000_000);
+  const [quotaSubmitting, setQuotaSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -133,6 +142,44 @@ export function SystemTenantsSection() {
       notifyError(dictionary.loadError, "system-tenant-create-error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function openQuota(tenant: SystemTenant): Promise<void> {
+    setQuotaTenant(tenant);
+    try {
+      const res = await apiFetch<{
+        quota: { maxMembers: number; maxStorageBytes: number; maxMonthlyBudgetMicrocents: number };
+      }>(`/v1/system/tenants/${tenant.id}/quota`);
+      setMaxMembers(res.quota.maxMembers);
+      setMaxStorageBytes(res.quota.maxStorageBytes);
+      setMaxMonthlyBudgetMicrocents(res.quota.maxMonthlyBudgetMicrocents);
+    } catch {
+      setMaxMembers(500);
+      setMaxStorageBytes(10 * 1024 * 1024 * 1024);
+      setMaxMonthlyBudgetMicrocents(100_000_000);
+    }
+  }
+
+  async function saveQuota(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (!quotaTenant) return;
+    setQuotaSubmitting(true);
+    try {
+      await apiFetch<void>(`/v1/system/tenants/${quotaTenant.id}/quota`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          maxMembers,
+          maxStorageBytes,
+          maxMonthlyBudgetMicrocents,
+        }),
+      });
+      notify(dictionary.quotaSaved);
+      setQuotaTenant(null);
+    } catch {
+      notifyError(dictionary.loadError, "save-quota-error");
+    } finally {
+      setQuotaSubmitting(false);
     }
   }
 
@@ -229,6 +276,13 @@ export function SystemTenantsSection() {
                 onClick={() => setViewingMembers(tenant)}
               >
                 <UsersRound size={14} /> {dictionary.viewMembers}
+              </button>
+              <button
+                type="button"
+                className="system-table-action"
+                onClick={() => void openQuota(tenant)}
+              >
+                <Gauge size={14} /> {dictionary.tenantQuota}
               </button>
               <button
                 type="button"
@@ -414,6 +468,78 @@ export function SystemTenantsSection() {
               value={timeZone}
               maxLength={64}
               onChange={(event) => setTimeZone(event.target.value)}
+            />
+          </SystemFormField>
+        </form>
+      </HaloDialog>
+
+      {/* 租户资源配额弹窗 */}
+      <HaloDialog
+        open={Boolean(quotaTenant)}
+        className="system-admin-drawer"
+        title={dictionary.tenantQuotaTitle}
+        description={`配置租户「${quotaTenant?.name ?? ""}」的资源配额与预算上限。`}
+        icon={<Gauge size={18} />}
+        closeLabel={dictionary.close}
+        onClose={() => setQuotaTenant(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setQuotaTenant(null)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="system-tenant-quota-form"
+              className="admin-primary-button"
+              disabled={quotaSubmitting}
+            >
+              {quotaSubmitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.save}
+            </button>
+          </>
+        }
+      >
+        <form
+          id="system-tenant-quota-form"
+          className="system-form"
+          onSubmit={(event) => void saveQuota(event)}
+        >
+          <div className="system-form-summary">
+            <strong>{quotaTenant?.name}</strong>
+            <small>{quotaTenant?.slug}</small>
+          </div>
+          <SystemFormField icon={<Building2 size={16} />} label={dictionary.maxMembers}>
+            <input
+              type="number"
+              min={1}
+              max={100000}
+              required
+              value={maxMembers}
+              onChange={(event) => setMaxMembers(Number.parseInt(event.target.value, 10) || 1)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Gauge size={16} />} label={dictionary.maxStorage}>
+            <input
+              type="number"
+              min={0}
+              required
+              value={maxStorageBytes}
+              onChange={(event) => setMaxStorageBytes(Number.parseInt(event.target.value, 10) || 0)}
+            />
+          </SystemFormField>
+          <SystemFormField icon={<Gauge size={16} />} label={dictionary.maxMonthlyBudget}>
+            <input
+              type="number"
+              min={0}
+              required
+              value={maxMonthlyBudgetMicrocents}
+              onChange={(event) =>
+                setMaxMonthlyBudgetMicrocents(Number.parseInt(event.target.value, 10) || 0)
+              }
             />
           </SystemFormField>
         </form>

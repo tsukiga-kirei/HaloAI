@@ -2,6 +2,7 @@
 
 import {
   WorkspaceOrganizationOverviewSchema,
+  type CustomRole,
   type SessionContext,
   type WorkspaceDepartment,
   type WorkspaceInvitationCreated,
@@ -17,13 +18,20 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import {
+  Archive,
   Building2,
+  Check,
+  CheckSquare,
   Copy,
+  FolderTree,
   LoaderCircle,
   Mail,
   Pencil,
   Plus,
   Search,
+  Settings,
+  ShieldAlert,
+  Square,
   UserCog,
   UserPlus,
   UsersRound,
@@ -51,8 +59,18 @@ const unassignedValue = "__unassigned__";
 const rootValue = "__root__";
 const noManagerValue = "__no_manager__";
 
+const timeZoneOptions = [
+  { value: "Asia/Shanghai", label: "Asia/Shanghai (UTC+8 北京/上海)" },
+  { value: "Asia/Tokyo", label: "Asia/Tokyo (UTC+9 东京)" },
+  { value: "Asia/Singapore", label: "Asia/Singapore (UTC+8 新加坡)" },
+  { value: "Europe/London", label: "Europe/London (UTC+0/1 伦敦)" },
+  { value: "Europe/Paris", label: "Europe/Paris (UTC+1/2 巴黎/柏林)" },
+  { value: "America/New_York", label: "America/New_York (UTC-5/4 纽约)" },
+  { value: "America/Los_Angeles", label: "America/Los_Angeles (UTC-8/7 洛杉矶)" },
+  { value: "UTC", label: "UTC (协调世界时)" },
+];
+
 function looksLikeEmail(value: string): boolean {
-  // 邀请表单禁用浏览器原生气泡，错误统一进入产品化字段提示。
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
@@ -84,6 +102,23 @@ export function LiveMembers() {
   const [managerActorId, setManagerActorId] = useState(noManagerValue);
   const [sortOrder, setSortOrder] = useState("0");
   const [submitting, setSubmitting] = useState(false);
+
+  // 批量选择状态
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
+  const [batchDepartmentId, setBatchDepartmentId] = useState(unassignedValue);
+  const [batchSubmitting, setBatchSubmitting] = useState(false);
+
+  // 空间设置与所有权转让状态
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [workspaceTimeZone, setWorkspaceTimeZone] = useState("Asia/Shanghai");
+  const [workspaceDefaultLocale, setWorkspaceDefaultLocale] = useState<"zh-CN" | "en-US">("zh-CN");
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferTargetId, setTransferTargetId] = useState("");
+
+  // 自定义角色状态
+  const [availableCustomRoles, setAvailableCustomRoles] = useState<CustomRole[]>([]);
+  const [assignedCustomRoleIds, setAssignedCustomRoleIds] = useState<string[]>([]);
 
   const activeWorkspace = useMemo(() => {
     if (!session) return undefined;
@@ -217,15 +252,76 @@ export function LiveMembers() {
     ],
   );
 
-  const openMember = useCallback((member: WorkspaceMember) => {
+  const toggleSelectMember = useCallback((id: string) => {
+    setSelectedMemberIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const isAllSelected =
+    filteredMembers.length > 0 &&
+    filteredMembers.every((m) => selectedMemberIds.has(m.membershipId));
+
+  const toggleSelectAll = useCallback(() => {
+    if (isAllSelected) {
+      setSelectedMemberIds(new Set());
+    } else {
+      setSelectedMemberIds(new Set(filteredMembers.map((m) => m.membershipId)));
+    }
+  }, [filteredMembers, isAllSelected]);
+
+  const openMember = useCallback(async (member: WorkspaceMember) => {
     setEditingMember(member);
     setMemberDepartmentId(member.departmentId ?? unassignedValue);
     setMemberJobTitle(member.jobTitle);
+    try {
+      const [rolesRes, memberRolesRes] = await Promise.all([
+        apiFetch<{ items: CustomRole[] }>("/v1/workspaces/current/roles"),
+        apiFetch<{ roleIds: string[] }>(`/v1/workspaces/current/members/${member.actorId}/roles`),
+      ]);
+      setAvailableCustomRoles(rolesRes.items);
+      setAssignedCustomRoleIds(memberRolesRes.roleIds);
+    } catch {
+      setAvailableCustomRoles([]);
+      setAssignedCustomRoleIds([]);
+    }
   }, []);
 
   const columns = useMemo(
     () =>
       memberColumnHelper.columns([
+        memberColumnHelper.display({
+          id: "select",
+          header: () => (
+            <button
+              type="button"
+              className="icon-button tiny"
+              style={{ width: "24px", height: "24px", padding: 0 }}
+              aria-label={isAllSelected ? "Deselect all" : "Select all"}
+              onClick={toggleSelectAll}
+            >
+              {isAllSelected ? <CheckSquare size={16} /> : <Square size={16} />}
+            </button>
+          ),
+          cell: ({ row }) => (
+            <button
+              type="button"
+              className="icon-button tiny"
+              style={{ width: "24px", height: "24px", padding: 0 }}
+              aria-label="Select row"
+              onClick={() => toggleSelectMember(row.original.membershipId)}
+            >
+              {selectedMemberIds.has(row.original.membershipId) ? (
+                <CheckSquare size={16} />
+              ) : (
+                <Square size={16} />
+              )}
+            </button>
+          ),
+        }),
         memberColumnHelper.accessor("name", {
           header: dictionary.member,
           cell: ({ row }) => (
@@ -309,7 +405,19 @@ export function LiveMembers() {
           ),
         }),
       ]),
-    [activeWorkspace?.role, dictionary, locale, openMember, roleLabel, updateRole, updateStatus],
+    [
+      activeWorkspace?.role,
+      dictionary,
+      isAllSelected,
+      locale,
+      openMember,
+      roleLabel,
+      selectedMemberIds,
+      toggleSelectAll,
+      toggleSelectMember,
+      updateRole,
+      updateStatus,
+    ],
   );
 
   const table = useTable(
@@ -334,16 +442,27 @@ export function LiveMembers() {
     if (!activeWorkspace || !editingMember) return;
     setSubmitting(true);
     try {
-      await apiFetch<void>(
-        `/v1/workspaces/${activeWorkspace.id}/members/${editingMember.membershipId}/organization`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({
-            departmentId: memberDepartmentId === unassignedValue ? null : memberDepartmentId,
-            jobTitle: memberJobTitle,
-          }),
-        },
-      );
+      await Promise.all([
+        apiFetch<void>(
+          `/v1/workspaces/${activeWorkspace.id}/members/${editingMember.membershipId}/organization`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              departmentId: memberDepartmentId === unassignedValue ? null : memberDepartmentId,
+              jobTitle: memberJobTitle,
+            }),
+          },
+        ),
+        apiFetch<void>(
+          `/v1/workspaces/${activeWorkspace.id}/members/${editingMember.actorId}/roles`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              roleIds: assignedCustomRoleIds,
+            }),
+          },
+        ),
+      ]);
       notify(dictionary.memberUpdated);
       setEditingMember(null);
       await load();
@@ -433,6 +552,96 @@ export function LiveMembers() {
     }
   }
 
+  async function executeBatchAssign(): Promise<void> {
+    if (!activeWorkspace || selectedMemberIds.size === 0) return;
+    setBatchSubmitting(true);
+    try {
+      await apiFetch<void>(`/v1/workspaces/${activeWorkspace.id}/members/batch-department`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          membershipIds: Array.from(selectedMemberIds),
+          departmentId: batchDepartmentId === unassignedValue ? null : batchDepartmentId,
+        }),
+      });
+      notify(dictionary.batchAssignSuccess);
+      setSelectedMemberIds(new Set());
+      await load();
+    } catch {
+      notifyError(dictionary.loadError, "batch-department-error");
+    } finally {
+      setBatchSubmitting(false);
+    }
+  }
+
+  function openWorkspaceSettings(): void {
+    if (!activeWorkspace) return;
+    setWorkspaceName(activeWorkspace.name);
+    setWorkspaceTimeZone(session?.user.timeZone ?? "Asia/Shanghai");
+    setWorkspaceDefaultLocale(session?.user.locale ?? "zh-CN");
+    setSettingsOpen(true);
+  }
+
+  async function saveWorkspaceSettings(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (!activeWorkspace || !workspaceName.trim()) return;
+    setSubmitting(true);
+    try {
+      await apiFetch<void>(`/v1/workspaces/${activeWorkspace.id}/settings`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          name: workspaceName.trim(),
+          timeZone: workspaceTimeZone,
+          defaultLocale: workspaceDefaultLocale,
+        }),
+      });
+      notify(dictionary.workspaceSettingsSaved);
+      setSettingsOpen(false);
+      await load();
+    } catch {
+      notifyError(dictionary.loadError, "workspace-settings-error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function executeTransferOwnership(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    if (!activeWorkspace || !transferTargetId) return;
+    setSubmitting(true);
+    try {
+      await apiFetch<void>(`/v1/workspaces/${activeWorkspace.id}/transfer-ownership`, {
+        method: "POST",
+        body: JSON.stringify({ targetMembershipId: transferTargetId }),
+      });
+      notify(dictionary.transferOwnershipSuccess);
+      setTransferOpen(false);
+      setSettingsOpen(false);
+      await load();
+    } catch {
+      notifyError(dictionary.loadError, "transfer-ownership-error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function executeArchiveWorkspace(): Promise<void> {
+    if (!activeWorkspace) return;
+    setSubmitting(true);
+    try {
+      await apiFetch<void>(`/v1/workspaces/${activeWorkspace.id}/archive`, {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      notify(dictionary.archiveWorkspaceSuccess);
+      setSettingsOpen(false);
+      await load();
+    } catch {
+      notifyError(dictionary.loadError, "archive-workspace-error");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (loading) {
     return (
       <>
@@ -451,6 +660,15 @@ export function LiveMembers() {
         title={dictionary.title}
         actions={
           <>
+            {activeWorkspace?.role === "owner" || activeWorkspace?.role === "admin" ? (
+              <button
+                type="button"
+                className="admin-secondary-button"
+                onClick={() => openWorkspaceSettings()}
+              >
+                <Settings size={17} /> {dictionary.workspaceSettings}
+              </button>
+            ) : null}
             <button
               type="button"
               className="admin-secondary-button"
@@ -569,14 +787,70 @@ export function LiveMembers() {
               {dictionary.member}
               <span>{filteredMembers.length}</span>
             </h2>
-            <label className="organization-search">
-              <Search size={17} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={dictionary.searchPlaceholder}
-              />
-            </label>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}
+            >
+              {selectedMemberIds.size > 0 ? (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.25rem 0.5rem",
+                    borderRadius: "var(--halo-radius-sm)",
+                    background: "var(--halo-bg-muted)",
+                    border: "1px solid var(--halo-border)",
+                  }}
+                >
+                  <span style={{ fontSize: "0.8125rem", fontWeight: 600 }}>
+                    {dictionary.batchAssignSelected.replace(
+                      "{count}",
+                      String(selectedMemberIds.size),
+                    )}
+                  </span>
+                  <div style={{ width: "160px" }}>
+                    <HaloSelect
+                      compact
+                      value={batchDepartmentId}
+                      onValueChange={setBatchDepartmentId}
+                      ariaLabel={dictionary.selectDepartment}
+                      options={[
+                        { value: unassignedValue, label: dictionary.unassigned },
+                        ...departments
+                          .filter((item) => item.status === "active")
+                          .map((item) => ({ value: item.id, label: item.name })),
+                      ]}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-primary-button compact"
+                    style={{ minHeight: "32px", padding: "0 0.75rem" }}
+                    disabled={batchSubmitting}
+                    onClick={() => void executeBatchAssign()}
+                  >
+                    {batchSubmitting ? <LoaderCircle size={14} /> : null}
+                    {dictionary.save}
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-secondary-button compact"
+                    style={{ minHeight: "32px", padding: "0 0.75rem" }}
+                    onClick={() => setSelectedMemberIds(new Set())}
+                  >
+                    {dictionary.cancel}
+                  </button>
+                </div>
+              ) : null}
+              <label className="organization-search">
+                <Search size={17} />
+                <input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={dictionary.searchPlaceholder}
+                />
+              </label>
+            </div>
           </div>
           {table.getRowModel().rows.length === 0 ? (
             <HaloEmptyState icon={<UsersRound size={22} />} title={dictionary.emptyMembers} />
@@ -684,6 +958,47 @@ export function LiveMembers() {
               onChange={(event) => setMemberJobTitle(event.target.value)}
             />
           </label>
+          {availableCustomRoles.length > 0 ? (
+            <div>
+              <span
+                style={{
+                  fontSize: "0.8125rem",
+                  fontWeight: 600,
+                  display: "block",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {dictionary.customRoles}
+              </span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {availableCustomRoles.map((role) => {
+                  const isChecked = assignedCustomRoleIds.includes(role.id);
+                  return (
+                    <button
+                      type="button"
+                      key={role.id}
+                      className={`admin-secondary-button compact${isChecked ? " is-active" : ""}`}
+                      style={{
+                        background: isChecked ? "var(--halo-primary-subtle)" : undefined,
+                        borderColor: isChecked ? "var(--halo-primary)" : undefined,
+                        color: isChecked ? "var(--halo-primary)" : undefined,
+                      }}
+                      onClick={() => {
+                        setAssignedCustomRoleIds((prev) =>
+                          prev.includes(role.id)
+                            ? prev.filter((id) => id !== role.id)
+                            : [...prev, role.id],
+                        );
+                      }}
+                    >
+                      {isChecked ? <Check size={14} /> : null}
+                      {role.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </form>
       </HaloDialog>
 
@@ -882,6 +1197,188 @@ export function LiveMembers() {
               </button>
             </div>
           ) : null}
+        </form>
+      </HaloDialog>
+
+      {/* 空间设置抽屉/弹窗 */}
+      <HaloDialog
+        open={settingsOpen}
+        className="workspace-admin-drawer"
+        title={dictionary.workspaceSettings}
+        description={dictionary.workspaceSettingsDescription}
+        icon={<Settings size={18} />}
+        onClose={() => setSettingsOpen(false)}
+        closeLabel={dictionary.close}
+        footer={
+          <>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setSettingsOpen(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="workspace-settings-form"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.save}
+            </button>
+          </>
+        }
+      >
+        <form
+          id="workspace-settings-form"
+          className="organization-form"
+          onSubmit={(event) => void saveWorkspaceSettings(event)}
+        >
+          <label>
+            <span>{dictionary.workspaceName}</span>
+            <input
+              value={workspaceName}
+              maxLength={80}
+              required
+              onChange={(event) => setWorkspaceName(event.target.value)}
+            />
+          </label>
+          <label>
+            <span>{dictionary.timeZone}</span>
+            <HaloSelect
+              value={workspaceTimeZone}
+              onValueChange={setWorkspaceTimeZone}
+              ariaLabel={dictionary.timeZone}
+              options={timeZoneOptions}
+            />
+          </label>
+          <label>
+            <span>{dictionary.defaultLanguage}</span>
+            <HaloSelect
+              value={workspaceDefaultLocale}
+              onValueChange={(val) => setWorkspaceDefaultLocale(val as "zh-CN" | "en-US")}
+              ariaLabel={dictionary.defaultLanguage}
+              options={[
+                { value: "zh-CN", label: "简体中文" },
+                { value: "en-US", label: "English" },
+              ]}
+            />
+          </label>
+
+          {activeWorkspace?.role === "owner" ? (
+            <div
+              style={{
+                marginTop: "1.5rem",
+                padding: "1rem",
+                borderRadius: "var(--halo-radius-md)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                background: "rgba(239, 68, 68, 0.04)",
+              }}
+            >
+              <h3
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  fontSize: "0.9375rem",
+                  fontWeight: 600,
+                  color: "#ef4444",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                <ShieldAlert size={18} /> {dictionary.dangerZone}
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.8125rem",
+                  color: "var(--halo-text-muted)",
+                  marginBottom: "1rem",
+                }}
+              >
+                {dictionary.transferOwnershipDescription}
+              </p>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.4)" }}
+                  onClick={() => {
+                    setTransferTargetId("");
+                    setTransferOpen(true);
+                  }}
+                >
+                  <UserCog size={16} /> {dictionary.transferOwnership}
+                </button>
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.4)" }}
+                  onClick={() => {
+                    if (window.confirm(dictionary.archiveWorkspaceConfirm)) {
+                      void executeArchiveWorkspace();
+                    }
+                  }}
+                >
+                  <Archive size={16} /> {dictionary.archiveWorkspace}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </form>
+      </HaloDialog>
+
+      {/* 转让所有权弹窗 */}
+      <HaloDialog
+        open={transferOpen}
+        title={dictionary.transferOwnership}
+        description={dictionary.transferOwnershipWarning}
+        icon={<ShieldAlert size={18} />}
+        onClose={() => setTransferOpen(false)}
+        closeLabel={dictionary.close}
+        footer={
+          <>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setTransferOpen(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="transfer-ownership-form"
+              className="primary-button is-danger"
+              disabled={submitting || !transferTargetId}
+            >
+              {submitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.transferOwnershipConfirm}
+            </button>
+          </>
+        }
+      >
+        <form
+          id="transfer-ownership-form"
+          className="organization-form"
+          onSubmit={(event) => void executeTransferOwnership(event)}
+        >
+          <label>
+            <span>{dictionary.transferOwnershipTarget}</span>
+            <HaloSelect
+              value={transferTargetId}
+              onValueChange={setTransferTargetId}
+              ariaLabel={dictionary.transferOwnershipTarget}
+              options={[
+                { value: "", label: dictionary.unassigned },
+                ...members
+                  .filter((m) => m.role !== "owner" && m.status === "active")
+                  .map((m) => ({
+                    value: m.membershipId,
+                    label: `${m.name} (${m.email}) - ${roleLabel(m.role)}`,
+                  })),
+              ]}
+            />
+          </label>
         </form>
       </HaloDialog>
     </>

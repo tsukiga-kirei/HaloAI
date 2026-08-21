@@ -32,12 +32,98 @@ export interface AdminDictionary {
   navIntegrations: string;
   navSecurity: string;
   navAudit: string;
+  navRoles: string;
   overviewTitle: string;
   membersTitle: string;
+  rolesTitle: string;
+  rolesDescription: string;
   agentsTitle: string;
   integrationsTitle: string;
   securityTitle: string;
   auditTitle: string;
+  createRole: string;
+  editRole: string;
+  deleteRole: string;
+  roleKey: string;
+  roleName: string;
+  roleDescription: string;
+  roleCapabilities: string;
+  roleBuiltIn: string;
+  roleCustom: string;
+  roleCreated: string;
+  roleUpdated: string;
+  roleDeleted: string;
+  assignRoles: string;
+  rolesSaved: string;
+  capCategoryWorkspace: string;
+  capCategoryMember: string;
+  capCategoryAgent: string;
+  capCategoryRoom: string;
+  capCategoryDocument: string;
+  capCategoryIntegration: string;
+  capCategorySecurity: string;
+  roleCapabilitiesCount: string;
+  roleType: string;
+  roleSearchPlaceholder: string;
+  roleKeyPlaceholder: string;
+  roleNamePlaceholder: string;
+  roleDescPlaceholder: string;
+  roleDrawerDescription: string;
+  roleCapsRequired: string;
+  selectAll: string;
+  deselectAll: string;
+  saveRole: string;
+  deleteRoleConfirmTitle: string;
+  deleteRoleConfirmDesc: string;
+  irreversibleAction: string;
+  confirmDelete: string;
+  customRoles: string;
+  actions: string;
+  // 细粒度权限能力字典
+  capWorkspaceReadName: string;
+  capWorkspaceReadDesc: string;
+  capWorkspaceManageName: string;
+  capWorkspaceManageDesc: string;
+  capWorkspaceSecurityManageName: string;
+  capWorkspaceSecurityManageDesc: string;
+  capMemberInviteName: string;
+  capMemberInviteDesc: string;
+  capMemberManageName: string;
+  capMemberManageDesc: string;
+  capAgentProfileReadName: string;
+  capAgentProfileReadDesc: string;
+  capAgentProfileCreateName: string;
+  capAgentProfileCreateDesc: string;
+  capAgentProfilePublishName: string;
+  capAgentProfilePublishDesc: string;
+  capAgentInvokeName: string;
+  capAgentInvokeDesc: string;
+  capRoomReadName: string;
+  capRoomReadDesc: string;
+  capRoomManageName: string;
+  capRoomManageDesc: string;
+  capRoomMessageCreateName: string;
+  capRoomMessageCreateDesc: string;
+  capDocumentReadName: string;
+  capDocumentReadDesc: string;
+  capDocumentEditName: string;
+  capDocumentEditDesc: string;
+  capDocumentProposalCreateName: string;
+  capDocumentProposalCreateDesc: string;
+  capDocumentProposalReviewName: string;
+  capDocumentProposalReviewDesc: string;
+  capDocumentPublishName: string;
+  capDocumentPublishDesc: string;
+  capIntegrationToolReadExecuteName: string;
+  capIntegrationToolReadExecuteDesc: string;
+  capIntegrationToolWriteExecuteName: string;
+  capIntegrationToolWriteExecuteDesc: string;
+  capApprovalRequestName: string;
+  capApprovalRequestDesc: string;
+  capApprovalReviewName: string;
+  capApprovalReviewDesc: string;
+  capAuditReadName: string;
+  capAuditReadDesc: string;
   inviteMember: string;
   createAgent: string;
   configure: string;
@@ -213,15 +299,29 @@ export interface AdminDictionary {
   accountAndSecurity: string;
   accountDescription: string;
   accountTabProfile: string;
+  accountTabSecurity: string;
   accountTabSession: string;
   accountEmail: string;
   accountDisplayName: string;
+  accountLanguage: string;
+  accountTimeZone: string;
   accountWorkspace: string;
   accountRole: string;
   accountSessionProtected: string;
   accountSaved: string;
   accountSaveError: string;
   accountNameRequired: string;
+  accountSave: string;
+  accountCurrentPassword: string;
+  accountNewPassword: string;
+  accountConfirmPassword: string;
+  accountPasswordLengthHint: string;
+  accountPasswordMismatch: string;
+  accountPasswordChanged: string;
+  accountPasswordChangeError: string;
+  accountCurrentPasswordRequired: string;
+  accountNewPasswordRequired: string;
+  accountChangePasswordButton: string;
   statusSuspended: string;
   statusLeft: string;
   suspendMember: string;
@@ -267,12 +367,97 @@ const zhCN: AdminDictionary = {
   navIntegrations: "可用模型",
   navSecurity: "安全策略",
   navAudit: "审计记录",
+  navRoles: "自定义角色",
   overviewTitle: "工作空间总览",
   membersTitle: "成员与访问角色",
+  rolesTitle: "自定义角色与权限能力",
+  rolesDescription: "配置团队自定义角色与 21 项细粒度权限能力矩阵。",
   agentsTitle: "AI 协作者",
   integrationsTitle: "本空间可用模型",
   securityTitle: "安全策略",
   auditTitle: "审计记录",
+  createRole: "创建自定义角色",
+  editRole: "编辑角色",
+  deleteRole: "删除角色",
+  roleKey: "角色唯一标识",
+  roleName: "角色名称",
+  roleDescription: "角色描述",
+  roleCapabilities: "权限能力矩阵",
+  roleBuiltIn: "系统内置",
+  roleCustom: "自定义",
+  roleCreated: "自定义角色已创建",
+  roleUpdated: "角色配置已更新",
+  roleDeleted: "角色已删除",
+  assignRoles: "配置角色",
+  rolesSaved: "成员角色已保存",
+  capCategoryWorkspace: "工作空间治理",
+  capCategoryMember: "成员与组织",
+  capCategoryAgent: "AI 与 Agent",
+  capCategoryRoom: "房间与会话",
+  capCategoryDocument: "文档与发布",
+  capCategoryIntegration: "工具与集成",
+  capCategorySecurity: "安全审计与审批",
+  roleCapabilitiesCount: "{count} 项权限能力",
+  roleType: "类型",
+  roleSearchPlaceholder: "搜索角色名称、唯一标识或描述…",
+  roleKeyPlaceholder: "例如：tech_lead",
+  roleNamePlaceholder: "例如：技术负责人",
+  roleDescPlaceholder: "简要说明该角色的业务定位与职责…",
+  roleDrawerDescription: "配置角色名称、唯一标识并勾选所需权限能力。",
+  roleCapsRequired: "请至少选择一项权限能力",
+  selectAll: "全选",
+  deselectAll: "全不选",
+  saveRole: "保存角色",
+  deleteRoleConfirmTitle: "确认删除自定义角色",
+  deleteRoleConfirmDesc: "确定要删除自定义角色「{name}」吗？删除后已分配该角色的成员将自动解绑。",
+  irreversibleAction: "此操作无法撤销。",
+  confirmDelete: "确认删除",
+  customRoles: "自定义角色",
+  actions: "操作",
+  capWorkspaceReadName: "读取工作空间",
+  capWorkspaceReadDesc: "查看工作空间基本信息、成员概况与可用功能。",
+  capWorkspaceManageName: "管理工作空间",
+  capWorkspaceManageDesc: "管理工作空间基本设置、组织架构与角色配置。",
+  capWorkspaceSecurityManageName: "安全策略管理",
+  capWorkspaceSecurityManageDesc: "管理会话安全策略、访问控制与敏感参数。",
+  capMemberInviteName: "邀请成员",
+  capMemberInviteDesc: "发起新成员加入工作空间邀请。",
+  capMemberManageName: "成员管理",
+  capMemberManageDesc: "调整成员角色、部门分配及启用/停用状态。",
+  capAgentProfileReadName: "读取 AI 档案",
+  capAgentProfileReadDesc: "查看 AI 成员配置、人设与授权范围。",
+  capAgentProfileCreateName: "创建 AI 档案",
+  capAgentProfileCreateDesc: "新建或编辑 AI 协作者配置。",
+  capAgentProfilePublishName: "发布 AI 档案",
+  capAgentProfilePublishDesc: "发布 AI 协作者至空间供团队使用。",
+  capAgentInvokeName: "调用 AI 运行",
+  capAgentInvokeDesc: "在房间或任务中唤起 AI 协作者执行任务。",
+  capRoomReadName: "访问房间",
+  capRoomReadDesc: "查看协作房间讨论与会话记录。",
+  capRoomManageName: "管理房间",
+  capRoomManageDesc: "创建、修改或归档协作房间。",
+  capRoomMessageCreateName: "发送消息",
+  capRoomMessageCreateDesc: "在房间中发表讨论与消息。",
+  capDocumentReadName: "阅读文档",
+  capDocumentReadDesc: "查看协同文档与知识库内容。",
+  capDocumentEditName: "编辑文档",
+  capDocumentEditDesc: "协同编辑文档正文内容。",
+  capDocumentProposalCreateName: "发起修改提案",
+  capDocumentProposalCreateDesc: "对受保护文档提交变更提案。",
+  capDocumentProposalReviewName: "审查合并提案",
+  capDocumentProposalReviewDesc: "审查他人提交的文档提案并执行合并。",
+  capDocumentPublishName: "发布导出文档",
+  capDocumentPublishDesc: "将文档公开发布或导出至外部。",
+  capIntegrationToolReadExecuteName: "只读工具调用",
+  capIntegrationToolReadExecuteDesc: "执行数据查询、检索等只读集成工具。",
+  capIntegrationToolWriteExecuteName: "写入工具调用",
+  capIntegrationToolWriteExecuteDesc: "执行数据变更、外部 API 调用等有副作用工具。",
+  capApprovalRequestName: "提交审批申请",
+  capApprovalRequestDesc: "对高风险或敏感操作发起审批流程。",
+  capApprovalReviewName: "审批操作执行",
+  capApprovalReviewDesc: "审查并批准高风险操作（仅限人类操作）。",
+  capAuditReadName: "查看审计流水",
+  capAuditReadDesc: "查看工作空间全局不可篡改审计流水。",
   inviteMember: "邀请成员",
   createAgent: "创建 AI 协作者",
   configure: "查看配置",
@@ -447,17 +632,31 @@ const zhCN: AdminDictionary = {
   agentReadOnly: "模型与工具范围由已发布版本决定；创建向导将在 Agent 发布链路接入后开放。",
   createAgentPending: "创建 AI 协作者将在 Agent 发布链路接入后开放。",
   accountAndSecurity: "账户与安全",
-  accountDescription: "更新显示名。邮箱与当前会话身份只读。",
-  accountTabProfile: "资料",
+  accountDescription: "更新个人资料与安全设置。邮箱与当前会话身份只读。",
+  accountTabProfile: "个人资料",
+  accountTabSecurity: "安全与密码",
   accountTabSession: "会话",
   accountEmail: "登录邮箱",
   accountDisplayName: "显示名称",
+  accountLanguage: "界面语言",
+  accountTimeZone: "时区",
   accountWorkspace: "当前工作区",
   accountRole: "当前访问角色",
   accountSessionProtected: "会话使用 HttpOnly Cookie，退出登录后立即失效，不会保存在浏览器存储里。",
-  accountSaved: "显示名称已更新。",
-  accountSaveError: "无法更新显示名称，请稍后重试。",
+  accountSaved: "个人资料已保存。",
+  accountSaveError: "无法保存个人资料，请稍后重试。",
   accountNameRequired: "请输入显示名称。",
+  accountSave: "保存",
+  accountCurrentPassword: "当前密码",
+  accountNewPassword: "新密码",
+  accountConfirmPassword: "确认新密码",
+  accountPasswordLengthHint: "密码至少包含 10 个字符",
+  accountPasswordMismatch: "两次输入的新密码不一致",
+  accountPasswordChanged: "密码已成功修改",
+  accountPasswordChangeError: "密码修改失败，请检查当前密码是否正确",
+  accountCurrentPasswordRequired: "请输入当前密码",
+  accountNewPasswordRequired: "请输入新密码",
+  accountChangePasswordButton: "更新密码",
   statusSuspended: "已停用",
   statusLeft: "已离开",
   suspendMember: "停用成员",
@@ -503,12 +702,100 @@ const enUS: AdminDictionary = {
   navIntegrations: "Available models",
   navSecurity: "Security policy",
   navAudit: "Audit log",
+  navRoles: "Custom Roles",
   overviewTitle: "Workspace overview",
   membersTitle: "Members and access roles",
+  rolesTitle: "Custom Roles and Capabilities",
+  rolesDescription: "Configure workspace roles and 21 granular capability permissions.",
   agentsTitle: "AI collaborators",
   integrationsTitle: "Models available here",
   securityTitle: "Security policy",
   auditTitle: "Audit log",
+  createRole: "Create Custom Role",
+  editRole: "Edit Role",
+  deleteRole: "Delete Role",
+  roleKey: "Role key",
+  roleName: "Role name",
+  roleDescription: "Role description",
+  roleCapabilities: "Capability Matrix",
+  roleBuiltIn: "Built-in",
+  roleCustom: "Custom",
+  roleCreated: "Custom role created",
+  roleUpdated: "Custom role updated",
+  roleDeleted: "Custom role deleted",
+  assignRoles: "Assign roles",
+  rolesSaved: "Member roles saved",
+  capCategoryWorkspace: "Workspace Governance",
+  capCategoryMember: "Members & Organization",
+  capCategoryAgent: "AI & Agents",
+  capCategoryRoom: "Rooms & Collaboration",
+  capCategoryDocument: "Documents & Publishing",
+  capCategoryIntegration: "Tools & Integrations",
+  capCategorySecurity: "Security & Audit",
+  roleCapabilitiesCount: "{count} capabilities",
+  roleType: "Type",
+  roleSearchPlaceholder: "Search by role name, key, or description…",
+  roleKeyPlaceholder: "e.g., tech_lead",
+  roleNamePlaceholder: "e.g., Tech Lead",
+  roleDescPlaceholder: "Brief description of role responsibilities…",
+  roleDrawerDescription: "Configure role name, key, and capability permissions.",
+  roleCapsRequired: "Please select at least one capability",
+  selectAll: "Select all",
+  deselectAll: "Deselect all",
+  saveRole: "Save Role",
+  deleteRoleConfirmTitle: "Confirm Delete Custom Role",
+  deleteRoleConfirmDesc:
+    'Are you sure you want to delete custom role "{name}"? Members assigned this role will be unbound.',
+  irreversibleAction: "This action cannot be undone.",
+  confirmDelete: "Confirm Delete",
+  customRoles: "Custom Roles",
+  actions: "Actions",
+  capWorkspaceReadName: "Read Workspace",
+  capWorkspaceReadDesc: "View basic workspace information, members, and available capabilities.",
+  capWorkspaceManageName: "Manage Workspace",
+  capWorkspaceManageDesc: "Manage workspace settings, organizational structure, and roles.",
+  capWorkspaceSecurityManageName: "Manage Security Policy",
+  capWorkspaceSecurityManageDesc:
+    "Manage session security policies, access controls, and sensitive parameters.",
+  capMemberInviteName: "Invite Members",
+  capMemberInviteDesc: "Invite new members to join the workspace.",
+  capMemberManageName: "Manage Members",
+  capMemberManageDesc: "Adjust member roles, departments, and activation status.",
+  capAgentProfileReadName: "Read AI Profiles",
+  capAgentProfileReadDesc:
+    "View AI collaborator configurations, personas, and authorization bounds.",
+  capAgentProfileCreateName: "Create AI Profiles",
+  capAgentProfileCreateDesc: "Create or edit AI collaborator configurations.",
+  capAgentProfilePublishName: "Publish AI Profiles",
+  capAgentProfilePublishDesc: "Publish AI collaborators to the workspace catalog.",
+  capAgentInvokeName: "Invoke AI Agents",
+  capAgentInvokeDesc: "Invoke AI collaborators to run tasks in rooms or workflows.",
+  capRoomReadName: "Access Rooms",
+  capRoomReadDesc: "View room discussions and collaboration history.",
+  capRoomManageName: "Manage Rooms",
+  capRoomManageDesc: "Create, modify, or archive collaboration rooms.",
+  capRoomMessageCreateName: "Send Messages",
+  capRoomMessageCreateDesc: "Post messages and discussions in collaboration rooms.",
+  capDocumentReadName: "Read Documents",
+  capDocumentReadDesc: "View collaborative documents and knowledge base content.",
+  capDocumentEditName: "Edit Documents",
+  capDocumentEditDesc: "Collaboratively edit document body content.",
+  capDocumentProposalCreateName: "Create Proposals",
+  capDocumentProposalCreateDesc: "Submit change proposals for protected documents.",
+  capDocumentProposalReviewName: "Review & Merge Proposals",
+  capDocumentProposalReviewDesc: "Review and merge document change proposals.",
+  capDocumentPublishName: "Publish & Export Documents",
+  capDocumentPublishDesc: "Publish documents publicly or export to external formats.",
+  capIntegrationToolReadExecuteName: "Execute Read Tools",
+  capIntegrationToolReadExecuteDesc: "Execute read-only queries and information retrieval tools.",
+  capIntegrationToolWriteExecuteName: "Execute Write Tools",
+  capIntegrationToolWriteExecuteDesc: "Execute state-changing tools and external API mutations.",
+  capApprovalRequestName: "Request Approvals",
+  capApprovalRequestDesc: "Submit approval requests for high-risk or sensitive actions.",
+  capApprovalReviewName: "Review Approvals",
+  capApprovalReviewDesc: "Review and approve high-risk operations (human-only).",
+  capAuditReadName: "Read Audit Log",
+  capAuditReadDesc: "View immutable workspace-wide audit logs.",
   inviteMember: "Invite member",
   createAgent: "Create AI collaborator",
   configure: "View configuration",
@@ -693,18 +980,33 @@ const enUS: AdminDictionary = {
   createAgentPending:
     "Creating AI collaborators opens after the agent publishing path is connected.",
   accountAndSecurity: "Account and security",
-  accountDescription: "Update your display name. Email and session identity stay read-only.",
+  accountDescription:
+    "Update your profile and security settings. Email and session identity stay read-only.",
   accountTabProfile: "Profile",
+  accountTabSecurity: "Security",
   accountTabSession: "Session",
   accountEmail: "Sign-in email",
   accountDisplayName: "Display name",
+  accountLanguage: "Language",
+  accountTimeZone: "Time zone",
   accountWorkspace: "Current workspace",
   accountRole: "Current access role",
   accountSessionProtected:
     "The session uses an HttpOnly cookie. It is revoked on sign-out and is never stored in browser storage.",
-  accountSaved: "Display name updated.",
-  accountSaveError: "Could not update the display name. Try again shortly.",
+  accountSaved: "Profile saved.",
+  accountSaveError: "Could not save profile settings. Try again shortly.",
   accountNameRequired: "Enter a display name.",
+  accountSave: "Save",
+  accountCurrentPassword: "Current password",
+  accountNewPassword: "New password",
+  accountConfirmPassword: "Confirm new password",
+  accountPasswordLengthHint: "Password must be at least 10 characters",
+  accountPasswordMismatch: "New passwords do not match",
+  accountPasswordChanged: "Password changed successfully",
+  accountPasswordChangeError: "Failed to change password. Please verify your current password.",
+  accountCurrentPasswordRequired: "Current password is required",
+  accountNewPasswordRequired: "New password is required",
+  accountChangePasswordButton: "Update password",
   statusSuspended: "Suspended",
   statusLeft: "Left",
   suspendMember: "Suspend member",

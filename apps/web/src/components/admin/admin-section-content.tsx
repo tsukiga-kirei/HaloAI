@@ -12,6 +12,7 @@ import { LiveAgents } from "./live-agents";
 import { LiveAudit } from "./live-audit";
 import { LiveMembers } from "./live-members";
 import { LiveModels } from "./live-models";
+import { LiveRoles } from "./live-roles";
 import { LiveSecurity } from "./live-security";
 
 export interface AdminLiveStats {
@@ -114,6 +115,7 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
 export function AdminSectionContent(props: AdminSectionContentProps) {
   if (props.section === "overview") return <Overview props={props} />;
   if (props.section === "members") return <LiveMembers />;
+  if (props.section === "roles") return <LiveRoles dictionary={props.dictionary} />;
   if (props.section === "agents") {
     return <LiveAgents dictionary={props.dictionary} agents={props.live?.agents ?? []} />;
   }
