@@ -12,6 +12,10 @@ import type { HaloAuth } from "../auth";
 import type { ApiConfig } from "../config";
 import { requireSession } from "../session";
 
+/**
+ * 工作空间路由负责邀请、角色和部门。成员列表必须先经 Membership 过滤再分页，
+ * 禁止把客户端传入的 workspaceId 当作已授权上下文。
+ */
 function sessionUser(session: Awaited<ReturnType<typeof requireSession>>) {
   return { id: session.user.id, name: session.user.name, email: session.user.email };
 }

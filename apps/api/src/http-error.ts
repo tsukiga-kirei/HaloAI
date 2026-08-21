@@ -1,5 +1,8 @@
 import type { ApiErrorCode } from "@haloai/contracts";
 
+/**
+ * HTTP 状态只由稳定错误码推导。响应文案走国际化 key，禁止把内部异常文本交给浏览器。
+ */
 const statusByCode: Readonly<Record<ApiErrorCode, number>> = {
   authentication_required: 401,
   permission_denied: 403,

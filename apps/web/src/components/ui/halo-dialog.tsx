@@ -4,11 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import gsap from "gsap";
 import { X } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import {
-  createDrawerTimeline,
-  prefersReducedMotion,
-  showDrawerImmediate,
-} from "@/lib/motion";
+import { createDrawerTimeline, prefersReducedMotion, showDrawerImmediate } from "@/lib/motion";
 
 /**
  * 表单与创建流程使用右侧抽屉：顶栏、滚动区、可选固定底栏。

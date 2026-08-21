@@ -33,6 +33,7 @@ html {
   --danger: #b9353b;
   --danger-soft: #ffeaec;
   --focus: #6d5ce7;
+  --focus-ring: color-mix(in srgb, var(--focus) 22%, transparent);
   --backdrop: rgb(16 20 29 / 48%);
   --shadow-popover: 0 12px 32px rgb(24 29 40 / 14%);
   --shadow-modal: 0 24px 72px rgb(17 22 32 / 24%);

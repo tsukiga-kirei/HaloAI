@@ -27,6 +27,10 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { HaloAuth } from "../auth";
 import { requireSession } from "../session";
 
+/**
+ * 协作快照与写入都必须先解析会话，再进入已写入租户上下文的事务。
+ * URL 中的 workspaceId 只用于选路，真正的授权来自 Membership 与 Capability。
+ */
 export type CollaborationRepositoryExecutor = <T>(
   request: FastifyRequest,
   workspaceId: string,

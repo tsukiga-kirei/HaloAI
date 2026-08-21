@@ -143,12 +143,9 @@ export function animateLoginEntrance(root: HTMLElement): () => void {
   const storyParts = targets.story
     ? Array.from(targets.story.querySelectorAll<HTMLElement>(":scope > *"))
     : [];
-  const allTargets = [
-    targets.brand,
-    ...storyParts,
-    targets.panel,
-    ...targets.controls,
-  ].filter((target): target is HTMLElement => Boolean(target));
+  const allTargets = [targets.brand, ...storyParts, targets.panel, ...targets.controls].filter(
+    (target): target is HTMLElement => Boolean(target),
+  );
 
   if (prefersReducedMotion()) {
     clearMotion(allTargets);

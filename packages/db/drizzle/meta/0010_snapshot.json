@@ -83,12 +83,8 @@
           "name": "agent_actors_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_actors",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -96,14 +92,8 @@
           "name": "agent_actors_actor_fk",
           "tableFrom": "agent_actors",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -111,14 +101,8 @@
           "name": "agent_actors_profile_fk",
           "tableFrom": "agent_actors",
           "tableTo": "agent_profiles",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_profile_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_profile_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -130,9 +114,7 @@
           "name": "agent_actors_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"agent_actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -288,12 +270,8 @@
           "name": "agent_profiles_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_profiles",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -301,14 +279,8 @@
           "name": "agent_profiles_owner_fk",
           "tableFrom": "agent_profiles",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "owner_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "owner_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -320,9 +292,7 @@
           "name": "agent_profiles_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_profiles\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"agent_profiles\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -442,12 +412,8 @@
           "name": "agent_version_capability_grants_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_version_capability_grants",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -455,12 +421,8 @@
           "name": "agent_version_capability_grants_capability_key_capabilities_key_fk",
           "tableFrom": "agent_version_capability_grants",
           "tableTo": "capabilities",
-          "columnsFrom": [
-            "capability_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["capability_key"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -468,14 +430,8 @@
           "name": "agent_version_cap_grants_version_fk",
           "tableFrom": "agent_version_capability_grants",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -483,14 +439,8 @@
           "name": "agent_version_cap_grants_creator_fk",
           "tableFrom": "agent_version_capability_grants",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -502,9 +452,7 @@
           "name": "agent_ver_cap_grants_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_version_capability_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"agent_version_capability_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -623,12 +571,8 @@
           "name": "agent_version_tool_grants_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_version_tool_grants",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -636,14 +580,8 @@
           "name": "agent_version_tool_grants_version_fk",
           "tableFrom": "agent_version_tool_grants",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -651,14 +589,8 @@
           "name": "agent_version_tool_grants_tool_fk",
           "tableFrom": "agent_version_tool_grants",
           "tableTo": "tool_capabilities",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_capability_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_capability_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -666,14 +598,8 @@
           "name": "agent_version_tool_grants_creator_fk",
           "tableFrom": "agent_version_tool_grants",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -685,9 +611,7 @@
           "name": "agent_ver_tool_grants_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_version_tool_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"agent_version_tool_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -936,12 +860,8 @@
           "name": "agent_versions_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_versions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -949,14 +869,8 @@
           "name": "agent_versions_profile_fk",
           "tableFrom": "agent_versions",
           "tableTo": "agent_profiles",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_profile_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_profile_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -964,14 +878,8 @@
           "name": "agent_versions_creator_fk",
           "tableFrom": "agent_versions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -979,14 +887,8 @@
           "name": "agent_versions_publisher_fk",
           "tableFrom": "agent_versions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "published_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "published_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -998,27 +900,21 @@
           "name": "agent_versions_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "agent_versions_insert": {
           "name": "agent_versions_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"agent_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "agent_versions_update_draft": {
           "name": "agent_versions_update_draft",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid and \"agent_versions\".\"status\" = 'draft'",
           "withCheck": "\"agent_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
@@ -1026,9 +922,7 @@
           "name": "agent_versions_delete_draft",
           "as": "PERMISSIVE",
           "for": "DELETE",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid and \"agent_versions\".\"status\" = 'draft'"
         }
       },
@@ -1280,12 +1174,8 @@
           "name": "tool_capabilities_workspace_id_workspaces_id_fk",
           "tableFrom": "tool_capabilities",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1293,14 +1183,8 @@
           "name": "tool_capabilities_creator_fk",
           "tableFrom": "tool_capabilities",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1312,9 +1196,7 @@
           "name": "tool_capabilities_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"tool_capabilities\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"tool_capabilities\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -1462,12 +1344,8 @@
           "name": "access_roles_workspace_id_workspaces_id_fk",
           "tableFrom": "access_roles",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1479,9 +1357,7 @@
           "name": "access_roles_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"access_roles\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"access_roles\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -1679,12 +1555,8 @@
           "name": "actor_role_assignments_workspace_id_workspaces_id_fk",
           "tableFrom": "actor_role_assignments",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1692,14 +1564,8 @@
           "name": "actor_role_assignments_actor_fk",
           "tableFrom": "actor_role_assignments",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1707,14 +1573,8 @@
           "name": "actor_role_assignments_role_fk",
           "tableFrom": "actor_role_assignments",
           "tableTo": "access_roles",
-          "columnsFrom": [
-            "workspace_id",
-            "role_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "role_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1722,14 +1582,8 @@
           "name": "actor_role_assignments_granter_fk",
           "tableFrom": "actor_role_assignments",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "granted_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "granted_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1741,9 +1595,7 @@
           "name": "actor_role_assign_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"actor_role_assignments\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"actor_role_assignments\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -2053,12 +1905,8 @@
           "name": "resource_grants_workspace_id_workspaces_id_fk",
           "tableFrom": "resource_grants",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2066,12 +1914,8 @@
           "name": "resource_grants_capability_key_capabilities_key_fk",
           "tableFrom": "resource_grants",
           "tableTo": "capabilities",
-          "columnsFrom": [
-            "capability_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["capability_key"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2079,14 +1923,8 @@
           "name": "resource_grants_actor_fk",
           "tableFrom": "resource_grants",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2094,14 +1932,8 @@
           "name": "resource_grants_role_fk",
           "tableFrom": "resource_grants",
           "tableTo": "access_roles",
-          "columnsFrom": [
-            "workspace_id",
-            "role_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "role_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2109,14 +1941,8 @@
           "name": "resource_grants_granter_fk",
           "tableFrom": "resource_grants",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "granted_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "granted_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2128,9 +1954,7 @@
           "name": "resource_grants_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"resource_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"resource_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -2262,12 +2086,8 @@
           "name": "role_capability_grants_workspace_id_workspaces_id_fk",
           "tableFrom": "role_capability_grants",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2275,12 +2095,8 @@
           "name": "role_capability_grants_capability_key_capabilities_key_fk",
           "tableFrom": "role_capability_grants",
           "tableTo": "capabilities",
-          "columnsFrom": [
-            "capability_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["capability_key"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2288,14 +2104,8 @@
           "name": "role_capability_grants_role_fk",
           "tableFrom": "role_capability_grants",
           "tableTo": "access_roles",
-          "columnsFrom": [
-            "workspace_id",
-            "role_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "role_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2303,14 +2113,8 @@
           "name": "role_capability_grants_granter_fk",
           "tableFrom": "role_capability_grants",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "granted_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "granted_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2322,9 +2126,7 @@
           "name": "role_cap_grants_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"role_capability_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"role_capability_grants\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -2461,12 +2263,8 @@
           "name": "auth_accounts_user_id_users_id_fk",
           "tableFrom": "auth_accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2576,12 +2374,8 @@
           "name": "auth_sessions_user_id_users_id_fk",
           "tableFrom": "auth_sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2809,12 +2603,8 @@
           "name": "mentions_workspace_id_workspaces_id_fk",
           "tableFrom": "mentions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2822,14 +2612,8 @@
           "name": "mentions_message_fk",
           "tableFrom": "mentions",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "message_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2837,14 +2621,8 @@
           "name": "mentions_target_actor_fk",
           "tableFrom": "mentions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "target_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "target_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2856,18 +2634,14 @@
           "name": "mentions_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"mentions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "mentions_insert": {
           "name": "mentions_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"mentions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -2996,12 +2770,8 @@
           "name": "message_revisions_workspace_id_workspaces_id_fk",
           "tableFrom": "message_revisions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3009,14 +2779,8 @@
           "name": "message_revisions_message_fk",
           "tableFrom": "message_revisions",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "message_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3024,14 +2788,8 @@
           "name": "message_revisions_editor_fk",
           "tableFrom": "message_revisions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "edited_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "edited_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3043,18 +2801,14 @@
           "name": "message_revisions_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"message_revisions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "message_revisions_insert": {
           "name": "message_revisions_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"message_revisions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -3164,12 +2918,8 @@
           "name": "message_tombstones_workspace_id_workspaces_id_fk",
           "tableFrom": "message_tombstones",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3177,14 +2927,8 @@
           "name": "message_tombstones_message_fk",
           "tableFrom": "message_tombstones",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "message_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3192,14 +2936,8 @@
           "name": "message_tombstones_actor_fk",
           "tableFrom": "message_tombstones",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "tombstoned_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tombstoned_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3211,18 +2949,14 @@
           "name": "message_tombstones_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"message_tombstones\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "message_tombstones_insert": {
           "name": "message_tombstones_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"message_tombstones\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -3461,12 +3195,8 @@
           "name": "messages_workspace_id_workspaces_id_fk",
           "tableFrom": "messages",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3474,14 +3204,8 @@
           "name": "messages_room_fk",
           "tableFrom": "messages",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "workspace_id",
-            "room_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "room_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3489,14 +3213,8 @@
           "name": "messages_author_fk",
           "tableFrom": "messages",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "author_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "author_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -3504,16 +3222,8 @@
           "name": "messages_reply_fk",
           "tableFrom": "messages",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "room_id",
-            "reply_to_message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "room_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "room_id", "reply_to_message_id"],
+          "columnsTo": ["workspace_id", "room_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -3521,16 +3231,8 @@
           "name": "messages_thread_root_fk",
           "tableFrom": "messages",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "room_id",
-            "thread_root_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "room_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "room_id", "thread_root_id"],
+          "columnsTo": ["workspace_id", "room_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3542,18 +3244,14 @@
           "name": "messages_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"messages\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "messages_insert": {
           "name": "messages_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"messages\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -3726,12 +3424,8 @@
           "name": "project_memberships_workspace_id_workspaces_id_fk",
           "tableFrom": "project_memberships",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3739,14 +3433,8 @@
           "name": "project_memberships_project_fk",
           "tableFrom": "project_memberships",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3754,14 +3442,8 @@
           "name": "project_memberships_actor_fk",
           "tableFrom": "project_memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3769,14 +3451,8 @@
           "name": "project_memberships_adder_fk",
           "tableFrom": "project_memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "added_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "added_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3788,9 +3464,7 @@
           "name": "project_memberships_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"project_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"project_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -3933,12 +3607,8 @@
           "name": "projects_workspace_id_workspaces_id_fk",
           "tableFrom": "projects",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3946,14 +3616,8 @@
           "name": "projects_creator_fk",
           "tableFrom": "projects",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3965,9 +3629,7 @@
           "name": "projects_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"projects\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"projects\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -4142,12 +3804,8 @@
           "name": "room_memberships_workspace_id_workspaces_id_fk",
           "tableFrom": "room_memberships",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4155,14 +3813,8 @@
           "name": "room_memberships_room_fk",
           "tableFrom": "room_memberships",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "workspace_id",
-            "room_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "room_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4170,14 +3822,8 @@
           "name": "room_memberships_actor_fk",
           "tableFrom": "room_memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4185,14 +3831,8 @@
           "name": "room_memberships_adder_fk",
           "tableFrom": "room_memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "added_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "added_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4204,9 +3844,7 @@
           "name": "room_memberships_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"room_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"room_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -4409,12 +4047,8 @@
           "name": "rooms_workspace_id_workspaces_id_fk",
           "tableFrom": "rooms",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4422,14 +4056,8 @@
           "name": "rooms_project_fk",
           "tableFrom": "rooms",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4437,14 +4065,8 @@
           "name": "rooms_creator_fk",
           "tableFrom": "rooms",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4456,9 +4078,7 @@
           "name": "rooms_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"rooms\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"rooms\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -4738,12 +4358,8 @@
           "name": "document_proposals_workspace_id_workspaces_id_fk",
           "tableFrom": "document_proposals",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4751,14 +4367,8 @@
           "name": "document_proposals_document_fk",
           "tableFrom": "document_proposals",
           "tableTo": "documents",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4766,16 +4376,8 @@
           "name": "document_proposals_base_version_fk",
           "tableFrom": "document_proposals",
           "tableTo": "document_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id",
-            "base_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "document_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id", "base_version_id"],
+          "columnsTo": ["workspace_id", "document_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4783,14 +4385,8 @@
           "name": "document_proposals_agent_actor_fk",
           "tableFrom": "document_proposals",
           "tableTo": "agent_actors",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "actor_id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_actor_id"],
+          "columnsTo": ["workspace_id", "actor_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4798,14 +4394,8 @@
           "name": "document_proposals_agent_version_fk",
           "tableFrom": "document_proposals",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4813,14 +4403,8 @@
           "name": "document_proposals_delegator_fk",
           "tableFrom": "document_proposals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "delegated_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "delegated_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4828,14 +4412,8 @@
           "name": "document_proposals_run_fk",
           "tableFrom": "document_proposals",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4843,14 +4421,8 @@
           "name": "document_proposals_reviewer_fk",
           "tableFrom": "document_proposals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "reviewed_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "reviewed_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4858,16 +4430,8 @@
           "name": "document_proposals_applied_snapshot_fk",
           "tableFrom": "document_proposals",
           "tableTo": "yjs_snapshots",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id",
-            "applied_snapshot_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "document_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id", "applied_snapshot_id"],
+          "columnsTo": ["workspace_id", "document_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -4875,16 +4439,8 @@
           "name": "document_proposals_applied_version_fk",
           "tableFrom": "document_proposals",
           "tableTo": "document_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id",
-            "applied_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "document_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id", "applied_version_id"],
+          "columnsTo": ["workspace_id", "document_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4896,9 +4452,7 @@
           "name": "document_proposals_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"document_proposals\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"document_proposals\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -5102,12 +4656,8 @@
           "name": "proposal_operations_workspace_id_workspaces_id_fk",
           "tableFrom": "proposal_operations",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5115,14 +4665,8 @@
           "name": "proposal_operations_proposal_fk",
           "tableFrom": "proposal_operations",
           "tableTo": "document_proposals",
-          "columnsFrom": [
-            "workspace_id",
-            "proposal_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "proposal_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5130,14 +4674,8 @@
           "name": "proposal_operations_decider_fk",
           "tableFrom": "proposal_operations",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "decided_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "decided_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5149,9 +4687,7 @@
           "name": "proposal_operations_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"proposal_operations\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"proposal_operations\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -5333,12 +4869,8 @@
           "name": "document_versions_workspace_id_workspaces_id_fk",
           "tableFrom": "document_versions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5346,14 +4878,8 @@
           "name": "document_versions_document_fk",
           "tableFrom": "document_versions",
           "tableTo": "documents",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5361,16 +4887,8 @@
           "name": "document_versions_snapshot_fk",
           "tableFrom": "document_versions",
           "tableTo": "yjs_snapshots",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id",
-            "snapshot_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "document_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id", "snapshot_id"],
+          "columnsTo": ["workspace_id", "document_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5378,14 +4896,8 @@
           "name": "document_versions_creator_fk",
           "tableFrom": "document_versions",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5393,14 +4905,8 @@
           "name": "document_versions_run_fk",
           "tableFrom": "document_versions",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5412,18 +4918,14 @@
           "name": "document_versions_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"document_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "document_versions_insert": {
           "name": "document_versions_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"document_versions\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -5600,12 +5102,8 @@
           "name": "documents_workspace_id_workspaces_id_fk",
           "tableFrom": "documents",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5613,14 +5111,8 @@
           "name": "documents_project_fk",
           "tableFrom": "documents",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5628,16 +5120,8 @@
           "name": "documents_room_fk",
           "tableFrom": "documents",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id",
-            "room_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "project_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id", "room_id"],
+          "columnsTo": ["workspace_id", "project_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5645,14 +5129,8 @@
           "name": "documents_owner_fk",
           "tableFrom": "documents",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "owner_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "owner_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5664,9 +5142,7 @@
           "name": "documents_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"documents\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"documents\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -5874,12 +5350,8 @@
           "name": "yjs_snapshots_workspace_id_workspaces_id_fk",
           "tableFrom": "yjs_snapshots",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5887,14 +5359,8 @@
           "name": "yjs_snapshots_document_fk",
           "tableFrom": "yjs_snapshots",
           "tableTo": "documents",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -5902,14 +5368,8 @@
           "name": "yjs_snapshots_creator_fk",
           "tableFrom": "yjs_snapshots",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5917,14 +5377,8 @@
           "name": "yjs_snapshots_run_fk",
           "tableFrom": "yjs_snapshots",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5936,18 +5390,14 @@
           "name": "yjs_snapshots_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"yjs_snapshots\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "yjs_snapshots_insert": {
           "name": "yjs_snapshots_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"yjs_snapshots\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -6155,12 +5605,8 @@
           "name": "yjs_updates_workspace_id_workspaces_id_fk",
           "tableFrom": "yjs_updates",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6168,14 +5614,8 @@
           "name": "yjs_updates_document_fk",
           "tableFrom": "yjs_updates",
           "tableTo": "documents",
-          "columnsFrom": [
-            "workspace_id",
-            "document_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6183,14 +5623,8 @@
           "name": "yjs_updates_actor_fk",
           "tableFrom": "yjs_updates",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6198,14 +5632,8 @@
           "name": "yjs_updates_run_fk",
           "tableFrom": "yjs_updates",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6217,18 +5645,14 @@
           "name": "yjs_updates_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"yjs_updates\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "yjs_updates_insert": {
           "name": "yjs_updates_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"yjs_updates\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -6548,12 +5972,8 @@
           "name": "approvals_workspace_id_workspaces_id_fk",
           "tableFrom": "approvals",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -6561,14 +5981,8 @@
           "name": "approvals_project_fk",
           "tableFrom": "approvals",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6576,14 +5990,8 @@
           "name": "approvals_requester_fk",
           "tableFrom": "approvals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "requested_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "requested_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6591,14 +5999,8 @@
           "name": "approvals_delegator_fk",
           "tableFrom": "approvals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "delegated_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "delegated_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6606,14 +6008,8 @@
           "name": "approvals_reviewer_fk",
           "tableFrom": "approvals",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "reviewed_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "reviewed_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6621,14 +6017,8 @@
           "name": "approvals_agent_version_fk",
           "tableFrom": "approvals",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6636,14 +6026,8 @@
           "name": "approvals_run_fk",
           "tableFrom": "approvals",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6651,14 +6035,8 @@
           "name": "approvals_tool_capability_fk",
           "tableFrom": "approvals",
           "tableTo": "tool_capabilities",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_capability_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_capability_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6666,14 +6044,8 @@
           "name": "approvals_tool_call_fk",
           "tableFrom": "approvals",
           "tableTo": "tool_calls",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_call_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_call_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6681,14 +6053,8 @@
           "name": "approvals_document_proposal_fk",
           "tableFrom": "approvals",
           "tableTo": "document_proposals",
-          "columnsFrom": [
-            "workspace_id",
-            "document_proposal_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "document_proposal_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6696,12 +6062,8 @@
           "name": "approvals_capability_fk",
           "tableFrom": "approvals",
           "tableTo": "capabilities",
-          "columnsFrom": [
-            "capability_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["capability_key"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6713,9 +6075,7 @@
           "name": "approvals_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"approvals\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"approvals\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -7028,12 +6388,8 @@
           "name": "audit_events_workspace_id_workspaces_id_fk",
           "tableFrom": "audit_events",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -7041,14 +6397,8 @@
           "name": "audit_events_principal_fk",
           "tableFrom": "audit_events",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "effective_principal_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "effective_principal_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7056,14 +6406,8 @@
           "name": "audit_events_on_behalf_of_fk",
           "tableFrom": "audit_events",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "on_behalf_of_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "on_behalf_of_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7071,14 +6415,8 @@
           "name": "audit_events_membership_fk",
           "tableFrom": "audit_events",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "workspace_membership_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "workspace_membership_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7086,14 +6424,8 @@
           "name": "audit_events_approval_fk",
           "tableFrom": "audit_events",
           "tableTo": "approvals",
-          "columnsFrom": [
-            "workspace_id",
-            "approval_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "approval_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7101,14 +6433,8 @@
           "name": "audit_events_run_fk",
           "tableFrom": "audit_events",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7116,14 +6442,8 @@
           "name": "audit_events_agent_version_fk",
           "tableFrom": "audit_events",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7131,14 +6451,8 @@
           "name": "audit_events_tool_call_fk",
           "tableFrom": "audit_events",
           "tableTo": "tool_calls",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_call_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_call_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7150,18 +6464,14 @@
           "name": "audit_events_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"audit_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "audit_events_insert": {
           "name": "audit_events_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"audit_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -7383,12 +6693,8 @@
           "name": "usage_ledger_entries_workspace_id_workspaces_id_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -7396,14 +6702,8 @@
           "name": "usage_ledger_project_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7411,14 +6711,8 @@
           "name": "usage_ledger_run_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7426,14 +6720,8 @@
           "name": "usage_ledger_actor_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7441,14 +6729,8 @@
           "name": "usage_ledger_agent_version_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7456,14 +6738,8 @@
           "name": "usage_ledger_tool_call_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "tool_calls",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_call_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_call_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7471,14 +6747,8 @@
           "name": "usage_ledger_reservation_fk",
           "tableFrom": "usage_ledger_entries",
           "tableTo": "usage_ledger_entries",
-          "columnsFrom": [
-            "workspace_id",
-            "reservation_entry_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "reservation_entry_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7490,18 +6760,14 @@
           "name": "usage_ledger_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"usage_ledger_entries\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "usage_ledger_insert": {
           "name": "usage_ledger_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"usage_ledger_entries\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -7668,12 +6934,8 @@
           "name": "actors_workspace_id_workspaces_id_fk",
           "tableFrom": "actors",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -7685,9 +6947,7 @@
           "name": "actors_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -7774,12 +7034,8 @@
           "name": "human_actors_workspace_id_workspaces_id_fk",
           "tableFrom": "human_actors",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -7787,12 +7043,8 @@
           "name": "human_actors_user_id_users_id_fk",
           "tableFrom": "human_actors",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7800,14 +7052,8 @@
           "name": "human_actors_workspace_actor_fk",
           "tableFrom": "human_actors",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -7819,9 +7065,7 @@
           "name": "human_actors_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"human_actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"human_actors\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -8085,12 +7329,8 @@
           "name": "workspace_departments_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_departments",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -8098,14 +7338,8 @@
           "name": "workspace_departments_parent_fk",
           "tableFrom": "workspace_departments",
           "tableTo": "workspace_departments",
-          "columnsFrom": [
-            "workspace_id",
-            "parent_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "parent_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8113,14 +7347,8 @@
           "name": "workspace_departments_manager_fk",
           "tableFrom": "workspace_departments",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "manager_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "manager_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8132,9 +7360,7 @@
           "name": "workspace_departments_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"workspace_departments\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"workspace_departments\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -8311,12 +7537,8 @@
           "name": "workspace_memberships_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_memberships",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -8324,14 +7546,8 @@
           "name": "workspace_memberships_human_actor_fk",
           "tableFrom": "workspace_memberships",
           "tableTo": "human_actors",
-          "columnsFrom": [
-            "workspace_id",
-            "human_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "actor_id"
-          ],
+          "columnsFrom": ["workspace_id", "human_actor_id"],
+          "columnsTo": ["workspace_id", "actor_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8339,14 +7555,8 @@
           "name": "workspace_memberships_inviter_fk",
           "tableFrom": "workspace_memberships",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "invited_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "invited_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8354,14 +7564,8 @@
           "name": "workspace_memberships_department_fk",
           "tableFrom": "workspace_memberships",
           "tableTo": "workspace_departments",
-          "columnsFrom": [
-            "workspace_id",
-            "department_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "department_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8373,9 +7577,7 @@
           "name": "workspace_memberships_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"workspace_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"workspace_memberships\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -8489,12 +7691,8 @@
           "name": "workspaces_created_by_user_id_users_id_fk",
           "tableFrom": "workspaces",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8506,9 +7704,7 @@
           "name": "workspaces_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"workspaces\".\"id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"workspaces\".\"id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -8769,12 +7965,8 @@
           "name": "outbox_events_workspace_id_workspaces_id_fk",
           "tableFrom": "outbox_events",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -8786,9 +7978,7 @@
           "name": "outbox_events_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"outbox_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"outbox_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -9149,12 +8339,8 @@
           "name": "agent_runs_workspace_id_workspaces_id_fk",
           "tableFrom": "agent_runs",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9162,14 +8348,8 @@
           "name": "agent_runs_project_fk",
           "tableFrom": "agent_runs",
           "tableTo": "projects",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9177,16 +8357,8 @@
           "name": "agent_runs_room_fk",
           "tableFrom": "agent_runs",
           "tableTo": "rooms",
-          "columnsFrom": [
-            "workspace_id",
-            "project_id",
-            "room_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "project_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "project_id", "room_id"],
+          "columnsTo": ["workspace_id", "project_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9194,14 +8366,8 @@
           "name": "agent_runs_agent_actor_fk",
           "tableFrom": "agent_runs",
           "tableTo": "agent_actors",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "actor_id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_actor_id"],
+          "columnsTo": ["workspace_id", "actor_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9209,14 +8375,8 @@
           "name": "agent_runs_agent_version_fk",
           "tableFrom": "agent_runs",
           "tableTo": "agent_versions",
-          "columnsFrom": [
-            "workspace_id",
-            "agent_version_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "agent_version_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9224,14 +8384,8 @@
           "name": "agent_runs_delegator_fk",
           "tableFrom": "agent_runs",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "delegated_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "delegated_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9239,14 +8393,8 @@
           "name": "agent_runs_parent_fk",
           "tableFrom": "agent_runs",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "parent_run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "parent_run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -9254,16 +8402,8 @@
           "name": "agent_runs_trigger_message_fk",
           "tableFrom": "agent_runs",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "room_id",
-            "trigger_message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "room_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "room_id", "trigger_message_id"],
+          "columnsTo": ["workspace_id", "room_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -9275,9 +8415,7 @@
           "name": "agent_runs_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"agent_runs\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"agent_runs\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -9495,12 +8633,8 @@
           "name": "run_events_workspace_id_workspaces_id_fk",
           "tableFrom": "run_events",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9508,14 +8642,8 @@
           "name": "run_events_run_fk",
           "tableFrom": "run_events",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9523,14 +8651,8 @@
           "name": "run_events_actor_fk",
           "tableFrom": "run_events",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -9542,18 +8664,14 @@
           "name": "run_events_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"run_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "run_events_insert": {
           "name": "run_events_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"run_events\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -9670,12 +8788,8 @@
           "name": "run_messages_workspace_id_workspaces_id_fk",
           "tableFrom": "run_messages",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9683,14 +8797,8 @@
           "name": "run_messages_run_fk",
           "tableFrom": "run_messages",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9698,14 +8806,8 @@
           "name": "run_messages_message_fk",
           "tableFrom": "run_messages",
           "tableTo": "messages",
-          "columnsFrom": [
-            "workspace_id",
-            "message_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "message_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -9717,18 +8819,14 @@
           "name": "run_messages_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"run_messages\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "run_messages_insert": {
           "name": "run_messages_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"run_messages\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -9953,12 +9051,8 @@
           "name": "run_steps_workspace_id_workspaces_id_fk",
           "tableFrom": "run_steps",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -9966,14 +9060,8 @@
           "name": "run_steps_run_fk",
           "tableFrom": "run_steps",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -9985,9 +9073,7 @@
           "name": "run_steps_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"run_steps\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"run_steps\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -10154,12 +9240,8 @@
           "name": "context_manifest_items_workspace_id_workspaces_id_fk",
           "tableFrom": "context_manifest_items",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10167,14 +9249,8 @@
           "name": "context_manifest_items_manifest_fk",
           "tableFrom": "context_manifest_items",
           "tableTo": "context_manifests",
-          "columnsFrom": [
-            "workspace_id",
-            "manifest_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "manifest_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -10186,18 +9262,14 @@
           "name": "context_manifest_items_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"context_manifest_items\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "context_manifest_items_insert": {
           "name": "context_manifest_items_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"context_manifest_items\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -10338,12 +9410,8 @@
           "name": "context_manifests_workspace_id_workspaces_id_fk",
           "tableFrom": "context_manifests",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10351,14 +9419,8 @@
           "name": "context_manifests_run_fk",
           "tableFrom": "context_manifests",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10366,14 +9428,8 @@
           "name": "context_manifests_step_fk",
           "tableFrom": "context_manifests",
           "tableTo": "run_steps",
-          "columnsFrom": [
-            "workspace_id",
-            "step_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "step_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -10385,18 +9441,14 @@
           "name": "context_manifests_select",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"context_manifests\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         },
         "context_manifests_insert": {
           "name": "context_manifests_insert",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "withCheck": "\"context_manifests\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
       },
@@ -10654,12 +9706,8 @@
           "name": "tool_calls_workspace_id_workspaces_id_fk",
           "tableFrom": "tool_calls",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10667,14 +9715,8 @@
           "name": "tool_calls_run_fk",
           "tableFrom": "tool_calls",
           "tableTo": "agent_runs",
-          "columnsFrom": [
-            "workspace_id",
-            "run_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "run_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10682,14 +9724,8 @@
           "name": "tool_calls_step_fk",
           "tableFrom": "tool_calls",
           "tableTo": "run_steps",
-          "columnsFrom": [
-            "workspace_id",
-            "step_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "step_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -10697,14 +9733,8 @@
           "name": "tool_calls_capability_fk",
           "tableFrom": "tool_calls",
           "tableTo": "tool_capabilities",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_capability_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_capability_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -10712,14 +9742,8 @@
           "name": "tool_calls_principal_fk",
           "tableFrom": "tool_calls",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "execution_principal_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "execution_principal_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -10731,9 +9755,7 @@
           "name": "tool_calls_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"tool_calls\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"tool_calls\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -10898,12 +9920,8 @@
           "name": "tool_effects_workspace_id_workspaces_id_fk",
           "tableFrom": "tool_effects",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -10911,14 +9929,8 @@
           "name": "tool_effects_tool_call_fk",
           "tableFrom": "tool_effects",
           "tableTo": "tool_calls",
-          "columnsFrom": [
-            "workspace_id",
-            "tool_call_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "tool_call_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -10930,9 +9942,7 @@
           "name": "tool_effects_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"tool_effects\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"tool_effects\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -11156,12 +10166,8 @@
           "name": "system_administrators_user_id_users_id_fk",
           "tableFrom": "system_administrators",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -11367,12 +10373,8 @@
           "name": "system_tenant_invitations_invited_by_user_id_users_id_fk",
           "tableFrom": "system_tenant_invitations",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -11380,12 +10382,8 @@
           "name": "system_tenant_invitations_accepted_by_user_id_users_id_fk",
           "tableFrom": "system_tenant_invitations",
           "tableTo": "users",
-          "columnsFrom": [
-            "accepted_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accepted_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -11496,12 +10494,8 @@
           "name": "workspace_model_allocations_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_model_allocations",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -11509,12 +10503,8 @@
           "name": "workspace_model_allocations_model_id_platform_models_id_fk",
           "tableFrom": "workspace_model_allocations",
           "tableTo": "platform_models",
-          "columnsFrom": [
-            "model_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["model_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -11682,12 +10672,8 @@
           "name": "workspace_invitations_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_invitations",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -11695,12 +10681,8 @@
           "name": "workspace_invitations_accepted_by_user_id_users_id_fk",
           "tableFrom": "workspace_invitations",
           "tableTo": "users",
-          "columnsFrom": [
-            "accepted_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accepted_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -11708,14 +10690,8 @@
           "name": "workspace_invitations_inviter_fk",
           "tableFrom": "workspace_invitations",
           "tableTo": "actors",
-          "columnsFrom": [
-            "workspace_id",
-            "invited_by_actor_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "invited_by_actor_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -11723,14 +10699,8 @@
           "name": "workspace_invitations_department_fk",
           "tableFrom": "workspace_invitations",
           "tableTo": "workspace_departments",
-          "columnsFrom": [
-            "workspace_id",
-            "department_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "id"
-          ],
+          "columnsFrom": ["workspace_id", "department_id"],
+          "columnsTo": ["workspace_id", "id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -11742,9 +10712,7 @@
           "name": "workspace_invitations_tenant",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": [
-            "public"
-          ],
+          "to": ["public"],
           "using": "\"workspace_invitations\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid",
           "withCheck": "\"workspace_invitations\".\"workspace_id\" = nullif(current_setting('haloai.workspace_id', true), '')::uuid"
         }
@@ -11766,215 +10734,112 @@
     "public.actor_kind": {
       "name": "actor_kind",
       "schema": "public",
-      "values": [
-        "human",
-        "agent",
-        "system"
-      ]
+      "values": ["human", "agent", "system"]
     },
     "public.actor_status": {
       "name": "actor_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended",
-        "archived"
-      ]
+      "values": ["active", "suspended", "archived"]
     },
     "public.agent_profile_status": {
       "name": "agent_profile_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "active",
-        "archived"
-      ]
+      "values": ["draft", "active", "archived"]
     },
     "public.agent_version_status": {
       "name": "agent_version_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "published",
-        "retired"
-      ]
+      "values": ["draft", "published", "retired"]
     },
     "public.approval_status": {
       "name": "approval_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "approved",
-        "rejected",
-        "expired",
-        "consumed",
-        "cancelled"
-      ]
+      "values": ["pending", "approved", "rejected", "expired", "consumed", "cancelled"]
     },
     "public.audit_outcome": {
       "name": "audit_outcome",
       "schema": "public",
-      "values": [
-        "succeeded",
-        "failed",
-        "denied",
-        "cancelled"
-      ]
+      "values": ["succeeded", "failed", "denied", "cancelled"]
     },
     "public.collaboration_mode": {
       "name": "collaboration_mode",
       "schema": "public",
-      "values": [
-        "mention",
-        "facilitated",
-        "workflow",
-        "roundtable"
-      ]
+      "values": ["mention", "facilitated", "workflow", "roundtable"]
     },
     "public.context_trust_class": {
       "name": "context_trust_class",
       "schema": "public",
-      "values": [
-        "server_instruction",
-        "authorized_content",
-        "untrusted_content"
-      ]
+      "values": ["server_instruction", "authorized_content", "untrusted_content"]
     },
     "public.document_snapshot_kind": {
       "name": "document_snapshot_kind",
       "schema": "public",
-      "values": [
-        "working",
-        "checkpoint",
-        "version",
-        "proposal"
-      ]
+      "values": ["working", "checkpoint", "version", "proposal"]
     },
     "public.document_status": {
       "name": "document_status",
       "schema": "public",
-      "values": [
-        "active",
-        "archived",
-        "deleted"
-      ]
+      "values": ["active", "archived", "deleted"]
     },
     "public.document_update_origin": {
       "name": "document_update_origin",
       "schema": "public",
-      "values": [
-        "human",
-        "agent",
-        "system",
-        "proposal"
-      ]
+      "values": ["human", "agent", "system", "proposal"]
     },
     "public.document_version_cause": {
       "name": "document_version_cause",
       "schema": "public",
-      "values": [
-        "manual",
-        "proposal",
-        "publish",
-        "restore",
-        "import"
-      ]
+      "values": ["manual", "proposal", "publish", "restore", "import"]
     },
     "public.event_durability": {
       "name": "event_durability",
       "schema": "public",
-      "values": [
-        "durable",
-        "transient"
-      ]
+      "values": ["durable", "transient"]
     },
     "public.external_effect_status": {
       "name": "external_effect_status",
       "schema": "public",
-      "values": [
-        "prepared",
-        "dispatched",
-        "confirmed",
-        "uncertain",
-        "compensated",
-        "cancelled"
-      ]
+      "values": ["prepared", "dispatched", "confirmed", "uncertain", "compensated", "cancelled"]
     },
     "public.grant_effect": {
       "name": "grant_effect",
       "schema": "public",
-      "values": [
-        "allow",
-        "deny"
-      ]
+      "values": ["allow", "deny"]
     },
     "public.grant_scope": {
       "name": "grant_scope",
       "schema": "public",
-      "values": [
-        "workspace",
-        "project",
-        "room",
-        "resource"
-      ]
+      "values": ["workspace", "project", "room", "resource"]
     },
     "public.grant_status": {
       "name": "grant_status",
       "schema": "public",
-      "values": [
-        "active",
-        "revoked",
-        "expired"
-      ]
+      "values": ["active", "revoked", "expired"]
     },
     "public.membership_status": {
       "name": "membership_status",
       "schema": "public",
-      "values": [
-        "invited",
-        "active",
-        "suspended",
-        "left"
-      ]
+      "values": ["invited", "active", "suspended", "left"]
     },
     "public.message_kind": {
       "name": "message_kind",
       "schema": "public",
-      "values": [
-        "text",
-        "rich_text",
-        "system",
-        "agent_response",
-        "action_card"
-      ]
+      "values": ["text", "rich_text", "system", "agent_response", "action_card"]
     },
     "public.message_status": {
       "name": "message_status",
       "schema": "public",
-      "values": [
-        "complete",
-        "partial",
-        "tombstoned"
-      ]
+      "values": ["complete", "partial", "tombstoned"]
     },
     "public.model_allocation_status": {
       "name": "model_allocation_status",
       "schema": "public",
-      "values": [
-        "active",
-        "revoked"
-      ]
+      "values": ["active", "revoked"]
     },
     "public.outbox_status": {
       "name": "outbox_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "processing",
-        "published",
-        "failed",
-        "dead_letter"
-      ]
+      "values": ["pending", "processing", "published", "failed", "dead_letter"]
     },
     "public.platform_model_api_format": {
       "name": "platform_model_api_format",
@@ -11989,51 +10854,27 @@
     "public.platform_model_status": {
       "name": "platform_model_status",
       "schema": "public",
-      "values": [
-        "active",
-        "disabled"
-      ]
+      "values": ["active", "disabled"]
     },
     "public.policy_decision": {
       "name": "policy_decision",
       "schema": "public",
-      "values": [
-        "allow",
-        "deny",
-        "require_approval",
-        "not_applicable"
-      ]
+      "values": ["allow", "deny", "require_approval", "not_applicable"]
     },
     "public.project_role": {
       "name": "project_role",
       "schema": "public",
-      "values": [
-        "lead",
-        "contributor",
-        "reviewer",
-        "observer"
-      ]
+      "values": ["lead", "contributor", "reviewer", "observer"]
     },
     "public.project_status": {
       "name": "project_status",
       "schema": "public",
-      "values": [
-        "active",
-        "completed",
-        "archived"
-      ]
+      "values": ["active", "completed", "archived"]
     },
     "public.proposal_operation_status": {
       "name": "proposal_operation_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "accepted",
-        "rejected",
-        "applied",
-        "failed",
-        "conflicted"
-      ]
+      "values": ["pending", "accepted", "rejected", "applied", "failed", "conflicted"]
     },
     "public.proposal_operation_type": {
       "name": "proposal_operation_type",
@@ -12065,48 +10906,27 @@
     "public.risk_class": {
       "name": "risk_class",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high",
-        "critical"
-      ]
+      "values": ["low", "medium", "high", "critical"]
     },
     "public.access_role_status": {
       "name": "access_role_status",
       "schema": "public",
-      "values": [
-        "active",
-        "archived"
-      ]
+      "values": ["active", "archived"]
     },
     "public.room_status": {
       "name": "room_status",
       "schema": "public",
-      "values": [
-        "active",
-        "waiting",
-        "completed",
-        "archived"
-      ]
+      "values": ["active", "waiting", "completed", "archived"]
     },
     "public.room_visibility": {
       "name": "room_visibility",
       "schema": "public",
-      "values": [
-        "workspace",
-        "private"
-      ]
+      "values": ["workspace", "private"]
     },
     "public.run_message_role": {
       "name": "run_message_role",
       "schema": "public",
-      "values": [
-        "trigger",
-        "input",
-        "output",
-        "partial"
-      ]
+      "values": ["trigger", "input", "output", "partial"]
     },
     "public.agent_run_status": {
       "name": "agent_run_status",
@@ -12131,36 +10951,17 @@
     "public.run_step_kind": {
       "name": "run_step_kind",
       "schema": "public",
-      "values": [
-        "context",
-        "model",
-        "tool",
-        "approval",
-        "document",
-        "memory",
-        "synthesis"
-      ]
+      "values": ["context", "model", "tool", "approval", "document", "memory", "synthesis"]
     },
     "public.run_step_status": {
       "name": "run_step_status",
       "schema": "public",
-      "values": [
-        "queued",
-        "running",
-        "waiting",
-        "succeeded",
-        "failed",
-        "skipped",
-        "cancelled"
-      ]
+      "values": ["queued", "running", "waiting", "succeeded", "failed", "skipped", "cancelled"]
     },
     "public.system_administrator_status": {
       "name": "system_administrator_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended"
-      ]
+      "values": ["active", "suspended"]
     },
     "public.tool_call_status": {
       "name": "tool_call_status",
@@ -12180,12 +10981,7 @@
     "public.tool_capability_status": {
       "name": "tool_capability_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "active",
-        "disabled",
-        "retired"
-      ]
+      "values": ["draft", "active", "disabled", "retired"]
     },
     "public.tool_effect_class": {
       "name": "tool_effect_class",
@@ -12203,57 +10999,32 @@
     "public.tool_transport": {
       "name": "tool_transport",
       "schema": "public",
-      "values": [
-        "native",
-        "mcp"
-      ]
+      "values": ["native", "mcp"]
     },
     "public.usage_direction": {
       "name": "usage_direction",
       "schema": "public",
-      "values": [
-        "debit",
-        "credit"
-      ]
+      "values": ["debit", "credit"]
     },
     "public.usage_ledger_entry_type": {
       "name": "usage_ledger_entry_type",
       "schema": "public",
-      "values": [
-        "reservation",
-        "settlement",
-        "release",
-        "adjustment"
-      ]
+      "values": ["reservation", "settlement", "release", "adjustment"]
     },
     "public.usage_unit": {
       "name": "usage_unit",
       "schema": "public",
-      "values": [
-        "input_tokens",
-        "output_tokens",
-        "cost_minor",
-        "duration_ms",
-        "tool_calls"
-      ]
+      "values": ["input_tokens", "output_tokens", "cost_minor", "duration_ms", "tool_calls"]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended",
-        "deleted"
-      ]
+      "values": ["active", "suspended", "deleted"]
     },
     "public.workspace_status": {
       "name": "workspace_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended",
-        "archived"
-      ]
+      "values": ["active", "suspended", "archived"]
     }
   },
   "schemas": {},
