@@ -57,6 +57,13 @@ export interface WorkspaceOrganizationDictionary {
   organizationOverview: string;
   ownersCount: string;
   lastOwnerRequired: string;
+  invited: string;
+  suspended: string;
+  left: string;
+  inviteEmailPlaceholder: string;
+  suspendMember: string;
+  restoreMember: string;
+  memberStatusUpdated: string;
 }
 
 const zhCN: WorkspaceOrganizationDictionary = {
@@ -116,6 +123,13 @@ const zhCN: WorkspaceOrganizationDictionary = {
   organizationOverview: "组织概览",
   ownersCount: "{count} 位所有者",
   lastOwnerRequired: "必须先指定另一位所有者，才能调整最后一位所有者。",
+  invited: "待接受邀请",
+  suspended: "已停用",
+  left: "已离开",
+  inviteEmailPlaceholder: "name@company.com",
+  suspendMember: "停用成员",
+  restoreMember: "恢复成员",
+  memberStatusUpdated: "成员状态已更新。",
 };
 
 const enUS: WorkspaceOrganizationDictionary = {
@@ -176,6 +190,13 @@ const enUS: WorkspaceOrganizationDictionary = {
   organizationOverview: "Organization overview",
   ownersCount: "{count} owners",
   lastOwnerRequired: "Assign another owner before changing the final owner.",
+  invited: "Invitation pending",
+  suspended: "Suspended",
+  left: "Left",
+  inviteEmailPlaceholder: "name@company.com",
+  suspendMember: "Suspend member",
+  restoreMember: "Restore member",
+  memberStatusUpdated: "Member status updated.",
 };
 
 export const workspaceOrganizationDictionaries: Record<Locale, WorkspaceOrganizationDictionary> = {

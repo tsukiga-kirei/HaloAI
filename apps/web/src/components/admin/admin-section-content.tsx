@@ -1,35 +1,28 @@
-import {
-  Activity,
-  ArrowUpRight,
-  Bot,
-  Building2,
-  Check,
-  CircleAlert,
-  Database,
-  KeyRound,
-  LockKeyhole,
-  Plus,
-  ShieldCheck,
-  UserPlus,
-  UsersRound,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { Activity, Bot, Building2, Check, CircleAlert, UsersRound } from "lucide-react";
+import type { CollaborationActor, WorkspaceAuditEvent } from "@haloai/contracts";
+import { HaloEmptyState } from "@/components/ui/halo-empty-state";
+import { HaloMetricCard } from "@/components/ui/halo-metric-card";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
-import { HaloMetricCard } from "@/components/ui/halo-metric-card";
+import { formatRelativeTime } from "@/lib/format-relative-time";
+import type { Locale } from "@/lib/i18n";
+import { LiveAgents } from "./live-agents";
+import { LiveAudit } from "./live-audit";
 import { LiveMembers } from "./live-members";
-import type { CollaborationActor } from "@haloai/contracts";
+import { LiveModels } from "./live-models";
+import { LiveSecurity } from "./live-security";
 
 export interface AdminLiveStats {
   memberCount: number;
   departmentCount: number;
   agents: readonly CollaborationActor[];
+  recentAudit: readonly WorkspaceAuditEvent[];
 }
 
 interface AdminSectionContentProps {
   dictionary: AdminDictionary;
   section: AdminSection;
-  onNotify: () => void;
+  locale: Locale;
   live?: AdminLiveStats | undefined;
 }
 
@@ -42,61 +35,18 @@ const sectionTitleKeys: Record<AdminSection, keyof AdminDictionary> = {
   audit: "auditTitle",
 };
 
-function SectionHeading({
-  dictionary,
-  section,
-  action,
-  onNotify,
-  description,
-}: AdminSectionContentProps & { action?: "invite" | "agent" | "export"; description?: string }) {
-  const actionLabel =
-    action === "invite"
-      ? dictionary.inviteMember
-      : action === "agent"
-        ? dictionary.createAgent
-        : action === "export"
-          ? dictionary.exportAudit
-          : undefined;
-
-  return (
-    <div className="admin-section-heading">
-      <div>
-        <h1>{dictionary[sectionTitleKeys[section]]}</h1>
-        {description ? <p>{description}</p> : null}
-      </div>
-      {actionLabel === undefined ? null : (
-        <button type="button" className="admin-primary-button" onClick={onNotify}>
-          {action === "invite" ? (
-            <UserPlus size={17} />
-          ) : action === "agent" ? (
-            <Plus size={17} />
-          ) : (
-            <ArrowUpRight size={17} />
-          )}
-          {actionLabel}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function StatusBadge({
-  children,
-  tone = "success",
-}: {
-  children: ReactNode;
-  tone?: "success" | "warning" | "muted";
-}) {
-  return <span className={`admin-status-badge is-${tone}`}>{children}</span>;
-}
-
 function Overview({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary, live } = props;
+  const { dictionary, live, locale } = props;
   const memberCount = live?.memberCount ?? 0;
   const agentCount = live?.agents.length ?? 0;
+  const events = live?.recentAudit ?? [];
   return (
     <>
-      <SectionHeading {...props} />
+      <div className="admin-section-heading">
+        <div>
+          <h1>{dictionary[sectionTitleKeys.overview]}</h1>
+        </div>
+      </div>
       <section className="admin-metrics" aria-label={dictionary.overviewTitle}>
         <HaloMetricCard
           icon={<UsersRound size={20} />}
@@ -159,147 +109,32 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
           <div className="admin-panel-heading">
             <h2>{dictionary.recentActivity}</h2>
           </div>
-          <p className="document-empty-copy">{dictionary.emptyAdminActivity}</p>
+          {events.length === 0 ? (
+            <HaloEmptyState icon={<Activity size={20} />} title={dictionary.emptyAdminActivity} />
+          ) : (
+            <ul className="admin-activity-list">
+              {events.map((event) => (
+                <li key={event.id}>
+                  <code>{event.action}</code>
+                  <span>{event.actorName ?? dictionary.auditSystem}</span>
+                  <small>{formatRelativeTime(event.occurredAt, locale)}</small>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
-    </>
-  );
-}
-
-function Members({ props }: { props: AdminSectionContentProps }) {
-  return <LiveMembers />;
-}
-
-function Agents({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary, live, onNotify } = props;
-  const agents = live?.agents ?? [];
-  return (
-    <>
-      <SectionHeading {...props} action="agent" />
-      {agents.length === 0 ? (
-        <p className="document-empty-copy">{dictionary.emptyAgentDirectory}</p>
-      ) : (
-        <section className="admin-card-grid">
-          {agents.map((agent, index) => (
-            <article className="admin-agent-card" key={agent.id}>
-              <div className={`admin-agent-orbit is-${(index % 3) + 1}`}>
-                <span>{agent.displayName.slice(0, 1)}</span>
-              </div>
-              <div className="admin-agent-copy">
-                <h2>{agent.displayName}</h2>
-                <p>@{agent.handle}</p>
-              </div>
-              <StatusBadge>
-                {agent.status === "active" ? dictionary.statusActive : agent.status}
-              </StatusBadge>
-              <div className="admin-agent-meta">
-                <span>{dictionary.agentAssignedModel}</span>
-                <strong>{dictionary.notAssigned}</strong>
-              </div>
-              <button type="button" className="admin-secondary-button" onClick={onNotify}>
-                {dictionary.configure}
-                <ArrowUpRight size={15} />
-              </button>
-            </article>
-          ))}
-        </section>
-      )}
-    </>
-  );
-}
-
-function Integrations({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary } = props;
-  const extras = [
-    {
-      icon: <Database size={21} />,
-      title: dictionary.integrationStorage,
-      description: dictionary.integrationStorageDetail,
-    },
-    {
-      icon: <KeyRound size={21} />,
-      title: dictionary.integrationMcp,
-      description: dictionary.integrationMcpDetail,
-    },
-  ] as const;
-  return (
-    <>
-      <SectionHeading {...props} description={dictionary.workspaceModelsIntro} />
-      <p className="document-empty-copy">{dictionary.emptyModelCatalog}</p>
-      <div className="admin-section-stack">
-        <h2 className="admin-subheading">{dictionary.workspaceIntegrationsTitle}</h2>
-        <section className="admin-stack-list">
-          {extras.map((item) => (
-            <article className="admin-integration-row" key={item.title}>
-              <span className="admin-integration-icon">{item.icon}</span>
-              <span>
-                <h2>{item.title}</h2>
-                <p>{item.description}</p>
-              </span>
-              <StatusBadge tone="muted">{dictionary.notConnected}</StatusBadge>
-            </article>
-          ))}
-        </section>
-      </div>
-    </>
-  );
-}
-
-function Security({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary } = props;
-  const items = [
-    {
-      icon: <LockKeyhole size={22} />,
-      title: dictionary.securitySession,
-      description: dictionary.securitySessionDetail,
-    },
-    {
-      icon: <ShieldCheck size={22} />,
-      title: dictionary.securityApproval,
-      description: dictionary.securityApprovalDetail,
-    },
-    {
-      icon: <Database size={22} />,
-      title: dictionary.securityRls,
-      description: dictionary.securityRlsDetail,
-    },
-  ] as const;
-  return (
-    <>
-      <SectionHeading {...props} />
-      <section className="admin-security-grid">
-        {items.map((item) => (
-          <article className="admin-security-card" key={item.title}>
-            <span className="admin-security-icon">{item.icon}</span>
-            <StatusBadge>{dictionary.enforced}</StatusBadge>
-            <h2>{item.title}</h2>
-            <p>{item.description}</p>
-            <button type="button" className="admin-secondary-button" onClick={props.onNotify}>
-              {dictionary.configure}
-              <ArrowUpRight size={15} />
-            </button>
-          </article>
-        ))}
-      </section>
-    </>
-  );
-}
-
-function Audit({ props }: { props: AdminSectionContentProps }) {
-  const { dictionary } = props;
-  return (
-    <>
-      <SectionHeading {...props} action="export" />
-      <p className="document-empty-copy">{dictionary.emptyAuditLog}</p>
     </>
   );
 }
 
 export function AdminSectionContent(props: AdminSectionContentProps) {
   if (props.section === "overview") return <Overview props={props} />;
-  if (props.section === "members") return <Members props={props} />;
-  if (props.section === "agents") return <Agents props={props} />;
-  if (props.section === "integrations") return <Integrations props={props} />;
-  if (props.section === "security") return <Security props={props} />;
-  return <Audit props={props} />;
+  if (props.section === "members") return <LiveMembers />;
+  if (props.section === "agents") {
+    return <LiveAgents dictionary={props.dictionary} agents={props.live?.agents ?? []} />;
+  }
+  if (props.section === "integrations") return <LiveModels dictionary={props.dictionary} />;
+  if (props.section === "security") return <LiveSecurity dictionary={props.dictionary} />;
+  return <LiveAudit dictionary={props.dictionary} />;
 }

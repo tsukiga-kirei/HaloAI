@@ -19,7 +19,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { notifyError } from "@/components/toast-host";
 import { HaloMark } from "@/components/workspace/primitives";
-import { persistPortal, portalPath, WORKSPACE_STORAGE_KEY, type PortalKey } from "@/lib/portals";
+import {
+  persistPortal,
+  persistWorkspaceId,
+  portalPath,
+  readStoredWorkspaceId,
+  type PortalKey,
+} from "@/lib/portals";
 import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
@@ -56,7 +62,7 @@ function looksLikeEmail(value: string): boolean {
 }
 
 function preferredWorkspaceId(workspaces: readonly WorkspaceSummary[]): string | null {
-  const remembered = window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+  const remembered = readStoredWorkspaceId();
   return (
     workspaces.find((workspace) => workspace.id === remembered)?.id ?? workspaces[0]?.id ?? null
   );
@@ -152,9 +158,9 @@ export function LoginForm() {
       }
       if (nextSelectedId === null) return;
       // 本地保存的 workspaceId 只是界面偏好，授权仍由服务端 Membership 强制执行。
-      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, nextSelectedId);
+      persistWorkspaceId(nextSelectedId);
     } else if (nextSelectedId) {
-      window.localStorage.setItem(WORKSPACE_STORAGE_KEY, nextSelectedId);
+      persistWorkspaceId(nextSelectedId);
     }
     enterWorkspace();
   }

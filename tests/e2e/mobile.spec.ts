@@ -71,6 +71,16 @@ test.describe("手机工作台", () => {
 
     await navigation.getByRole("link", { name: "安全策略" }).click();
     await expect(page.getByText("工作空间数据隔离", { exact: true })).toBeVisible();
+    await expect(page.getByText("强制执行").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "配置" })).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+
+    await navigation.getByRole("link", { name: "审计记录" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "审计记录" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await navigation.getByRole("link", { name: "可用模型" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "本空间可用模型" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });

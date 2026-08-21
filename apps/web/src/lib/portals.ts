@@ -11,6 +11,16 @@ export const PORTAL_STORAGE_KEY = "haloai.portal";
 export const LOGIN_ROLE_STORAGE_KEY = "haloai.loginRole";
 export const WORKSPACE_STORAGE_KEY = "haloai.workspaceId";
 
+export function persistWorkspaceId(workspaceId: string): void {
+  window.localStorage.setItem(WORKSPACE_STORAGE_KEY, workspaceId);
+  document.cookie = `${WORKSPACE_STORAGE_KEY}=${encodeURIComponent(workspaceId)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
+export function readStoredWorkspaceId(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(WORKSPACE_STORAGE_KEY);
+}
+
 export function isPortalKey(value: string | null): value is PortalKey {
   return portalKeys.some((key) => key === value);
 }
@@ -36,4 +46,5 @@ export function clearClientPortalSession(): void {
   persistPortal("member");
   window.localStorage.removeItem(LOGIN_ROLE_STORAGE_KEY);
   window.localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+  document.cookie = `${WORKSPACE_STORAGE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
 }

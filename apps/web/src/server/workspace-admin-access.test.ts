@@ -2,35 +2,30 @@ import { describe, expect, it } from "vitest";
 import { resolveWorkspaceAdminAccess } from "./workspace-admin-access";
 
 describe("工作空间后台访问", () => {
-  it("生产环境在真实认证接入前默认拒绝", () => {
-    expect(
-      resolveWorkspaceAdminAccess({ section: "overview", environment: "production" }),
-    ).toMatchObject({ allowed: false, reason: "authentication_required" });
+  it("未登录与无能力都拒绝，不再提供开发环境预览 Owner", () => {
+    expect(resolveWorkspaceAdminAccess({ responseStatus: 401 })).toMatchObject({
+      allowed: false,
+      reason: "authentication_required",
+    });
+    expect(resolveWorkspaceAdminAccess({ responseStatus: 403 })).toMatchObject({
+      allowed: false,
+      reason: "permission_denied",
+    });
   });
 
-  it("开发环境 Owner 可以进入所有工作空间后台分区", () => {
-    for (const section of [
-      "overview",
-      "members",
-      "agents",
-      "integrations",
-      "security",
-      "audit",
-    ] as const) {
-      expect(
-        resolveWorkspaceAdminAccess({ section, environment: "development", previewRole: "owner" })
-          .allowed,
-      ).toBe(true);
-    }
-  });
-
-  it("普通成员不能通过直接路由进入管理总览", () => {
+  it("只接受工作空间访问 API 的成功决定", () => {
     expect(
       resolveWorkspaceAdminAccess({
-        section: "overview",
-        environment: "development",
-        previewRole: "member",
+        responseStatus: 200,
+        role: "owner",
+        workspaceName: "HaloAI Alpha",
       }),
-    ).toMatchObject({ allowed: false, reason: "capability_missing" });
+    ).toEqual({
+      allowed: true,
+      reason: "authorized",
+      role: "owner",
+      workspaceName: "HaloAI Alpha",
+    });
+    expect(resolveWorkspaceAdminAccess({ responseStatus: 503 }).allowed).toBe(false);
   });
 });

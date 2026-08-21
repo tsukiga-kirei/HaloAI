@@ -35,7 +35,9 @@ import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react
 import { notify, notifyError } from "@/components/toast-host";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import { HaloSelect } from "@/components/ui/halo-select";
+import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import { workspaceOrganizationDictionaries } from "@/lib/workspace-organization-i18n";
@@ -86,19 +88,14 @@ export function LiveMembers() {
 
   const activeWorkspace = useMemo(() => {
     if (!session) return undefined;
-    const remembered = window.localStorage.getItem("haloai.workspaceId");
-    return (
-      session.workspaces.find((workspace) => workspace.id === remembered) ?? session.workspaces[0]
-    );
+    return resolveActiveWorkspace(session);
   }, [session]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const nextSession = await apiFetch<SessionContext>("/v1/session");
-      const remembered = window.localStorage.getItem("haloai.workspaceId");
-      const workspace =
-        nextSession.workspaces.find((item) => item.id === remembered) ?? nextSession.workspaces[0];
+      const workspace = resolveActiveWorkspace(nextSession);
       setSession(nextSession);
       if (!workspace) {
         setMembers([]);
@@ -184,6 +181,42 @@ export function LiveMembers() {
     [activeWorkspace, dictionary.lastOwnerRequired, dictionary.loadError, dictionary.memberUpdated],
   );
 
+  const updateStatus = useCallback(
+    async (member: WorkspaceMember, status: "active" | "suspended"): Promise<void> => {
+      if (!activeWorkspace || status === member.status) return;
+      const previous = member.status;
+      setMembers((current) =>
+        current.map((item) =>
+          item.membershipId === member.membershipId ? { ...item, status } : item,
+        ),
+      );
+      try {
+        await apiFetch<void>(
+          `/v1/workspaces/${activeWorkspace.id}/members/${member.membershipId}/status`,
+          { method: "PATCH", body: JSON.stringify({ status }) },
+        );
+        notify(dictionary.memberStatusUpdated);
+      } catch (caught) {
+        setMembers((current) =>
+          current.map((item) =>
+            item.membershipId === member.membershipId ? { ...item, status: previous } : item,
+          ),
+        );
+        const lastOwner = caught instanceof ApiClientError && caught.code === "last_owner_required";
+        notifyError(
+          lastOwner ? dictionary.lastOwnerRequired : dictionary.loadError,
+          "workspace-member-status-error",
+        );
+      }
+    },
+    [
+      activeWorkspace,
+      dictionary.lastOwnerRequired,
+      dictionary.loadError,
+      dictionary.memberStatusUpdated,
+    ],
+  );
+
   const openMember = useCallback((member: WorkspaceMember) => {
     setEditingMember(member);
     setMemberDepartmentId(member.departmentId ?? unassignedValue);
@@ -229,23 +262,54 @@ export function LiveMembers() {
         }),
         memberColumnHelper.accessor("status", {
           header: dictionary.status,
-          cell: () => <span className="admin-status-badge is-success">{dictionary.active}</span>,
+          cell: ({ row }) => {
+            const status = row.original.status;
+            const tone =
+              status === "active" ? "success" : status === "invited" ? "warning" : "muted";
+            const label =
+              status === "active"
+                ? dictionary.active
+                : status === "invited"
+                  ? dictionary.invited
+                  : status === "suspended"
+                    ? dictionary.suspended
+                    : dictionary.left;
+            return <span className={`admin-status-badge is-${tone}`}>{label}</span>;
+          },
         }),
         memberColumnHelper.display({
           id: "actions",
           header: dictionary.actions,
           cell: ({ row }) => (
-            <button
-              type="button"
-              className="admin-table-action"
-              onClick={() => openMember(row.original)}
-            >
-              <Pencil size={14} /> {dictionary.edit}
-            </button>
+            <span className="admin-table-actions">
+              <button
+                type="button"
+                className="admin-table-action"
+                onClick={() => openMember(row.original)}
+              >
+                <Pencil size={14} /> {dictionary.edit}
+              </button>
+              {row.original.status === "left" || row.original.role === "owner" ? null : (
+                <button
+                  type="button"
+                  className={`admin-table-action${row.original.status === "suspended" ? "" : " is-danger"}`}
+                  onClick={() =>
+                    void updateStatus(
+                      row.original,
+                      row.original.status === "suspended" ? "active" : "suspended",
+                    )
+                  }
+                >
+                  {row.original.status === "suspended"
+                    ? dictionary.restoreMember
+                    : dictionary.suspendMember}
+                </button>
+              )}
+            </span>
           ),
         }),
       ]),
-    [activeWorkspace?.role, dictionary, locale, openMember, roleLabel, updateRole],
+    [activeWorkspace?.role, dictionary, locale, openMember, roleLabel, updateRole, updateStatus],
   );
 
   const table = useTable(
@@ -497,7 +561,7 @@ export function LiveMembers() {
             </label>
           </div>
           {table.getRowModel().rows.length === 0 ? (
-            <p className="document-empty-copy">{dictionary.emptyMembers}</p>
+            <HaloEmptyState icon={<UsersRound size={22} />} title={dictionary.emptyMembers} />
           ) : (
             <div className="organization-table-wrap">
               <table className="organization-table">
@@ -729,7 +793,7 @@ export function LiveMembers() {
                   inputMode="email"
                   autoComplete="email"
                   autoFocus
-                  placeholder="name@company.com"
+                  placeholder={dictionary.inviteEmailPlaceholder}
                   onChange={() => setEmailError(false)}
                 />
               </div>

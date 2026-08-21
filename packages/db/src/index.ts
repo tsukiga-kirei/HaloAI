@@ -1,3 +1,4 @@
+export * from "./audit-event";
 export * from "./canonical-json";
 export * from "./client";
 export * from "./errors";

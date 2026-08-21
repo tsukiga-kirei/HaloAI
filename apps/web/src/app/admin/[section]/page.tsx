@@ -12,7 +12,7 @@ export default async function AdminSectionRoutePage({
   const { section } = await params;
   if (!isAdminSection(section)) notFound();
 
-  const access = getWorkspaceAdminAccess(section);
+  const access = await getWorkspaceAdminAccess(section);
   if (!access.allowed) return <RestrictedSurface kind="workspace" variant="panel" />;
   return <AdminSectionPage section={section} />;
 }

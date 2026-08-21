@@ -14,6 +14,7 @@
 
 - PostgreSQL repositories and migrations (foundation complete; identity, document, and runtime repositories continue next).
 - [x] Authentication, workspace creation and switching, invitation acceptance, and built-in role protection.
+- [x] Workspace audit, allocated model catalog, read-only security snapshot, member suspend/restore, and account display name.
 - [ ] Project memberships and room-level authorization.
 - Real room/message/document APIs.
 - One configurable model provider, connected by a system administrator and allocated to a pilot tenant, with streaming.

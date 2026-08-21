@@ -77,6 +77,29 @@ export interface Dictionary {
   cancel: string;
   create: string;
   rolePlaceholder: string;
+  teammateEmail: string;
+  teammateEmailPlaceholder: string;
+  memberInvited: string;
+  memberInviteFailed: string;
+  noAllocatedModels: string;
+  accountAndSecurity: string;
+  accountEmail: string;
+  accountDisplayName: string;
+  accountWorkspace: string;
+  accountRole: string;
+  accountSessionProtected: string;
+  accountSaved: string;
+  accountSaveError: string;
+  accountNameRequired: string;
+  accountSave: string;
+  accessOwner: string;
+  accessAdmin: string;
+  accessMember: string;
+  accessGuest: string;
+  emptyActivityDescription: string;
+  activityAdminOnly: string;
+  loadingActivity: string;
+  inviteAccessRole: string;
   instructionsPlaceholder: string;
   privacyNote: string;
   online: string;
@@ -297,6 +320,30 @@ export const dictionaries: Record<Locale, Dictionary> = {
     cancel: "取消",
     create: "添加到房间",
     rolePlaceholder: "例如：法务审阅者",
+    teammateEmail: "工作邮箱",
+    teammateEmailPlaceholder: "name@company.com",
+    memberInvited: "邀请已创建，有效期为 72 小时。",
+    memberInviteFailed: "无法发送邀请，请确认邮箱和权限后重试。",
+    noAllocatedModels: "本空间还没有可分配的模型。",
+    accountAndSecurity: "账户与安全",
+    accountEmail: "登录邮箱",
+    accountDisplayName: "显示名称",
+    accountWorkspace: "当前工作区",
+    accountRole: "当前访问角色",
+    accountSessionProtected:
+      "会话使用 HttpOnly Cookie，退出登录后立即失效，不会保存在浏览器存储里。",
+    accountSaved: "显示名称已更新。",
+    accountSaveError: "无法更新显示名称，请稍后重试。",
+    accountNameRequired: "请输入显示名称。",
+    accountSave: "保存",
+    accessOwner: "所有者",
+    accessAdmin: "管理员",
+    accessMember: "成员",
+    accessGuest: "访客",
+    emptyActivityDescription: "成员邀请、角色变更等可归因操作会显示在这里。",
+    activityAdminOnly: "工作空间动态需要管理权限。普通成员可在房间和文档中继续协作。",
+    loadingActivity: "正在读取可归因的工作空间动态…",
+    inviteAccessRole: "访问角色",
     instructionsPlaceholder: "说明职责、边界以及何时保持沉默",
     privacyNote: "权限由服务端策略执行，不会仅依赖 AI 提示词。",
     online: "在线",
@@ -521,6 +568,31 @@ export const dictionaries: Record<Locale, Dictionary> = {
     cancel: "Cancel",
     create: "Add to room",
     rolePlaceholder: "For example: Legal reviewer",
+    teammateEmail: "Work email",
+    teammateEmailPlaceholder: "name@company.com",
+    memberInvited: "Invitation created and valid for 72 hours.",
+    memberInviteFailed: "Could not send the invitation. Check the email and your permissions.",
+    noAllocatedModels: "No models have been allocated to this workspace yet.",
+    accountAndSecurity: "Account and security",
+    accountEmail: "Sign-in email",
+    accountDisplayName: "Display name",
+    accountWorkspace: "Current workspace",
+    accountRole: "Current access role",
+    accountSessionProtected:
+      "The session uses an HttpOnly cookie. It is revoked on sign-out and is never stored in browser storage.",
+    accountSaved: "Display name updated.",
+    accountSaveError: "Could not update the display name. Try again shortly.",
+    accountNameRequired: "Enter a display name.",
+    accountSave: "Save",
+    accessOwner: "Owner",
+    accessAdmin: "Admin",
+    accessMember: "Member",
+    accessGuest: "Guest",
+    emptyActivityDescription: "Attributable member invites and role changes appear here.",
+    activityAdminOnly:
+      "Workspace activity requires administration access. Members can keep collaborating in rooms and documents.",
+    loadingActivity: "Loading attributable workspace activity…",
+    inviteAccessRole: "Access role",
     instructionsPlaceholder: "Describe responsibilities, boundaries, and when to stay silent",
     privacyNote:
       "Server-side policy enforces permissions; prompts are never the authorization boundary.",

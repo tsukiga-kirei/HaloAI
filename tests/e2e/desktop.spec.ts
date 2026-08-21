@@ -53,6 +53,9 @@ test.describe("桌面工作台", () => {
     await page.locator('input[placeholder="搜索文档"]').fill("访谈");
     await expect(page.getByText("用户访谈洞察汇总")).toBeVisible();
     await expect(page.getByText("HaloAI 内测发布提案")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "动态" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "工作空间动态" })).toBeVisible();
     expect(aiRequests).toEqual([]);
     await expectNoHorizontalOverflow(page);
   });
@@ -162,10 +165,13 @@ test.describe("桌面工作台", () => {
     await expect(page.getByRole("button", { name: "保存版本" })).toHaveCount(0);
   });
 
-  test("单工作区时个人设置不显示切换工作区", async ({ page }) => {
+  test("单工作区时个人设置不显示切换工作区，但可打开账户与安全", async ({ page }) => {
     await page.getByRole("button", { name: "个人设置" }).click();
     await expect(page.getByRole("menuitem", { name: "退出登录" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "切换工作区" })).toHaveCount(0);
+    await page.getByRole("menuitem", { name: "账户与安全" }).click();
+    await expect(page.getByRole("dialog", { name: "账户与安全" })).toBeVisible();
+    await expect(page.getByLabel("登录邮箱")).toHaveValue("owner@haloai.dev");
   });
 
   test("设置入口进入独立工作空间后台", async ({ page }) => {
@@ -198,6 +204,27 @@ test.describe("桌面工作台", () => {
     await page.getByRole("menuitemradio", { name: "Collaborator" }).click();
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByRole("heading", { level: 1, name: "内测发布" })).toBeVisible();
+  });
+
+  test("后台审计、可用模型和安全策略可读且不提供假配置入口", async ({ page }) => {
+    await page.goto("/admin/audit");
+    await expect(page.getByRole("heading", { level: 1, name: "审计记录" })).toBeVisible();
+    await expect(page.getByPlaceholder("搜索动作、对象或执行人")).toBeVisible();
+    await expect(page.getByRole("button", { name: "导出审计记录" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole("link", { name: "可用模型" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "本空间可用模型" })).toBeVisible();
+    await expect(page.getByText("对象存储", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "配置" })).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
+
+    await page.getByRole("link", { name: "安全策略" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "安全策略" })).toBeVisible();
+    await expect(page.getByText("工作空间数据隔离", { exact: true })).toBeVisible();
+    await expect(page.getByText("强制执行").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "配置" })).toHaveCount(0);
+    await expectNoHorizontalOverflow(page);
   });
 
   test("系统后台保持独立锁定且不展示租户内容", async ({ page }) => {

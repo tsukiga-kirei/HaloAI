@@ -14,4 +14,5 @@ export * from "./document-proposal";
 export * from "./primitives";
 export * from "./system-administration";
 export * from "./workspace-collaboration";
+export * from "./workspace-governance";
 export * from "./workspace-organization";

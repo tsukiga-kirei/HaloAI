@@ -6,6 +6,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { persistWorkspaceId } from "@/lib/portals";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { HaloMark } from "@/components/workspace/primitives";
 import styles from "./auth-shell.module.css";
@@ -57,7 +58,7 @@ export function OnboardingForm() {
         method: "POST",
         body: JSON.stringify({ name, slug, locale: "zh-CN", timeZone }),
       });
-      window.localStorage.setItem("haloai.workspaceId", result.workspace.id);
+      persistWorkspaceId(result.workspace.id);
       router.replace("/app" as Route);
       router.refresh();
     } catch (caught) {

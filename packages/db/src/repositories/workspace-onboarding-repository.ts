@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, asc, count, eq } from "drizzle-orm";
+import { appendAuditEvent } from "../audit-event";
 import type { DatabaseClient } from "../client";
 import { PersistenceError } from "../errors";
 import {
@@ -233,6 +234,17 @@ export class WorkspaceOnboardingRepository {
             scopeId: workspaceId,
             grantedByActorId: actorId,
           });
+          await appendAuditEvent(transaction, {
+            workspaceId,
+            principalActorId: actorId,
+            membershipId,
+            action: "workspace.created",
+            resourceType: "workspace",
+            resourceId: workspaceId,
+            outcome: "succeeded",
+            metadata: { name: input.name, slug: input.slug },
+            requestId: input.requestId,
+          });
 
           return {
             id: workspaceId,
@@ -297,6 +309,17 @@ export class WorkspaceOnboardingRepository {
           tokenDigest: invitationDigest(token),
           invitedByActorId: input.principal.actorId,
           expiresAt,
+        });
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "member.invited",
+          resourceType: "invitation",
+          resourceId: id,
+          outcome: "succeeded",
+          metadata: { email, role: input.role },
+          requestId: input.requestId,
         });
       },
     );
@@ -389,6 +412,17 @@ export class WorkspaceOnboardingRepository {
               .update(workspaceInvitations)
               .set({ acceptedByUserId: input.user.id, acceptedAt: now, updatedAt: now })
               .where(eq(workspaceInvitations.id, lockedInvitation.id));
+            await appendAuditEvent(transaction, {
+              workspaceId: invitation.workspace_id,
+              principalActorId: existingActor.actorId,
+              membershipId: membership.id,
+              action: "member.joined",
+              resourceType: "membership",
+              resourceId: membership.id,
+              outcome: "succeeded",
+              metadata: { email: input.user.email },
+              requestId: input.requestId,
+            });
           }
           const [workspace] = await transaction
             .select({ name: workspaces.name, slug: workspaces.slug })
@@ -453,6 +487,17 @@ export class WorkspaceOnboardingRepository {
           .update(workspaceInvitations)
           .set({ acceptedByUserId: input.user.id, acceptedAt: now, updatedAt: now })
           .where(eq(workspaceInvitations.id, invitation.invitation_id));
+        await appendAuditEvent(transaction, {
+          workspaceId: invitation.workspace_id,
+          principalActorId: actorId,
+          membershipId,
+          action: "member.joined",
+          resourceType: "membership",
+          resourceId: membershipId,
+          outcome: "succeeded",
+          metadata: { email: input.user.email, role: invitation.requested_role },
+          requestId: input.requestId,
+        });
         const [workspace] = await transaction
           .select({ name: workspaces.name, slug: workspaces.slug })
           .from(workspaces)
@@ -635,6 +680,17 @@ export class WorkspaceOnboardingRepository {
           } else {
             await transaction.insert(workspaceDepartments).values({ id: departmentId, ...values });
           }
+          await appendAuditEvent(transaction, {
+            workspaceId: input.principal.workspaceId,
+            principalActorId: input.principal.actorId,
+            membershipId: input.principal.membershipId,
+            action: input.departmentId ? "department.updated" : "department.created",
+            resourceType: "department",
+            resourceId: departmentId,
+            outcome: "succeeded",
+            metadata: { name: input.name, code: input.code },
+            requestId: input.requestId,
+          });
         },
       );
       return departmentId;
@@ -695,6 +751,20 @@ export class WorkspaceOnboardingRepository {
           )
           .returning({ id: workspaceMemberships.id });
         if (!updated) throw new PersistenceError("not_found", "成员不存在");
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "member.organization.updated",
+          resourceType: "membership",
+          resourceId: input.membershipId,
+          outcome: "succeeded",
+          metadata: {
+            departmentId: input.departmentId,
+            jobTitle: input.jobTitle.trim(),
+          },
+          requestId: input.requestId,
+        });
       },
     );
   }
@@ -804,7 +874,110 @@ export class WorkspaceOnboardingRepository {
           .update(workspaceMemberships)
           .set({ isOwner: input.role === "owner", updatedAt: new Date() })
           .where(eq(workspaceMemberships.id, target.id));
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "member.role.updated",
+          resourceType: "membership",
+          resourceId: target.id,
+          outcome: "succeeded",
+          metadata: { role: input.role },
+          requestId: input.requestId,
+        });
       },
     );
+  }
+
+  async updateMemberStatus(input: {
+    principal: MembershipContext;
+    membershipId: string;
+    status: "active" | "suspended";
+    requestId: string;
+  }): Promise<void> {
+    assertUuid(input.membershipId, "membershipId");
+    if (input.principal.role !== "owner" && input.principal.role !== "admin") {
+      throw new PersistenceError("access_denied", "当前成员无权调整成员状态");
+    }
+    await withWorkspaceTransaction(
+      this.client.db,
+      {
+        workspaceId: input.principal.workspaceId,
+        actorId: input.principal.actorId,
+        requestId: input.requestId,
+      },
+      async (transaction) => {
+        const [target] = await transaction
+          .select()
+          .from(workspaceMemberships)
+          .where(
+            and(
+              eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+              eq(workspaceMemberships.id, input.membershipId),
+            ),
+          )
+          .for("update");
+        if (!target || target.status === "left") {
+          throw new PersistenceError("not_found", "目标成员不存在");
+        }
+        if (target.id === input.principal.membershipId && input.status === "suspended") {
+          throw new PersistenceError("invalid_context", "不能停用自己的成员身份");
+        }
+        if (target.isOwner && input.status === "suspended") {
+          const [owners] = await transaction
+            .select({ value: count() })
+            .from(workspaceMemberships)
+            .where(
+              and(
+                eq(workspaceMemberships.workspaceId, input.principal.workspaceId),
+                eq(workspaceMemberships.status, "active"),
+                eq(workspaceMemberships.isOwner, true),
+              ),
+            );
+          if ((owners?.value ?? 0) <= 1) {
+            throw new PersistenceError("last_owner_required", "工作区必须保留至少一位所有者");
+          }
+        }
+        await transaction
+          .update(workspaceMemberships)
+          .set({ status: input.status, updatedAt: new Date() })
+          .where(eq(workspaceMemberships.id, target.id));
+        await appendAuditEvent(transaction, {
+          workspaceId: input.principal.workspaceId,
+          principalActorId: input.principal.actorId,
+          membershipId: input.principal.membershipId,
+          action: "member.status.updated",
+          resourceType: "membership",
+          resourceId: target.id,
+          outcome: "succeeded",
+          metadata: { status: input.status },
+          requestId: input.requestId,
+        });
+      },
+    );
+  }
+
+  async updateDisplayNameForUser(input: {
+    userId: string;
+    name: string;
+    requestId: string;
+  }): Promise<void> {
+    const workspacesForUser = await this.listWorkspacesForUser(input.userId);
+    for (const workspace of workspacesForUser) {
+      await withWorkspaceTransaction(
+        this.client.db,
+        {
+          workspaceId: workspace.id,
+          actorId: workspace.actorId,
+          requestId: input.requestId,
+        },
+        async (transaction) => {
+          await transaction
+            .update(actors)
+            .set({ displayName: input.name, updatedAt: new Date() })
+            .where(and(eq(actors.workspaceId, workspace.id), eq(actors.id, workspace.actorId)));
+        },
+      );
+    }
   }
 }

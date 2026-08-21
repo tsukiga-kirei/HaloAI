@@ -174,6 +174,59 @@ export interface AdminDictionary {
   notAssigned: string;
   apiReady: string;
   apiUnavailable: string;
+  auditDescription: string;
+  auditSearchPlaceholder: string;
+  auditAllOutcomes: string;
+  auditOutcomeSucceeded: string;
+  auditOutcomeFailed: string;
+  auditOutcomeDenied: string;
+  auditOutcomeCancelled: string;
+  auditLoadError: string;
+  auditExported: string;
+  auditDetailTitle: string;
+  auditDecision: string;
+  auditReason: string;
+  auditResource: string;
+  auditEmptyDescription: string;
+  auditLoading: string;
+  auditPreviousPage: string;
+  auditNextPage: string;
+  modelsLoading: string;
+  securityReadOnly: string;
+  securitySessionLifetime: string;
+  securityRenewalInterval: string;
+  securitySlidingOn: string;
+  securitySlidingOff: string;
+  durationDay: string;
+  durationDays: string;
+  durationHour: string;
+  durationHours: string;
+  modelContextWindow: string;
+  modelProtocol: string;
+  modelUnallocatedDescription: string;
+  agentHandle: string;
+  agentReadOnly: string;
+  createAgentPending: string;
+  accountAndSecurity: string;
+  accountEmail: string;
+  accountDisplayName: string;
+  accountWorkspace: string;
+  accountRole: string;
+  accountSessionProtected: string;
+  accountSaved: string;
+  accountSaveError: string;
+  accountNameRequired: string;
+  statusSuspended: string;
+  statusLeft: string;
+  suspendMember: string;
+  restoreMember: string;
+  memberStatusUpdated: string;
+  save: string;
+  cancel: string;
+  accessOwner: string;
+  accessAdmin: string;
+  accessMember: string;
+  accessGuest: string;
 }
 
 const zhCN: AdminDictionary = {
@@ -286,7 +339,7 @@ const zhCN: AdminDictionary = {
   auditSystem: "系统策略服务",
   localOnlyNotice: "界面反馈已完成；持久写入将在管理 API 接入后开放。",
   accessDeniedTitle: "无法进入工作空间后台",
-  accessDeniedDescription: "当前会话没有所需的管理能力，或真实认证尚未接入。",
+  accessDeniedDescription: "当前会话没有进入该分区所需的管理能力。",
   accessDeniedReason: "为避免权限误配，直接访问链接不会绕过服务端检查。",
   systemBoundary: "平台级安全边界",
   systemTitle: "系统后台保持锁定",
@@ -351,6 +404,59 @@ const zhCN: AdminDictionary = {
   notAssigned: "未分配",
   apiReady: "可用",
   apiUnavailable: "不可用",
+  auditDescription: "只追加的治理事件。导出与列表都不包含密钥、完整请求或模型原文。",
+  auditSearchPlaceholder: "搜索动作、对象或执行人",
+  auditAllOutcomes: "全部结果",
+  auditOutcomeSucceeded: "成功",
+  auditOutcomeFailed: "失败",
+  auditOutcomeDenied: "拒绝",
+  auditOutcomeCancelled: "取消",
+  auditLoadError: "无法读取审计记录，请确认你拥有审计权限。",
+  auditExported: "已导出当前筛选的审计记录。",
+  auditDetailTitle: "审计详情",
+  auditDecision: "策略决定",
+  auditReason: "原因码",
+  auditResource: "对象",
+  auditEmptyDescription: "成员邀请、角色变更和组织调整会在成功写入后出现在这里。",
+  auditLoading: "正在读取审计记录…",
+  auditPreviousPage: "上一页",
+  auditNextPage: "下一页",
+  modelsLoading: "正在读取本空间已分配的模型…",
+  securityReadOnly: "这些边界由平台强制执行，空间管理不能在此关闭。",
+  securitySessionLifetime: "登录有效期 {value}",
+  securityRenewalInterval: "续期间隔 {value}",
+  securitySlidingOn: "滑动续期已开启",
+  securitySlidingOff: "滑动续期已关闭",
+  durationDay: "天",
+  durationDays: "天",
+  durationHour: "小时",
+  durationHours: "小时",
+  modelContextWindow: "上下文 {value}",
+  modelProtocol: "协议",
+  modelUnallocatedDescription: "系统管理尚未把模型分配给本空间。空间不能自行接入供应商或填写密钥。",
+  agentHandle: "标识",
+  agentReadOnly: "模型与工具范围由已发布版本决定；创建向导将在 Agent 发布链路接入后开放。",
+  createAgentPending: "创建 AI 协作者将在 Agent 发布链路接入后开放。",
+  accountAndSecurity: "账户与安全",
+  accountEmail: "登录邮箱",
+  accountDisplayName: "显示名称",
+  accountWorkspace: "当前工作区",
+  accountRole: "当前访问角色",
+  accountSessionProtected: "会话使用 HttpOnly Cookie，退出登录后立即失效，不会保存在浏览器存储里。",
+  accountSaved: "显示名称已更新。",
+  accountSaveError: "无法更新显示名称，请稍后重试。",
+  accountNameRequired: "请输入显示名称。",
+  statusSuspended: "已停用",
+  statusLeft: "已离开",
+  suspendMember: "停用成员",
+  restoreMember: "恢复成员",
+  memberStatusUpdated: "成员状态已更新。",
+  save: "保存",
+  cancel: "取消",
+  accessOwner: "所有者",
+  accessAdmin: "管理员",
+  accessMember: "成员",
+  accessGuest: "访客",
 };
 
 const enUS: AdminDictionary = {
@@ -471,8 +577,7 @@ const enUS: AdminDictionary = {
   localOnlyNotice:
     "Interface feedback completed. Durable writes open after the administration API is connected.",
   accessDeniedTitle: "Workspace administration is unavailable",
-  accessDeniedDescription:
-    "The current session lacks the required capability, or real authentication is not connected yet.",
+  accessDeniedDescription: "The current session lacks the capability required for this section.",
   accessDeniedReason: "Direct navigation never bypasses server authorization checks.",
   systemBoundary: "Platform security boundary",
   systemTitle: "System administration stays locked",
@@ -539,6 +644,65 @@ const enUS: AdminDictionary = {
   notAssigned: "Not assigned",
   apiReady: "Ready",
   apiUnavailable: "Unavailable",
+  auditDescription:
+    "Append-only governance events. Exports and lists never include secrets, full requests, or model text.",
+  auditSearchPlaceholder: "Search action, object, or actor",
+  auditAllOutcomes: "All outcomes",
+  auditOutcomeSucceeded: "Succeeded",
+  auditOutcomeFailed: "Failed",
+  auditOutcomeDenied: "Denied",
+  auditOutcomeCancelled: "Cancelled",
+  auditLoadError: "Could not load the audit log. Check that you have audit access.",
+  auditExported: "Exported the current audit filter.",
+  auditDetailTitle: "Audit detail",
+  auditDecision: "Policy decision",
+  auditReason: "Reason code",
+  auditResource: "Resource",
+  auditEmptyDescription:
+    "Member invites, role changes, and organization updates appear here after they are written.",
+  auditLoading: "Loading the audit log…",
+  auditPreviousPage: "Previous page",
+  auditNextPage: "Next page",
+  modelsLoading: "Loading models allocated to this workspace…",
+  securityReadOnly: "These boundaries are enforced by the platform and cannot be turned off here.",
+  securitySessionLifetime: "Sign-in lifetime {value}",
+  securityRenewalInterval: "Renewal interval {value}",
+  securitySlidingOn: "Sliding renewal is on",
+  securitySlidingOff: "Sliding renewal is off",
+  durationDay: "day",
+  durationDays: "days",
+  durationHour: "hour",
+  durationHours: "hours",
+  modelContextWindow: "Context {value}",
+  modelProtocol: "Protocol",
+  modelUnallocatedDescription:
+    "System administration has not allocated models to this workspace. You cannot connect a provider or enter a secret here.",
+  agentHandle: "Handle",
+  agentReadOnly:
+    "Model and tool scope come from the published version. The create wizard opens after the agent publishing path is connected.",
+  createAgentPending:
+    "Creating AI collaborators opens after the agent publishing path is connected.",
+  accountAndSecurity: "Account and security",
+  accountEmail: "Sign-in email",
+  accountDisplayName: "Display name",
+  accountWorkspace: "Current workspace",
+  accountRole: "Current access role",
+  accountSessionProtected:
+    "The session uses an HttpOnly cookie. It is revoked on sign-out and is never stored in browser storage.",
+  accountSaved: "Display name updated.",
+  accountSaveError: "Could not update the display name. Try again shortly.",
+  accountNameRequired: "Enter a display name.",
+  statusSuspended: "Suspended",
+  statusLeft: "Left",
+  suspendMember: "Suspend member",
+  restoreMember: "Restore member",
+  memberStatusUpdated: "Member status updated.",
+  save: "Save",
+  cancel: "Cancel",
+  accessOwner: "Owner",
+  accessAdmin: "Admin",
+  accessMember: "Member",
+  accessGuest: "Guest",
 };
 
 export const adminDictionaries: Record<Locale, AdminDictionary> = {

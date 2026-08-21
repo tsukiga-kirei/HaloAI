@@ -25,8 +25,10 @@ const roleCapabilities: Record<BuiltInWorkspaceRole, ReadonlySet<Capability>> = 
     "approval.review",
     "audit.read",
   ]),
+  // 空间管理员可以治理成员、已分配模型和总览，但不能改平台强制的安全策略。
   admin: new Set<Capability>([
     "workspace.read",
+    "workspace.manage",
     "member.invite",
     "member.manage",
     "agent.profile.read",

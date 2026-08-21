@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Check, KeyRound, LoaderCircle } from "lucide-rea
 import type { Route } from "next";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { persistWorkspaceId } from "@/lib/portals";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import styles from "./auth-shell.module.css";
 
@@ -42,7 +43,7 @@ export function InvitationAcceptance() {
         method: "POST",
         body: JSON.stringify({ token }),
       });
-      window.localStorage.setItem("haloai.workspaceId", result.workspace.id);
+      persistWorkspaceId(result.workspace.id);
       setState("done");
       window.setTimeout(() => {
         router.replace("/app" as Route);

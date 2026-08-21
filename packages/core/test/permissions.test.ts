@@ -62,6 +62,24 @@ describe("授权策略", () => {
     ).toEqual({ allowed: false, reason: "human_approval_required" });
   });
 
+  it("工作空间管理员可以治理空间并读取审计，但不能改安全策略", () => {
+    const admin: Principal = { ...basePrincipal, builtInRole: "admin" };
+    expect(authorize(admin, "workspace.manage", { workspaceId: "workspace-1" }).allowed).toBe(true);
+    expect(authorize(admin, "audit.read", { workspaceId: "workspace-1" }).allowed).toBe(true);
+    expect(
+      authorize(admin, "workspace.security.manage", { workspaceId: "workspace-1" }).allowed,
+    ).toBe(false);
+  });
+
+  it("普通成员不能读取审计或管理空间", () => {
+    expect(authorize(basePrincipal, "audit.read", { workspaceId: "workspace-1" }).allowed).toBe(
+      false,
+    );
+    expect(
+      authorize(basePrincipal, "workspace.manage", { workspaceId: "workspace-1" }).allowed,
+    ).toBe(false);
+  });
+
   it("AI 静态能力只取委托人、Agent、资源和工具策略交集", () => {
     const delegator = new Set<Capability>(["document.read", "document.edit", "agent.invoke"]);
     const agent = new Set<Capability>(["document.read", "document.edit"]);

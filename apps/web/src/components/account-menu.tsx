@@ -14,6 +14,7 @@ import {
   Settings2,
   Shield,
   Sun,
+  UserRound,
 } from "lucide-react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -51,6 +52,7 @@ export function AccountMenu({
   onToggleLocale,
   onToggleTheme,
   onWorkspaceChange,
+  onOpenAccountSettings,
   onSignOut,
 }: {
   open: boolean;
@@ -77,11 +79,13 @@ export function AccountMenu({
     roleSystemAdmin: string;
     switchedToRole: string;
     signOut: string;
+    accountAndSecurity: string;
   };
   onOpenChange: (open: boolean) => void;
   onToggleLocale: () => void;
   onToggleTheme: () => void;
   onWorkspaceChange?: ((workspace: WorkspaceSummary) => void) | undefined;
+  onOpenAccountSettings?: (() => void) | undefined;
   onSignOut?: (() => void) | undefined;
 }) {
   const router = useRouter();
@@ -131,6 +135,18 @@ export function AccountMenu({
               <strong>{name}</strong>
               <small>{detail}</small>
             </div>
+            {onOpenAccountSettings ? (
+              <DropdownMenu.Item
+                className="halo-menu-item"
+                onSelect={() => {
+                  onOpenChange(false);
+                  onOpenAccountSettings();
+                }}
+              >
+                <UserRound size={16} />
+                {labels.accountAndSecurity}
+              </DropdownMenu.Item>
+            ) : null}
             <DropdownMenu.Item
               className="halo-menu-item"
               onSelect={(event) => {

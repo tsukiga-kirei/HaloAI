@@ -5,6 +5,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AccountMenu } from "@/components/account-menu";
+import { AccountSettingsDialog } from "@/components/account-settings-dialog";
 import { HaloMark, RoomGlyph, SidebarSection } from "./primitives";
 import type { PortalKey } from "@/lib/portals";
 import type { DemoRoom, Theme, WorkspaceSection, WorkspaceViewProps } from "./types";
@@ -54,6 +55,7 @@ export function WorkspaceSidebar({
 }) {
   const [query, setQuery] = useState("");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const visibleRooms = useMemo(
@@ -238,14 +240,39 @@ export function WorkspaceSidebar({
             roleSystemAdmin: dictionary.roleSystemAdmin,
             switchedToRole: dictionary.switchedToRole,
             signOut: dictionary.signOut,
+            accountAndSecurity: dictionary.accountAndSecurity,
           }}
           onOpenChange={setProfileMenuOpen}
           onToggleLocale={onToggleLocale}
           onToggleTheme={onToggleTheme}
           onWorkspaceChange={onWorkspaceChange}
+          onOpenAccountSettings={() => setAccountOpen(true)}
           onSignOut={onSignOut}
         />
       </div>
+      <AccountSettingsDialog
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        session={identity ? { user: identity, workspaces: [...workspaces] } : null}
+        workspace={activeWorkspace}
+        labels={{
+          title: dictionary.accountAndSecurity,
+          email: dictionary.accountEmail,
+          displayName: dictionary.accountDisplayName,
+          workspace: dictionary.accountWorkspace,
+          role: dictionary.accountRole,
+          sessionProtected: dictionary.accountSessionProtected,
+          saved: dictionary.accountSaved,
+          saveError: dictionary.accountSaveError,
+          nameRequired: dictionary.accountNameRequired,
+          save: dictionary.accountSave,
+          cancel: dictionary.cancel,
+          owner: dictionary.accessOwner,
+          admin: dictionary.accessAdmin,
+          member: dictionary.accessMember,
+          guest: dictionary.accessGuest,
+        }}
+      />
     </aside>
   );
 }

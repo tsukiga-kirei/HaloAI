@@ -5,6 +5,7 @@ import { createAuth } from "./auth";
 import {
   createDatabaseClient,
   SystemAdministrationRepository,
+  WorkspaceGovernanceRepository,
   WorkspaceOnboardingRepository,
 } from "@haloai/db";
 import { createSessionPolicy } from "./session-policy";
@@ -17,6 +18,7 @@ import { registerHealthRoutes } from "./routes/health";
 import { registerAuthRoutes } from "./routes/auth";
 import { registerCollaborationRoutes } from "./routes/collaboration";
 import { registerWorkspaceRoutes } from "./routes/workspaces";
+import { registerWorkspaceGovernanceRoutes } from "./routes/workspace-governance";
 import { registerSystemAdministrationRoutes } from "./routes/system-administration";
 import { webOriginAllowlist } from "./web-origins";
 import { ModelSecretCipher } from "./model-secret";
@@ -38,6 +40,7 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
     maxConnections: 5,
   });
   const onboardingRepository = new WorkspaceOnboardingRepository(applicationDatabase);
+  const governanceRepository = new WorkspaceGovernanceRepository(applicationDatabase);
   const systemAdministrationRepository = new SystemAdministrationRepository(applicationDatabase);
   const sessionPolicy = createSessionPolicy({
     sessionExpiresInSeconds: config.AUTH_SESSION_EXPIRES_IN_SECONDS,
@@ -86,6 +89,13 @@ export async function createServer(config: ApiConfig): Promise<FastifyInstance> 
   await registerDemoEventRoutes(app);
   await registerAuthRoutes(app, auth, config);
   await registerWorkspaceRoutes(app, auth, onboardingRepository, config);
+  await registerWorkspaceGovernanceRoutes(
+    app,
+    auth,
+    onboardingRepository,
+    governanceRepository,
+    systemAdministrationRepository,
+  );
   await registerSystemAdministrationRoutes(
     app,
     auth,

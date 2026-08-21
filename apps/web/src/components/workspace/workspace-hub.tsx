@@ -10,13 +10,25 @@ import {
   Hash,
   Inbox,
   Plus,
+  ScrollText,
   UserRound,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useState } from "react";
-import type { DocumentSummary, ProjectSummary } from "@haloai/contracts";
+import { useEffect, useState } from "react";
+import type {
+  DocumentSummary,
+  ProjectSummary,
+  SessionContext,
+  WorkspaceAuditEvent,
+} from "@haloai/contracts";
+import { WorkspaceAuditPageSchema } from "@haloai/contracts";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
+import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import { HaloMetricCard, type HaloMetricTone } from "@/components/ui/halo-metric-card";
+import { resolveActiveWorkspace } from "@/lib/active-workspace";
+import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { formatRelativeTime } from "@/lib/format-relative-time";
+import { useShellPreferences } from "@/lib/shell-preferences";
 import type { DemoRoom, WorkspaceSection, WorkspaceViewProps } from "./types";
 import { WorkspaceDocumentsView } from "./workspace-documents-view";
 
@@ -248,15 +260,66 @@ function InboxView({ dictionary }: WorkspaceViewProps) {
           { value: "invitations", label: dictionary.invitations, icon: UserRound },
         ]}
       />
-      <p className="document-empty-copy">{dictionary.emptyInbox}</p>
+      <HaloEmptyState icon={<Inbox size={22} />} title={dictionary.emptyInbox} />
     </div>
   );
 }
 
 function ActivityView({ dictionary }: WorkspaceViewProps) {
+  const { locale } = useShellPreferences();
+  const [events, setEvents] = useState<WorkspaceAuditEvent[] | null>(null);
+  const [forbidden, setForbidden] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load(): Promise<void> {
+      try {
+        const session = await apiFetch<SessionContext>("/v1/session");
+        const workspace = resolveActiveWorkspace(session);
+        if (!workspace) {
+          if (!cancelled) setEvents([]);
+          return;
+        }
+        const payload = await apiFetch<unknown>(
+          `/v1/workspaces/${workspace.id}/audit?page=1&pageSize=20`,
+        );
+        if (!cancelled) setEvents(WorkspaceAuditPageSchema.parse(payload).items);
+      } catch (caught) {
+        if (!cancelled) {
+          setForbidden(caught instanceof ApiClientError && caught.status === 403);
+          setEvents([]);
+        }
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="workspace-hub-body activity-view">
-      <p className="document-empty-copy">{dictionary.emptyActivity}</p>
+      {events === null ? (
+        <p className="halo-loading-copy">{dictionary.loadingActivity}</p>
+      ) : events.length === 0 ? (
+        <HaloEmptyState
+          icon={<ScrollText size={22} />}
+          title={dictionary.emptyActivity}
+          description={
+            forbidden ? dictionary.activityAdminOnly : dictionary.emptyActivityDescription
+          }
+        />
+      ) : (
+        <ul className="workspace-activity-list">
+          {events.map((event) => (
+            <li key={event.id}>
+              <code>{event.action}</code>
+              <span>{event.actorName ?? event.resourceType}</span>
+              <small>{formatRelativeTime(event.occurredAt, locale)}</small>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

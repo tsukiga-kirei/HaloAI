@@ -20,6 +20,7 @@ import { useParams, useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
 import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
 import { useShellPreferences } from "@/lib/shell-preferences";
+import { persistWorkspaceId } from "@/lib/portals";
 import { tenantActivationDictionaries } from "@/lib/tenant-activation-i18n";
 import styles from "./auth-shell.module.css";
 
@@ -64,7 +65,7 @@ export function TenantAdministratorActivation() {
       method: "POST",
       body: JSON.stringify({ token }),
     });
-    window.localStorage.setItem("haloai.workspaceId", result.workspaceId);
+    persistWorkspaceId(result.workspaceId);
     setState("done");
     window.setTimeout(() => {
       router.replace("/app" as Route);

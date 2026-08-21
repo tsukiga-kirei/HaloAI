@@ -440,8 +440,8 @@
 
 .admin-table-action {
   display: inline-flex;
-  min-height: 36px;
-  padding: 0 8px;
+  min-height: 44px;
+  padding: 0 10px;
   align-items: center;
   gap: 6px;
   border-radius: 8px;
@@ -453,6 +453,17 @@
 .admin-table-action:hover {
   background: var(--surface-muted);
   color: var(--accent);
+}
+
+.admin-table-action.is-danger {
+  color: var(--danger);
+}
+
+.admin-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
 }
 
 .organization-pagination {
@@ -680,6 +691,7 @@
 
 .admin-panel,
 .admin-agent-card,
+.admin-model-card,
 .admin-integration-row,
 .admin-security-card {
   border: 1px solid var(--border);
@@ -723,6 +735,7 @@
 
 .admin-panel h2,
 .admin-agent-card h2,
+.admin-model-card h2,
 .admin-integration-row h2,
 .admin-security-card h2 {
   margin: 0;
@@ -732,6 +745,7 @@
 
 .admin-panel-heading p,
 .admin-agent-card p,
+.admin-model-card p,
 .admin-integration-row p,
 .admin-security-card p {
   margin: 5px 0 0;
@@ -867,9 +881,22 @@
     minmax(100px, 0.55fr);
   align-items: center;
   gap: 16px;
+  border: 0;
   border-block-end: 1px solid var(--border);
+  background: transparent;
   color: var(--text-soft);
+  font: inherit;
   font-size: 13px;
+  text-align: start;
+  cursor: default;
+}
+button.admin-table-row {
+  width: 100%;
+  cursor: pointer;
+}
+button.admin-table-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 .admin-table-row:last-child {
   border-block-end: 0;
@@ -1008,15 +1035,158 @@
   align-items: flex-start;
   flex-direction: column;
 }
-.admin-security-card > .admin-status-badge {
-  margin: -44px 0 24px auto;
+.admin-security-card-top {
+  display: flex;
+  width: 100%;
+  margin-block-end: 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 .admin-security-card p {
-  min-height: 58px;
+  min-height: 0;
+}
+.admin-security-meta {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 .admin-security-card .admin-secondary-button {
   width: 100%;
   margin-block-start: auto;
+}
+
+.admin-model-card {
+  display: flex;
+  min-width: 0;
+  padding: 22px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.admin-model-card > .admin-status-badge {
+  width: max-content;
+  margin-block-end: 6px;
+}
+.admin-model-card .admin-agent-meta {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.admin-audit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto 16px;
+  align-items: center;
+  gap: 12px;
+}
+.admin-audit-search {
+  width: min(420px, 100%);
+  min-height: 44px;
+  flex: 1 1 220px;
+}
+.admin-audit-toolbar .halo-segmented {
+  max-width: 100%;
+}
+
+.admin-audit-detail {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+.admin-audit-detail > div {
+  display: grid;
+  gap: 4px;
+}
+.admin-audit-detail dt {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.admin-audit-detail dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-activity-list,
+.workspace-activity-list {
+  display: grid;
+  padding: 0;
+  list-style: none;
+  gap: 2px;
+}
+.admin-activity-list {
+  margin: 20px 0 0;
+}
+.workspace-activity-list {
+  margin: 0;
+}
+.admin-activity-list li,
+.workspace-activity-list li {
+  display: grid;
+  min-height: 56px;
+  padding: 10px 4px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-block-start: 1px solid var(--border);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.admin-activity-list code,
+.workspace-activity-list code {
+  overflow: hidden;
+  color: var(--text);
+  font: 550 12px/1.4 var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-activity-list small,
+.workspace-activity-list small {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.system-pagination {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 4px 16px 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.system-pagination-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.system-pagination-actions > button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-soft);
+}
+.system-pagination-actions > button:disabled {
+  opacity: 0.38;
 }
 
 .admin-table.is-audit .admin-table-row {
@@ -1109,6 +1279,18 @@
     grid-column: 1 / -1;
     width: 100%;
   }
+  .admin-activity-list li,
+  .workspace-activity-list li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .admin-audit-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-audit-search {
+    width: 100%;
+  }
 }
 
 @media (max-width: 440px) {
@@ -1117,6 +1299,7 @@
   }
   .admin-panel,
   .admin-agent-card,
+  .admin-model-card,
   .admin-security-card {
     padding: 17px;
   }

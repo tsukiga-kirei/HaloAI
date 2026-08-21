@@ -1,14 +1,15 @@
 "use client";
 
-import type { SessionContext } from "@haloai/contracts";
+import type { SessionContext, WorkspaceAuditEvent } from "@haloai/contracts";
 import {
+  WorkspaceAuditPageSchema,
   WorkspaceCollaborationSnapshotSchema,
   WorkspaceOrganizationOverviewSchema,
 } from "@haloai/contracts";
 import { useEffect, useMemo, useState } from "react";
-import { notify } from "@/components/toast-host";
 import { AdminSectionContent, type AdminLiveStats } from "./admin-section-content";
 import { adminDictionaries } from "@/lib/admin-i18n";
+import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import { apiFetch } from "@/lib/api-client";
 import type { AdminSection } from "@/lib/admin-sections";
 import { useShellPreferences } from "@/lib/shell-preferences";
@@ -25,18 +26,16 @@ export function AdminSectionPage({ section }: { section: AdminSection }) {
       try {
         const nextSession = await apiFetch<SessionContext>("/v1/session");
         if (cancelled) return;
-        const remembered = window.localStorage.getItem("haloai.workspaceId");
-        const workspace =
-          nextSession.workspaces.find((item) => item.id === remembered) ??
-          nextSession.workspaces[0];
+        const workspace = resolveActiveWorkspace(nextSession);
         if (!workspace) {
-          setLive({ memberCount: 0, departmentCount: 0, agents: [] });
+          setLive({ memberCount: 0, departmentCount: 0, agents: [], recentAudit: [] });
           return;
         }
 
-        const [membersResult, snapshotResult] = await Promise.allSettled([
+        const [membersResult, snapshotResult, auditResult] = await Promise.allSettled([
           apiFetch<unknown>(`/v1/workspaces/${workspace.id}/organization`),
           apiFetch<unknown>(`/v1/workspaces/${workspace.id}/collaboration`),
+          apiFetch<unknown>(`/v1/workspaces/${workspace.id}/audit?page=1&pageSize=5`),
         ]);
         if (cancelled) return;
 
@@ -50,13 +49,21 @@ export function AdminSectionPage({ section }: { section: AdminSection }) {
                 (actor) => actor.kind === "agent",
               )
             : [];
+        const recentAudit: WorkspaceAuditEvent[] =
+          auditResult.status === "fulfilled"
+            ? WorkspaceAuditPageSchema.parse(auditResult.value).items
+            : [];
         setLive({
-          memberCount: organization?.members.length ?? 0,
+          memberCount:
+            organization?.members.filter((member) => member.status === "active").length ?? 0,
           departmentCount: organization?.departments.length ?? 0,
           agents,
+          recentAudit,
         });
       } catch {
-        if (!cancelled) setLive({ memberCount: 0, departmentCount: 0, agents: [] });
+        if (!cancelled) {
+          setLive({ memberCount: 0, departmentCount: 0, agents: [], recentAudit: [] });
+        }
       }
     }
 
@@ -67,11 +74,6 @@ export function AdminSectionPage({ section }: { section: AdminSection }) {
   }, []);
 
   return (
-    <AdminSectionContent
-      dictionary={dictionary}
-      section={section}
-      live={live}
-      onNotify={() => notify(dictionary.localOnlyNotice)}
-    />
+    <AdminSectionContent dictionary={dictionary} section={section} locale={locale} live={live} />
   );
 }

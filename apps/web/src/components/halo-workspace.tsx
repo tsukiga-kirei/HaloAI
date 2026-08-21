@@ -3,22 +3,24 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import type {
-  AuthenticatedUser,
-  CreateDocumentInput,
-  CreateProjectInput,
-  CreateRoomInput,
-  DocumentSummary,
-  ProjectSummary,
-  RoomMessageSummary,
-  RoomSummary,
-  WorkspaceCollaborationSnapshot,
-  WorkspaceSummary,
+import {
+  AssignableWorkspaceRoleSchema,
+  type AuthenticatedUser,
+  type CreateDocumentInput,
+  type CreateProjectInput,
+  type CreateRoomInput,
+  type DocumentSummary,
+  type ProjectSummary,
+  type RoomMessageSummary,
+  type RoomSummary,
+  type WorkspaceCollaborationSnapshot,
+  type WorkspaceSummary,
 } from "@haloai/contracts";
 import { getDictionary } from "@/lib/i18n";
 import { clearClientPortalSession } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
-import { notify } from "@/components/toast-host";
+import { notify, notifyError } from "@/components/toast-host";
+import { apiFetch } from "@/lib/api-client";
 import { ConversationPanel } from "./workspace/conversation-panel";
 import { DocumentPanel } from "./workspace/document-panel";
 import { DocumentDialog } from "./workspace/document-dialog";
@@ -221,10 +223,37 @@ export function HaloWorkspace({
     }
   }
 
-  function handleAddMember(event: FormEvent<HTMLFormElement>): void {
+  async function handleAddMember(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    setMemberDialogOpen(false);
-    notify(dictionary.memberInvitePending);
+    if (newMemberKind === "agent") {
+      notify(dictionary.memberInvitePending);
+      setMemberDialogOpen(false);
+      return;
+    }
+    if (!activeWorkspace) {
+      notifyError(dictionary.memberInviteFailed, "workspace-invite-missing");
+      return;
+    }
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "")
+      .trim()
+      .toLowerCase();
+    const parsedRole = AssignableWorkspaceRoleSchema.safeParse(
+      String(form.get("role") ?? "member"),
+    );
+    try {
+      await apiFetch(`/v1/workspaces/${activeWorkspace.id}/invitations`, {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          role: parsedRole.success ? parsedRole.data : "member",
+        }),
+      });
+      notify(dictionary.memberInvited);
+      setMemberDialogOpen(false);
+    } catch {
+      notifyError(dictionary.memberInviteFailed, "workspace-invite-error");
+    }
   }
 
   function selectRoom(roomId: string): void {
@@ -347,9 +376,10 @@ export function HaloWorkspace({
         <MemberDialog
           dictionary={dictionary}
           kind={newMemberKind}
+          workspaceId={activeWorkspace?.id}
           onKindChange={setNewMemberKind}
           onClose={() => setMemberDialogOpen(false)}
-          onSubmit={handleAddMember}
+          onSubmit={(event) => void handleAddMember(event)}
         />
       ) : null}
 

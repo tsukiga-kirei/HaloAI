@@ -9,9 +9,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
+import { AccountSettingsDialog } from "@/components/account-settings-dialog";
 import { HaloMark } from "@/components/workspace/primitives";
 import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch } from "@/lib/api-client";
+import { persistWorkspaceId, readStoredWorkspaceId } from "@/lib/portals";
 import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
@@ -40,14 +42,14 @@ export function ManagementShell({
   const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, sidebarMotion } =
     useShellPreferences();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [narrowNav, setNarrowNav] = useState(false);
   const [motionReady, setMotionReady] = useState(false);
   const dictionary = useMemo(() => adminDictionaries[locale], [locale]);
   const router = useRouter();
   const [session, setSession] = useState<SessionContext | null>(null);
   const workspaces = session?.workspaces ?? [];
-  const rememberedWorkspaceId =
-    typeof window === "undefined" ? null : window.localStorage.getItem("haloai.workspaceId");
+  const rememberedWorkspaceId = typeof window === "undefined" ? null : readStoredWorkspaceId();
   const activeWorkspace =
     workspaces.find((workspace) => workspace.id === rememberedWorkspaceId) ?? workspaces[0];
   const profileName = session?.user.name ?? "HaloAI";
@@ -178,19 +180,49 @@ export function ManagementShell({
               roleSystemAdmin: dictionary.roleSystemAdmin,
               switchedToRole: dictionary.switchedToRole,
               signOut: dictionary.signOut,
+              accountAndSecurity: dictionary.accountAndSecurity,
             }}
             onOpenChange={setMenuOpen}
             onToggleLocale={() => setLocale((current) => (current === "zh-CN" ? "en-US" : "zh-CN"))}
             onToggleTheme={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
             onWorkspaceChange={(workspace: WorkspaceSummary) => {
-              window.localStorage.setItem("haloai.workspaceId", workspace.id);
+              persistWorkspaceId(workspace.id);
               window.location.reload();
             }}
+            onOpenAccountSettings={() => setAccountOpen(true)}
             onSignOut={signOut}
           />
         </div>
       </aside>
       <main className="management-main">{children(dictionary, locale)}</main>
+      <AccountSettingsDialog
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        session={session}
+        workspace={activeWorkspace}
+        labels={{
+          title: dictionary.accountAndSecurity,
+          email: dictionary.accountEmail,
+          displayName: dictionary.accountDisplayName,
+          workspace: dictionary.accountWorkspace,
+          role: dictionary.accountRole,
+          sessionProtected: dictionary.accountSessionProtected,
+          saved: dictionary.accountSaved,
+          saveError: dictionary.accountSaveError,
+          nameRequired: dictionary.accountNameRequired,
+          save: dictionary.save,
+          cancel: dictionary.cancel,
+          owner: dictionary.accessOwner,
+          admin: dictionary.accessAdmin,
+          member: dictionary.accessMember,
+          guest: dictionary.accessGuest,
+        }}
+        onSaved={(name) => {
+          setSession((current) =>
+            current ? { ...current, user: { ...current.user, name } } : current,
+          );
+        }}
+      />
     </div>
   );
 }

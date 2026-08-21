@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch, ApiClientError, getApiBaseUrl } from "@/lib/api-client";
 import { HaloWorkspace } from "@/components/halo-workspace";
-import { clearClientPortalSession } from "@/lib/portals";
+import { clearClientPortalSession, persistWorkspaceId, readStoredWorkspaceId } from "@/lib/portals";
 import styles from "./auth-shell.module.css";
 
 export function SessionGate() {
@@ -43,7 +43,7 @@ export function SessionGate() {
           router.replace("/onboarding" as Route);
           return;
         }
-        const remembered = window.localStorage.getItem("haloai.workspaceId");
+        const remembered = readStoredWorkspaceId();
         const selected =
           nextSession.workspaces.find((workspace) => workspace.id === remembered) ??
           nextSession.workspaces[0] ??
@@ -112,7 +112,7 @@ export function SessionGate() {
   const activeWorkspaceId = activeWorkspace.id;
 
   function switchWorkspace(workspace: WorkspaceSummary): void {
-    window.localStorage.setItem("haloai.workspaceId", workspace.id);
+    persistWorkspaceId(workspace.id);
     setActiveWorkspace(workspace);
   }
 

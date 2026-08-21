@@ -730,6 +730,101 @@ a {
   display: grid;
   gap: 14px;
 }
+.halo-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 40px 24px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.halo-empty-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-block-end: 4px;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.halo-empty-state > strong {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 650;
+}
+.halo-empty-state > p {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.halo-loading-copy {
+  display: inline-flex;
+  min-height: 48px;
+  margin: 0;
+  padding: 18px;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.halo-spin {
+  animation: halo-spin 0.9s linear infinite;
+}
+@keyframes halo-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.workspace-activity-list {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0 16px;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+}
+.workspace-activity-list li {
+  display: grid;
+  min-height: 56px;
+  padding: 10px 0;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-block-start: 1px solid var(--border);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.workspace-activity-list li:first-child {
+  border-block-start: 0;
+}
+.workspace-activity-list code {
+  overflow: hidden;
+  color: var(--text);
+  font: 550 12px/1.4 var(--font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.workspace-activity-list small {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.account-settings-form input:read-only {
+  color: var(--text-muted);
+  background: var(--surface-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .halo-spin {
+    animation: none;
+  }
+}
 .activity-timeline {
   margin-top: 0;
 }
@@ -3009,6 +3104,10 @@ a {
     padding: 12px 14px 28px;
     overflow: auto;
     overflow-x: hidden;
+  }
+  .workspace-activity-list li {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
   .workspace-metrics,
   .admin-metrics {
