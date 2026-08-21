@@ -2,6 +2,7 @@ import {
   AssignMemberRolesInputSchema,
   ChangePasswordInputSchema,
   CreateCustomRoleInputSchema,
+  CreateWorkspaceAnnouncementInputSchema,
   UpdateCustomRoleInputSchema,
   UpdateSessionProfileInputSchema,
   UpdateWorkspaceMemberStatusInputSchema,
@@ -27,6 +28,7 @@ const sectionCapabilities: Record<WorkspaceAdminSection, Capability> = {
   overview: "workspace.manage",
   members: "member.manage",
   roles: "workspace.manage",
+  announcements: "workspace.manage",
   agents: "agent.profile.create",
   integrations: "workspace.manage",
   security: "workspace.security.manage",
@@ -338,6 +340,71 @@ export async function registerWorkspaceGovernanceRoutes(
         memberActorId: request.params.actorId,
         roleIds: input.roleIds,
       });
+      return reply.status(204).send();
+    },
+  );
+
+  // === 空间公告管理 ===
+  app.get<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/announcements",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.read");
+      reply.header("cache-control", "no-store");
+      const list = await governance.listAnnouncements(request.params.workspaceId);
+      return {
+        items: list.map((item) => ({
+          ...item,
+          startsAt: item.startsAt.toISOString(),
+          expiresAt: item.expiresAt ? item.expiresAt.toISOString() : null,
+          createdAt: item.createdAt.toISOString(),
+        })),
+      };
+    },
+  );
+
+  app.post<{ Params: { workspaceId: string } }>(
+    "/v1/workspaces/:workspaceId/announcements",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.manage");
+      const input = CreateWorkspaceAnnouncementInputSchema.parse(request.body);
+      const created = await governance.createAnnouncement(request.params.workspaceId, {
+        title: input.title,
+        content: input.content,
+        level: input.level,
+        active: input.active,
+        expiresAt: input.expiresAt,
+      });
+      return reply.status(201).send({
+        announcement: {
+          ...created,
+          startsAt: created.startsAt.toISOString(),
+          expiresAt: created.expiresAt ? created.expiresAt.toISOString() : null,
+          createdAt: created.createdAt.toISOString(),
+        },
+      });
+    },
+  );
+
+  app.delete<{ Params: { workspaceId: string; id: string } }>(
+    "/v1/workspaces/:workspaceId/announcements/:id",
+    async (request, reply) => {
+      const session = await requireSession(auth, request);
+      const principal = await onboarding.resolveMembership(
+        session.user.id,
+        request.params.workspaceId,
+      );
+      requireWorkspaceCapability(principal, "workspace.manage");
+      await governance.deleteAnnouncement(request.params.workspaceId, request.params.id);
       return reply.status(204).send();
     },
   );

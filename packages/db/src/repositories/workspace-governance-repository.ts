@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { and, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import type { DatabaseClient } from "../client";
 import { PersistenceError } from "../errors";
@@ -575,5 +576,110 @@ export class WorkspaceGovernanceRepository {
         }
       },
     );
+  }
+
+  // === 空间公告管理 ===
+  async listAnnouncements(workspaceId: string): Promise<
+    Array<{
+      id: string;
+      workspaceId: string;
+      title: string;
+      content: string;
+      level: "info" | "warning" | "critical";
+      active: boolean;
+      startsAt: Date;
+      expiresAt: Date | null;
+      createdAt: Date;
+    }>
+  > {
+    assertUuid(workspaceId, "workspaceId");
+    const rows = await this.client.connection<Array<{ key: string; value: string }>>`
+      SELECT key, value
+      FROM public.system_settings
+      WHERE key = ${`workspace_announcements:${workspaceId}`}
+      LIMIT 1
+    `;
+    const row = rows[0];
+    if (!row?.value) return [];
+    try {
+      const items = JSON.parse(row.value) as Array<{
+        id: string;
+        workspaceId: string;
+        title: string;
+        content: string;
+        level: "info" | "warning" | "critical";
+        active: boolean;
+        startsAt: string;
+        expiresAt?: string | null | undefined;
+        createdAt: string;
+      }>;
+      return items.map((item) => ({
+        id: item.id,
+        workspaceId: item.workspaceId || workspaceId,
+        title: item.title,
+        content: item.content,
+        level: item.level,
+        active: item.active,
+        startsAt: new Date(item.startsAt),
+        expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
+        createdAt: new Date(item.createdAt),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async createAnnouncement(
+    workspaceId: string,
+    input: {
+      title: string;
+      content: string;
+      level: "info" | "warning" | "critical";
+      active: boolean;
+      expiresAt?: string | null | undefined;
+    },
+  ): Promise<{
+    id: string;
+    workspaceId: string;
+    title: string;
+    content: string;
+    level: "info" | "warning" | "critical";
+    active: boolean;
+    startsAt: Date;
+    expiresAt: Date | null;
+    createdAt: Date;
+  }> {
+    assertUuid(workspaceId, "workspaceId");
+    const current = await this.listAnnouncements(workspaceId);
+    const now = new Date();
+    const newEntry = {
+      id: randomUUID(),
+      workspaceId,
+      title: input.title,
+      content: input.content,
+      level: input.level,
+      active: input.active,
+      startsAt: now,
+      expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+      createdAt: now,
+    };
+    const updated = [newEntry, ...current];
+    await this.client.connection`
+      INSERT INTO public.system_settings (key, value, created_at, updated_at)
+      VALUES (${`workspace_announcements:${workspaceId}`}, ${JSON.stringify(updated)}, now(), now())
+      ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(updated)}, updated_at = now()
+    `;
+    return newEntry;
+  }
+
+  async deleteAnnouncement(workspaceId: string, id: string): Promise<void> {
+    assertUuid(workspaceId, "workspaceId");
+    const current = await this.listAnnouncements(workspaceId);
+    const filtered = current.filter((item) => item.id !== id);
+    await this.client.connection`
+      INSERT INTO public.system_settings (key, value, created_at, updated_at)
+      VALUES (${`workspace_announcements:${workspaceId}`}, ${JSON.stringify(filtered)}, now(), now())
+      ON CONFLICT (key) DO UPDATE SET value = ${JSON.stringify(filtered)}, updated_at = now()
+    `;
   }
 }

@@ -41,6 +41,7 @@ import { notify, notifyError } from "@/components/toast-host";
 import { AdminPageHeader } from "./admin-page-header";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloModal } from "@/components/ui/halo-modal";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import { HaloPagination } from "@/components/ui/halo-pagination";
 import { HaloSelect } from "@/components/ui/halo-select";
@@ -115,6 +116,7 @@ export function LiveMembers() {
   const [workspaceDefaultLocale, setWorkspaceDefaultLocale] = useState<"zh-CN" | "en-US">("zh-CN");
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferTargetId, setTransferTargetId] = useState("");
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
   // 自定义角色状态
   const [availableCustomRoles, setAvailableCustomRoles] = useState<CustomRole[]>([]);
@@ -273,22 +275,28 @@ export function LiveMembers() {
     }
   }, [filteredMembers, isAllSelected]);
 
-  const openMember = useCallback(async (member: WorkspaceMember) => {
-    setEditingMember(member);
-    setMemberDepartmentId(member.departmentId ?? unassignedValue);
-    setMemberJobTitle(member.jobTitle);
-    try {
-      const [rolesRes, memberRolesRes] = await Promise.all([
-        apiFetch<{ items: CustomRole[] }>("/v1/workspaces/current/roles"),
-        apiFetch<{ roleIds: string[] }>(`/v1/workspaces/current/members/${member.actorId}/roles`),
-      ]);
-      setAvailableCustomRoles(rolesRes.items);
-      setAssignedCustomRoleIds(memberRolesRes.roleIds);
-    } catch {
-      setAvailableCustomRoles([]);
-      setAssignedCustomRoleIds([]);
-    }
-  }, []);
+  const openMember = useCallback(
+    async (member: WorkspaceMember) => {
+      setEditingMember(member);
+      setMemberDepartmentId(member.departmentId ?? unassignedValue);
+      setMemberJobTitle(member.jobTitle);
+      if (!activeWorkspace) return;
+      try {
+        const [rolesRes, memberRolesRes] = await Promise.all([
+          apiFetch<{ items: CustomRole[] }>(`/v1/workspaces/${activeWorkspace.id}/roles`),
+          apiFetch<{ roleIds: string[] }>(
+            `/v1/workspaces/${activeWorkspace.id}/members/${member.actorId}/roles`,
+          ),
+        ]);
+        setAvailableCustomRoles(rolesRes.items);
+        setAssignedCustomRoleIds(memberRolesRes.roleIds);
+      } catch {
+        setAvailableCustomRoles([]);
+        setAssignedCustomRoleIds([]);
+      }
+    },
+    [activeWorkspace],
+  );
 
   const columns = useMemo(
     () =>
@@ -728,55 +736,64 @@ export function LiveMembers() {
             </button>
           </div>
           <div className="organization-tree-list">
-            <div className="organization-tree-row">
+            <div
+              className={`organization-tree-row${selectedDepartment === null ? " is-active" : ""}`}
+            >
               <button
                 type="button"
-                className={`organization-tree-item${selectedDepartment === null ? " is-active" : ""}`}
+                className="organization-tree-item"
                 onClick={() => setSelectedDepartment(null)}
               >
                 <UsersRound size={16} />
                 <span>{dictionary.allMembers}</span>
-                <strong>{members.length}</strong>
               </button>
-              <span className="organization-tree-edit-slot" aria-hidden="true" />
+              <div className="organization-tree-actions">
+                <span className="organization-tree-count">{members.length}</span>
+              </div>
             </div>
             {roots
               .flatMap((root) => [root, ...departments.filter((item) => item.parentId === root.id)])
               .map((department) => (
-                <div className="organization-tree-row" key={department.id}>
+                <div
+                  className={`organization-tree-row${selectedDepartment === department.id ? " is-active" : ""}`}
+                  key={department.id}
+                >
                   <button
                     type="button"
-                    className={`organization-tree-item${selectedDepartment === department.id ? " is-active" : ""}`}
+                    className="organization-tree-item"
                     aria-level={department.parentId ? 2 : 1}
                     onClick={() => setSelectedDepartment(department.id)}
                   >
                     <Building2 size={16} />
                     <span>{department.name}</span>
-                    <strong>{department.memberCount}</strong>
                   </button>
-                  <span className="organization-tree-edit-slot">
+                  <div className="organization-tree-actions">
+                    <span className="organization-tree-count">{department.memberCount}</span>
                     <button
                       type="button"
                       className="organization-tree-edit"
                       aria-label={`${dictionary.editDepartment} · ${department.name}`}
                       onClick={() => openDepartment(department)}
                     >
-                      <Pencil size={14} />
+                      <Pencil size={13} />
                     </button>
-                  </span>
+                  </div>
                 </div>
               ))}
-            <div className="organization-tree-row">
+            <div
+              className={`organization-tree-row${selectedDepartment === "unassigned" ? " is-active" : ""}`}
+            >
               <button
                 type="button"
-                className={`organization-tree-item${selectedDepartment === "unassigned" ? " is-active" : ""}`}
+                className="organization-tree-item"
                 onClick={() => setSelectedDepartment("unassigned")}
               >
                 <Building2 size={16} />
                 <span>{dictionary.unassigned}</span>
-                <strong>{unassignedCount}</strong>
               </button>
-              <span className="organization-tree-edit-slot" aria-hidden="true" />
+              <div className="organization-tree-actions">
+                <span className="organization-tree-count">{unassignedCount}</span>
+              </div>
             </div>
           </div>
         </aside>
@@ -1314,11 +1331,7 @@ export function LiveMembers() {
                   type="button"
                   className="admin-secondary-button"
                   style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.4)" }}
-                  onClick={() => {
-                    if (window.confirm(dictionary.archiveWorkspaceConfirm)) {
-                      void executeArchiveWorkspace();
-                    }
-                  }}
+                  onClick={() => setArchiveConfirmOpen(true)}
                 >
                   <Archive size={16} /> {dictionary.archiveWorkspace}
                 </button>
@@ -1327,6 +1340,42 @@ export function LiveMembers() {
           ) : null}
         </form>
       </HaloDialog>
+
+      {/* 归档工作空间确认弹窗 */}
+      <HaloModal
+        open={archiveConfirmOpen}
+        danger
+        title={dictionary.archiveWorkspace}
+        description={dictionary.archiveWorkspaceConfirm}
+        icon={<Archive size={18} />}
+        onClose={() => setArchiveConfirmOpen(false)}
+        footer={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setArchiveConfirmOpen(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="button"
+              className="admin-secondary-button is-danger"
+              style={{ color: "#ffffff", background: "#ef4444", borderColor: "#ef4444" }}
+              onClick={async () => {
+                setArchiveConfirmOpen(false);
+                await executeArchiveWorkspace();
+              }}
+            >
+              {dictionary.archiveWorkspace}
+            </button>
+          </>
+        }
+      >
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5 }}>
+          {dictionary.archiveWorkspaceDescription}
+        </p>
+      </HaloModal>
 
       {/* 转让所有权弹窗 */}
       <HaloDialog

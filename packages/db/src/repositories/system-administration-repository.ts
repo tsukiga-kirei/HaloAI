@@ -499,25 +499,33 @@ export class SystemAdministrationRepository {
       lastActiveAt: Date | null;
     }>
   > {
-    const rows = await this.client.db
-      .select({
-        userId: systemAdministrators.userId,
-        status: systemAdministrators.status,
-        createdAt: systemAdministrators.createdAt,
-        name: users.name,
-        email: users.email,
-      })
-      .from(systemAdministrators)
-      .innerJoin(users, eq(users.id, systemAdministrators.userId))
-      .orderBy(desc(systemAdministrators.createdAt));
+    const rows = await this.client.connection<
+      Array<{
+        user_id: string;
+        name: string;
+        primary_email: string;
+        status: "active" | "suspended";
+        created_at: Date;
+      }>
+    >`
+      SELECT
+        sa.user_id,
+        u.name,
+        u.primary_email,
+        sa.status,
+        sa.created_at
+      FROM public.system_administrators sa
+      JOIN public.users u ON u.id = sa.user_id
+      ORDER BY sa.created_at DESC
+    `;
 
     return rows.map((row) => ({
-      id: row.userId,
-      userId: row.userId,
+      id: row.user_id,
+      userId: row.user_id,
       name: row.name,
-      email: row.email,
+      email: row.primary_email,
       status: row.status,
-      createdAt: row.createdAt,
+      createdAt: new Date(row.created_at),
       lastActiveAt: null,
     }));
   }
@@ -525,31 +533,31 @@ export class SystemAdministrationRepository {
   async addAdministrator(input: {
     email: string;
   }): Promise<{ id: string; userId: string; name: string; email: string }> {
-    const [targetUser] = await this.client.db
-      .select()
-      .from(users)
-      .where(eq(users.email, input.email.toLowerCase().trim()));
+    const rows = await this.client.connection<
+      Array<{ id: string; name: string; primary_email: string }>
+    >`
+      SELECT id, name, primary_email
+      FROM public.users
+      WHERE lower(primary_email) = ${input.email.toLowerCase().trim()}
+      LIMIT 1
+    `;
+    const targetUser = rows[0];
 
     if (!targetUser) {
       throw new PersistenceError("not_found", "目标用户不存在，请先让该用户完成注册登录");
     }
 
-    await this.client.db
-      .insert(systemAdministrators)
-      .values({
-        userId: targetUser.id,
-        status: "active",
-      })
-      .onConflictDoUpdate({
-        target: systemAdministrators.userId,
-        set: { status: "active", updatedAt: new Date() },
-      });
+    await this.client.connection`
+      INSERT INTO public.system_administrators (user_id, status, created_at, updated_at)
+      VALUES (${targetUser.id}::uuid, 'active', now(), now())
+      ON CONFLICT (user_id) DO UPDATE SET status = 'active', updated_at = now()
+    `;
 
     return {
       id: targetUser.id,
       userId: targetUser.id,
       name: targetUser.name,
-      email: targetUser.email,
+      email: targetUser.primary_email,
     };
   }
 
@@ -560,20 +568,23 @@ export class SystemAdministrationRepository {
     assertUuid(input.targetUserId, "targetUserId");
 
     if (input.status === "suspended") {
-      const [activeAdmins] = await this.client.db
-        .select({ count: count() })
-        .from(systemAdministrators)
-        .where(eq(systemAdministrators.status, "active"));
+      const rows = await this.client.connection<Array<{ count: string | number }>>`
+        SELECT count(*) as count
+        FROM public.system_administrators
+        WHERE status = 'active'
+      `;
+      const activeCount = Number(rows[0]?.count ?? 0);
 
-      if ((activeAdmins?.count ?? 0) <= 1) {
+      if (activeCount <= 1) {
         throw new PersistenceError("last_owner_required", "系统必须保留至少一位活跃平台管理员");
       }
     }
 
-    await this.client.db
-      .update(systemAdministrators)
-      .set({ status: input.status, updatedAt: new Date() })
-      .where(eq(systemAdministrators.userId, input.targetUserId));
+    await this.client.connection`
+      UPDATE public.system_administrators
+      SET status = ${input.status}, updated_at = now()
+      WHERE user_id = ${input.targetUserId}::uuid
+    `;
   }
 
   // === 租户配额管理 ===

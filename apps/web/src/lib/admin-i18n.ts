@@ -27,12 +27,40 @@ export interface AdminDictionary {
   navGroupPeople: string;
   navGroupGovernance: string;
   navOverview: string;
+  navAnnouncements: string;
   navMembers: string;
   navAgents: string;
   navIntegrations: string;
   navSecurity: string;
   navAudit: string;
   navRoles: string;
+  createAnnouncement: string;
+  createAnnouncementDrawerTitle: string;
+  createAnnouncementDrawerDesc: string;
+  announcementTitle: string;
+  announcementContent: string;
+  announcementLevel: string;
+  announcementActive: string;
+  announcementCreatedAt: string;
+  announcementStartsAt: string;
+  announcementExpiresAt: string;
+  announcementTitlePlaceholder: string;
+  announcementContentPlaceholder: string;
+  announcementSearchPlaceholder: string;
+  announcementLevelInfo: string;
+  announcementLevelWarning: string;
+  announcementLevelCritical: string;
+  announcementCreated: string;
+  announcementDeleted: string;
+  deleteAnnouncementConfirmTitle: string;
+  deleteAnnouncementConfirmDesc: string;
+  announcementsLoadError: string;
+  announcementSaveError: string;
+  announcementDeleteError: string;
+  noAnnouncements: string;
+  noAnnouncementsDesc: string;
+  reload: string;
+  delete: string;
   overviewTitle: string;
   membersTitle: string;
   rolesTitle: string;
@@ -79,6 +107,9 @@ export interface AdminDictionary {
   confirmDelete: string;
   customRoles: string;
   actions: string;
+  roleLoadError: string;
+  roleSaveError: string;
+  roleDeleteError: string;
   // 细粒度权限能力字典
   capWorkspaceReadName: string;
   capWorkspaceReadDesc: string;
@@ -362,12 +393,40 @@ const zhCN: AdminDictionary = {
   navGroupPeople: "人员",
   navGroupGovernance: "治理",
   navOverview: "总览",
+  navAnnouncements: "空间公告",
   navMembers: "组织与成员",
   navAgents: "AI 协作者",
   navIntegrations: "可用模型",
   navSecurity: "安全策略",
   navAudit: "审计记录",
   navRoles: "自定义角色",
+  createAnnouncement: "发布空间公告",
+  createAnnouncementDrawerTitle: "发布空间协同公告",
+  createAnnouncementDrawerDesc: "向本工作空间全体成员发布置顶横幅公告或维护提醒。",
+  announcementTitle: "公告标题",
+  announcementContent: "公告正文",
+  announcementLevel: "重要级别",
+  announcementActive: "立即启用该公告",
+  announcementCreatedAt: "发布时间",
+  announcementStartsAt: "生效时间",
+  announcementExpiresAt: "过期时间",
+  announcementTitlePlaceholder: "例如：全员协同规范更新通知",
+  announcementContentPlaceholder: "请输入详细的公告内容...",
+  announcementSearchPlaceholder: "搜索公告标题或内容...",
+  announcementLevelInfo: "普通通知",
+  announcementLevelWarning: "重要提醒",
+  announcementLevelCritical: "紧急通知",
+  announcementCreated: "空间公告已发布",
+  announcementDeleted: "空间公告已删除",
+  deleteAnnouncementConfirmTitle: "确认删除该空间公告？",
+  deleteAnnouncementConfirmDesc: "删除后该公告将立即对空间成员隐藏，不可撤销。",
+  announcementsLoadError: "无法读取空间公告列表，请确认你拥有空间管理权限。",
+  announcementSaveError: "保存空间公告失败，请检查网络或参数。",
+  announcementDeleteError: "删除空间公告失败，请稍后重试。",
+  noAnnouncements: "暂无空间公告",
+  noAnnouncementsDesc: "点击右上角「发布空间公告」即可向全体空间成员广播通知。",
+  reload: "刷新",
+  delete: "删除",
   overviewTitle: "工作空间总览",
   membersTitle: "成员与访问角色",
   rolesTitle: "自定义角色与权限能力",
@@ -414,6 +473,9 @@ const zhCN: AdminDictionary = {
   confirmDelete: "确认删除",
   customRoles: "自定义角色",
   actions: "操作",
+  roleLoadError: "无法读取角色列表，请确认你拥有管理权限。",
+  roleSaveError: "保存角色失败，请检查配置或稍后重试。",
+  roleDeleteError: "删除角色失败，请稍后重试。",
   capWorkspaceReadName: "读取工作空间",
   capWorkspaceReadDesc: "查看工作空间基本信息、成员概况与可用功能。",
   capWorkspaceManageName: "管理工作空间",
@@ -697,12 +759,44 @@ const enUS: AdminDictionary = {
   navGroupPeople: "People",
   navGroupGovernance: "Governance",
   navOverview: "Overview",
+  navAnnouncements: "Announcements",
   navMembers: "Organization",
   navAgents: "AI collaborators",
   navIntegrations: "Available models",
   navSecurity: "Security policy",
   navAudit: "Audit log",
   navRoles: "Custom Roles",
+  createAnnouncement: "Post Announcement",
+  createAnnouncementDrawerTitle: "Post Workspace Announcement",
+  createAnnouncementDrawerDesc:
+    "Broadcast a banner announcement or maintenance notice to all workspace members.",
+  announcementTitle: "Title",
+  announcementContent: "Content",
+  announcementLevel: "Severity Level",
+  announcementActive: "Enable immediately",
+  announcementCreatedAt: "Posted At",
+  announcementStartsAt: "Starts At",
+  announcementExpiresAt: "Expires At",
+  announcementTitlePlaceholder: "e.g. Workspace Collaboration Guidelines Update",
+  announcementContentPlaceholder: "Enter detailed announcement message...",
+  announcementSearchPlaceholder: "Search announcement title or content...",
+  announcementLevelInfo: "Info",
+  announcementLevelWarning: "Warning",
+  announcementLevelCritical: "Critical",
+  announcementCreated: "Workspace announcement published",
+  announcementDeleted: "Workspace announcement deleted",
+  deleteAnnouncementConfirmTitle: "Delete this announcement?",
+  deleteAnnouncementConfirmDesc:
+    "This announcement will be hidden from all workspace members immediately.",
+  announcementsLoadError:
+    "Unable to load announcements. Please verify workspace management permissions.",
+  announcementSaveError: "Failed to save announcement. Please check input parameters.",
+  announcementDeleteError: "Failed to delete announcement. Please try again later.",
+  noAnnouncements: "No announcements yet",
+  noAnnouncementsDesc:
+    "Click 'Post Announcement' in the top right to broadcast notices to your workspace members.",
+  reload: "Reload",
+  delete: "Delete",
   overviewTitle: "Workspace overview",
   membersTitle: "Members and access roles",
   rolesTitle: "Custom Roles and Capabilities",
@@ -750,6 +844,9 @@ const enUS: AdminDictionary = {
   confirmDelete: "Confirm Delete",
   customRoles: "Custom Roles",
   actions: "Actions",
+  roleLoadError: "Could not load roles. Check that you have management access.",
+  roleSaveError: "Failed to save role. Check configuration and try again.",
+  roleDeleteError: "Failed to delete role. Please try again later.",
   capWorkspaceReadName: "Read Workspace",
   capWorkspaceReadDesc: "View basic workspace information, members, and available capabilities.",
   capWorkspaceManageName: "Manage Workspace",

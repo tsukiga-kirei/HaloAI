@@ -31,6 +31,7 @@ import { ProjectDialog } from "./workspace/project-dialog";
 import type { DisplayMessage, DocumentTab, MobileView, WorkspaceSection } from "./workspace/types";
 import { WorkspaceHub } from "./workspace/workspace-hub";
 import { WorkspaceSidebar } from "./workspace/workspace-sidebar";
+import { WorkspaceAnnouncementBanner } from "./workspace/workspace-announcement-banner";
 import { useWorkspaceEntities } from "./workspace/use-workspace-entities";
 
 export function HaloWorkspace({
@@ -323,53 +324,67 @@ export function HaloWorkspace({
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
       />
-      {workspaceSection === "room" ? (
-        <>
-          <ConversationPanel
-            dictionary={dictionary}
-            roomTitle={roomTitle}
-            roomGoal={roomGoal}
-            memberSummary={memberSummary}
-            participants={participants}
-            messages={activeMessages}
-            input={input}
-            isStreaming={isStreaming}
-            endOfMessagesRef={endOfMessagesRef}
-            onInputChange={setInput}
-            onComposerKeyDown={handleComposerKeyDown}
-            onSubmit={() => void submitMessage()}
-            onOpenRooms={() => setMobileView("rooms")}
-            onOpenDocument={() => setMobileView("document")}
-            onOpenMemberDialog={() => setMemberDialogOpen(true)}
-            onNotify={notify}
-          />
-          <DocumentPanel
-            dictionary={dictionary}
-            tab={documentTab}
-            onTabChange={setDocumentTab}
-            onCloseMobile={() => setMobileView("chat")}
-          />
-        </>
-      ) : (
-        <WorkspaceHub
-          dictionary={dictionary}
-          section={workspaceSection}
-          rooms={rooms}
-          projects={projects}
-          documents={documents}
-          canCreateProject={canCreateProject}
-          canCreateArtifact={writableProjects.length > 0}
-          onSectionChange={selectWorkspaceSection}
-          onCreateRoom={requestCreateRoom}
-          onCreateProject={() => setProjectDialogOpen(true)}
-          onCreateDocument={() =>
-            writableProjects.length === 0 ? requestCreateRoom() : setDocumentDialogOpen(true)
-          }
-          onOpenRoom={selectRoom}
-          onOpenDocument={openRoomDocument}
-          onNotify={notify}
-        />
-      )}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minWidth: 0,
+          height: "100%",
+          overflow: "hidden",
+        }}
+      >
+        <WorkspaceAnnouncementBanner />
+        <div style={{ display: "flex", flex: 1, minWidth: 0, height: "100%", overflow: "hidden" }}>
+          {workspaceSection === "room" ? (
+            <>
+              <ConversationPanel
+                dictionary={dictionary}
+                roomTitle={roomTitle}
+                roomGoal={roomGoal}
+                memberSummary={memberSummary}
+                participants={participants}
+                messages={activeMessages}
+                input={input}
+                isStreaming={isStreaming}
+                endOfMessagesRef={endOfMessagesRef}
+                onInputChange={setInput}
+                onComposerKeyDown={handleComposerKeyDown}
+                onSubmit={() => void submitMessage()}
+                onOpenRooms={() => setMobileView("rooms")}
+                onOpenDocument={() => setMobileView("document")}
+                onOpenMemberDialog={() => setMemberDialogOpen(true)}
+                onNotify={notify}
+              />
+              <DocumentPanel
+                dictionary={dictionary}
+                tab={documentTab}
+                onTabChange={setDocumentTab}
+                onCloseMobile={() => setMobileView("chat")}
+              />
+            </>
+          ) : (
+            <WorkspaceHub
+              dictionary={dictionary}
+              section={workspaceSection}
+              rooms={rooms}
+              projects={projects}
+              documents={documents}
+              canCreateProject={canCreateProject}
+              canCreateArtifact={writableProjects.length > 0}
+              onSectionChange={selectWorkspaceSection}
+              onCreateRoom={requestCreateRoom}
+              onCreateProject={() => setProjectDialogOpen(true)}
+              onCreateDocument={() =>
+                writableProjects.length === 0 ? requestCreateRoom() : setDocumentDialogOpen(true)
+              }
+              onOpenRoom={selectRoom}
+              onOpenDocument={openRoomDocument}
+              onNotify={notify}
+            />
+          )}
+        </div>
+      </div>
       <MobileNavigation dictionary={dictionary} view={mobileView} onViewChange={changeMobileView} />
 
       {memberDialogOpen ? (

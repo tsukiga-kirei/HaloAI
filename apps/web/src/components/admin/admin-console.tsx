@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Bell,
   Bot,
   Boxes,
   LayoutDashboard,
@@ -19,7 +20,10 @@ const navigation: ReadonlyArray<ManagementNavSection> = [
   {
     id: "space",
     titleKey: "navGroupSpace",
-    items: [{ href: "/admin/overview" as Route, icon: LayoutDashboard, labelKey: "navOverview" }],
+    items: [
+      { href: "/admin/overview" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
+      { href: "/admin/announcements" as Route, icon: Bell, labelKey: "navAnnouncements" },
+    ],
   },
   {
     id: "people",

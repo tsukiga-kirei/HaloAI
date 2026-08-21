@@ -258,42 +258,50 @@
 }
 
 .organization-tree-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 32px;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 2px;
-}
-
-.organization-tree-item {
-  display: grid;
   width: 100%;
-  min-height: 40px;
-  padding: 0 8px;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
   border-radius: 8px;
-  color: var(--text-soft);
-  text-align: start;
   transition:
     background var(--fast) var(--ease),
     color var(--fast) var(--ease);
+}
+
+.organization-tree-row:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.organization-tree-row.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.organization-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 8px 0 10px;
+  border-radius: 8px;
+  color: var(--text-soft);
+  text-align: start;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.organization-tree-row.is-active .organization-tree-item {
+  color: var(--accent);
 }
 
 .organization-tree-item > svg {
   display: block;
   width: 16px;
   height: 16px;
-}
-
-.organization-tree-item:hover {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--text);
-}
-
-.organization-tree-item.is-active {
-  background: var(--accent-soft);
-  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .organization-tree-item > span {
@@ -302,35 +310,38 @@
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1 1 0%;
 }
 
-.organization-tree-item > strong {
-  justify-self: end;
+.organization-tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 6px;
+  flex-shrink: 0;
+}
+
+.organization-tree-count {
   min-width: 1.25em;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   text-align: end;
+  padding: 0 4px;
 }
 
-.organization-tree-item.is-active > strong {
+.organization-tree-row.is-active .organization-tree-count {
   color: var(--accent);
 }
 
-.organization-tree-edit-slot {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-}
-
 .organization-tree-edit {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 8px;
+  display: flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
   color: var(--text-muted);
   opacity: 0;
   transition:
@@ -345,7 +356,7 @@
 }
 
 .organization-tree-edit:hover {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
 }
 
@@ -491,7 +502,7 @@
   font-weight: 650;
 }
 
-.organization-form input,
+.organization-form input:not([type="checkbox"]):not([type="radio"]),
 .organization-form textarea {
   width: 100%;
   min-height: 44px;
@@ -505,7 +516,19 @@
   resize: vertical;
 }
 
-.organization-form input:focus,
+.organization-form input[type="checkbox"] {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 2px 0 0 0;
+  border-radius: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.organization-form input:not([type="checkbox"]):not([type="radio"]):focus,
 .organization-form textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--focus-ring);

@@ -78,19 +78,31 @@ export function SystemSettingsSection() {
   const load = useCallback(async () => {
     setFailed(false);
     try {
-      const [settingsData, adminsData, announcementsData] = await Promise.all([
-        apiFetch<unknown>("/v1/system/settings"),
-        apiFetch<{ items: SystemAdministrator[] }>("/v1/system/administrators"),
-        apiFetch<{ items: SystemAnnouncement[] }>("/v1/system/announcements"),
-      ]);
+      const settingsData = await apiFetch<unknown>("/v1/system/settings");
       const parsed = SystemSettingsSchema.parse(settingsData);
       setSettings(parsed);
       setLocale(parsed.defaultLocale);
       setSessionExpiresInSeconds(parsed.authentication.sessionExpiresInSeconds);
       setSessionUpdateAgeSeconds(parsed.authentication.sessionUpdateAgeSeconds);
       setSlidingRenewal(parsed.authentication.slidingRenewal);
-      setAdministrators(adminsData.items);
-      setAnnouncements(announcementsData.items);
+
+      try {
+        const adminsData = await apiFetch<{ items: SystemAdministrator[] }>(
+          "/v1/system/administrators",
+        );
+        setAdministrators(adminsData.items ?? []);
+      } catch {
+        setAdministrators([]);
+      }
+
+      try {
+        const announcementsData = await apiFetch<{ items: SystemAnnouncement[] }>(
+          "/v1/system/announcements",
+        );
+        setAnnouncements(announcementsData.items ?? []);
+      } catch {
+        setAnnouncements([]);
+      }
     } catch {
       setFailed(true);
     }

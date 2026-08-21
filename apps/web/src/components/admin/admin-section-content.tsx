@@ -9,6 +9,7 @@ import { labelAuditAction } from "@/lib/audit-action-i18n";
 import type { Locale } from "@/lib/i18n";
 import { AdminPageHeader } from "./admin-page-header";
 import { LiveAgents } from "./live-agents";
+import { LiveAnnouncements } from "./live-announcements";
 import { LiveAudit } from "./live-audit";
 import { LiveMembers } from "./live-members";
 import { LiveModels } from "./live-models";
@@ -116,6 +117,9 @@ export function AdminSectionContent(props: AdminSectionContentProps) {
   if (props.section === "overview") return <Overview props={props} />;
   if (props.section === "members") return <LiveMembers />;
   if (props.section === "roles") return <LiveRoles dictionary={props.dictionary} />;
+  if (props.section === "announcements") {
+    return <LiveAnnouncements dictionary={props.dictionary} />;
+  }
   if (props.section === "agents") {
     return <LiveAgents dictionary={props.dictionary} agents={props.live?.agents ?? []} />;
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import type { CapabilityKey, CustomRole } from "@haloai/contracts";
+import type { CapabilityKey, CustomRole, SessionContext } from "@haloai/contracts";
 import {
   Bot,
   Building2,
@@ -20,6 +20,8 @@ import {
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { notify, notifyError } from "@/components/toast-host";
 import { HaloDialog } from "@/components/ui/halo-dialog";
+import { HaloModal } from "@/components/ui/halo-modal";
+import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import type { AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch } from "@/lib/api-client";
 import { AdminPageHeader } from "./admin-page-header";
@@ -172,14 +174,20 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiFetch<{ items: CustomRole[] }>("/v1/workspaces/current/roles");
+      const session = await apiFetch<SessionContext>("/v1/session");
+      const workspace = resolveActiveWorkspace(session);
+      if (!workspace) {
+        setRoles([]);
+        return;
+      }
+      const res = await apiFetch<{ items: CustomRole[] }>(`/v1/workspaces/${workspace.id}/roles`);
       setRoles(res.items);
     } catch {
-      notifyError(dictionary.auditLoadError, "load-roles-error");
+      notifyError(dictionary.roleLoadError, "load-roles-error");
     } finally {
       setLoading(false);
     }
-  }, [dictionary.auditLoadError]);
+  }, [dictionary.roleLoadError]);
 
   useEffect(() => {
     void load();
@@ -253,8 +261,12 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
 
     setSubmitting(true);
     try {
+      const session = await apiFetch<SessionContext>("/v1/session");
+      const workspace = resolveActiveWorkspace(session);
+      if (!workspace) return;
+
       if (editingRole) {
-        await apiFetch<void>(`/v1/workspaces/current/roles/${editingRole.id}`, {
+        await apiFetch<void>(`/v1/workspaces/${workspace.id}/roles/${editingRole.id}`, {
           method: "PATCH",
           body: JSON.stringify({
             name: formName.trim(),
@@ -264,7 +276,7 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
         });
         notify(dictionary.roleUpdated);
       } else {
-        await apiFetch<void>("/v1/workspaces/current/roles", {
+        await apiFetch<void>(`/v1/workspaces/${workspace.id}/roles`, {
           method: "POST",
           body: JSON.stringify({
             key: formKey.trim().toLowerCase(),
@@ -278,7 +290,7 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
       setDrawerOpen(false);
       await load();
     } catch {
-      notifyError(dictionary.auditLoadError, "save-role-error");
+      notifyError(dictionary.roleSaveError, "save-role-error");
     } finally {
       setSubmitting(false);
     }
@@ -288,14 +300,18 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
     if (!deletingRole) return;
     setDeleteSubmitting(true);
     try {
-      await apiFetch<void>(`/v1/workspaces/current/roles/${deletingRole.id}`, {
+      const session = await apiFetch<SessionContext>("/v1/session");
+      const workspace = resolveActiveWorkspace(session);
+      if (!workspace) return;
+
+      await apiFetch<void>(`/v1/workspaces/${workspace.id}/roles/${deletingRole.id}`, {
         method: "DELETE",
       });
       notify(dictionary.roleDeleted);
       setDeletingRole(null);
       await load();
     } catch {
-      notifyError(dictionary.auditLoadError, "delete-role-error");
+      notifyError(dictionary.roleDeleteError, "delete-role-error");
     } finally {
       setDeleteSubmitting(false);
     }
@@ -539,7 +555,7 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
                       </button>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
                       {catCaps.map((cap) => {
                         const checked = selectedCaps.has(cap.key);
                         const texts = getCapabilityTexts(cap.key, dictionary);
@@ -549,24 +565,51 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
                             style={{
                               display: "flex",
                               alignItems: "flex-start",
-                              gap: "0.5rem",
+                              gap: "0.75rem",
                               cursor: "pointer",
-                              padding: "0.25rem 0",
+                              padding: "0.5rem 0.625rem",
+                              borderRadius: "8px",
+                              background: checked
+                                ? "color-mix(in srgb, var(--accent) 6%, var(--surface))"
+                                : "transparent",
+                              border: checked
+                                ? "1px solid color-mix(in srgb, var(--accent) 30%, var(--border))"
+                                : "1px solid transparent",
+                              transition: "all 0.15s ease",
                             }}
                           >
                             <input
                               type="checkbox"
                               checked={checked}
                               onChange={() => toggleCap(cap.key)}
-                              style={{ marginTop: "0.2rem" }}
+                              style={{
+                                width: "16px",
+                                minWidth: "16px",
+                                height: "16px",
+                                minHeight: "16px",
+                                margin: "2px 0 0 0",
+                                accentColor: "var(--accent)",
+                                cursor: "pointer",
+                                flexShrink: 0,
+                              }}
                             />
-                            <div>
-                              <strong style={{ fontSize: "0.8125rem" }}>{texts.label}</strong>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <strong
+                                style={{
+                                  display: "block",
+                                  fontSize: "0.8125rem",
+                                  fontWeight: 600,
+                                  color: "var(--text)",
+                                }}
+                              >
+                                {texts.label}
+                              </strong>
                               <p
                                 style={{
                                   fontSize: "0.75rem",
-                                  color: "var(--halo-text-muted)",
-                                  margin: 0,
+                                  color: "var(--text-muted)",
+                                  margin: "2px 0 0",
+                                  lineHeight: 1.4,
                                 }}
                               >
                                 {texts.description}
@@ -584,9 +627,10 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
         </form>
       </HaloDialog>
 
-      {/* 删除确认弹窗 */}
-      <HaloDialog
+      {/* 删除确认居中 Modal */}
+      <HaloModal
         open={Boolean(deletingRole)}
+        danger
         title={dictionary.deleteRoleConfirmTitle}
         description={dictionary.deleteRoleConfirmDesc.replace("{name}", deletingRole?.name ?? "")}
         icon={<Trash2 size={18} />}
@@ -596,14 +640,15 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
           <>
             <button
               type="button"
-              className="secondary-button"
+              className="admin-secondary-button"
               onClick={() => setDeletingRole(null)}
             >
               {dictionary.cancel}
             </button>
             <button
               type="button"
-              className="danger-button"
+              className="admin-secondary-button is-danger"
+              style={{ color: "#ffffff", background: "#ef4444", borderColor: "#ef4444" }}
               disabled={deleteSubmitting}
               onClick={() => void handleDeleteRole()}
             >
@@ -613,10 +658,10 @@ export function LiveRoles({ dictionary }: { dictionary: AdminDictionary }) {
           </>
         }
       >
-        <p style={{ fontSize: "0.875rem", color: "var(--halo-text-muted)" }}>
+        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.5 }}>
           {dictionary.irreversibleAction}
         </p>
-      </HaloDialog>
+      </HaloModal>
     </>
   );
 }

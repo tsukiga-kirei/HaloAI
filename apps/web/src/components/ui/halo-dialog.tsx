@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createDrawerTimeline, prefersReducedMotion, showDrawerImmediate } from "@/lib/motion";
+import { useShellPreferences } from "@/lib/shell-preferences";
 
 /**
  * 表单与创建流程使用右侧抽屉：顶栏、滚动区、可选固定底栏。
@@ -21,7 +22,7 @@ export function HaloDialog({
   onClose,
   children,
   className,
-  closeLabel = "关闭",
+  closeLabel,
 }: {
   open: boolean;
   title: string;
@@ -34,6 +35,8 @@ export function HaloDialog({
   className?: string;
   closeLabel?: string;
 }) {
+  const { locale } = useShellPreferences();
+  const effectiveCloseLabel = closeLabel ?? (locale === "zh-CN" ? "关闭" : "Close");
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -49,10 +52,19 @@ export function HaloDialog({
     children,
     className,
     size,
-    closeLabel,
+    closeLabel: effectiveCloseLabel,
   });
   if (open) {
-    frameRef.current = { title, description, icon, footer, children, className, size, closeLabel };
+    frameRef.current = {
+      title,
+      description,
+      icon,
+      footer,
+      children,
+      className,
+      size,
+      closeLabel: effectiveCloseLabel,
+    };
   }
   const frame = frameRef.current;
 

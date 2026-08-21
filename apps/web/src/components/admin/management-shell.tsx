@@ -17,6 +17,7 @@ import { persistWorkspaceId, readStoredWorkspaceId } from "@/lib/portals";
 import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { usePortalSurface, useShellPreferences } from "@/lib/shell-preferences";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
+import { WorkspaceAnnouncementBanner } from "@/components/workspace/workspace-announcement-banner";
 
 export type ManagementNavItem = {
   href: Route;
@@ -209,7 +210,10 @@ export function ManagementShell({
           />
         </div>
       </aside>
-      <main className="management-main">{children(dictionary, locale)}</main>
+      <main className="management-main">
+        <WorkspaceAnnouncementBanner />
+        {children(dictionary, locale)}
+      </main>
       <AccountSettingsDialog
         open={accountOpen}
         onClose={() => setAccountOpen(false)}

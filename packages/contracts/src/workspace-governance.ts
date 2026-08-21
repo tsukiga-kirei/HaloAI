@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LocaleSchema } from "./primitives";
+import { ISODateTimeSchema, LocaleSchema } from "./primitives";
 import { PlatformModelApiFormatSchema } from "./system-administration";
 import { WorkspaceRoleSchema } from "./authentication";
 
@@ -9,6 +9,7 @@ export const WorkspaceAdminSectionSchema = z.enum([
   "overview",
   "members",
   "roles",
+  "announcements",
   "agents",
   "integrations",
   "security",
@@ -209,6 +210,30 @@ export const ChangePasswordInputSchema = z
   })
   .strict();
 
+export const WorkspaceAnnouncementSchema = z
+  .object({
+    id: UuidSchema,
+    workspaceId: UuidSchema,
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(2000),
+    level: z.enum(["info", "warning", "critical"]),
+    active: z.boolean(),
+    startsAt: ISODateTimeSchema,
+    expiresAt: ISODateTimeSchema.nullable().optional(),
+    createdAt: ISODateTimeSchema,
+  })
+  .strict();
+
+export const CreateWorkspaceAnnouncementInputSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(2000),
+    level: z.enum(["info", "warning", "critical"]).default("info"),
+    active: z.boolean().default(true),
+    expiresAt: ISODateTimeSchema.nullable().optional(),
+  })
+  .strict();
+
 export type WorkspaceAdminSection = z.infer<typeof WorkspaceAdminSectionSchema>;
 export type WorkspaceAdminAccessResponse = z.infer<typeof WorkspaceAdminAccessResponseSchema>;
 export type CapabilityKey = z.infer<typeof CapabilityKeySchema>;
@@ -230,3 +255,7 @@ export type UpdateWorkspaceMemberStatusInput = z.infer<
 >;
 export type UpdateSessionProfileInput = z.infer<typeof UpdateSessionProfileInputSchema>;
 export type ChangePasswordInput = z.infer<typeof ChangePasswordInputSchema>;
+export type WorkspaceAnnouncement = z.infer<typeof WorkspaceAnnouncementSchema>;
+export type CreateWorkspaceAnnouncementInput = z.infer<
+  typeof CreateWorkspaceAnnouncementInputSchema
+>;
