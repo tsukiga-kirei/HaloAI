@@ -8,6 +8,7 @@ import {
 import { Boxes, Database, KeyRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { notifyError } from "@/components/toast-host";
+import { AdminPageHeader } from "./admin-page-header";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import type { AdminDictionary } from "@/lib/admin-i18n";
@@ -66,12 +67,11 @@ export function LiveModels({ dictionary }: { dictionary: AdminDictionary }) {
 
   return (
     <>
-      <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary.integrationsTitle}</h1>
-          <p>{dictionary.workspaceModelsIntro}</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.navGroupGovernance}
+        title={dictionary.integrationsTitle}
+        description={dictionary.workspaceModelsIntro}
+      />
       {loading ? (
         <p className="halo-loading-copy">{dictionary.modelsLoading}</p>
       ) : models.length === 0 ? (

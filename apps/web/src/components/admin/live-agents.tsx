@@ -4,6 +4,7 @@ import type { CollaborationActor } from "@haloai/contracts";
 import { Bot } from "lucide-react";
 import { useState } from "react";
 import { notify } from "@/components/toast-host";
+import { AdminPageHeader } from "./admin-page-header";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import type { AdminDictionary } from "@/lib/admin-i18n";
@@ -19,20 +20,21 @@ export function LiveAgents({
 
   return (
     <>
-      <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary.agentsTitle}</h1>
-          <p>{dictionary.agentReadOnly}</p>
-        </div>
-        <button
-          type="button"
-          className="admin-primary-button"
-          onClick={() => notify(dictionary.createAgentPending)}
-        >
-          <Bot size={17} />
-          {dictionary.createAgent}
-        </button>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.navGroupPeople}
+        title={dictionary.agentsTitle}
+        description={dictionary.agentReadOnly}
+        actions={
+          <button
+            type="button"
+            className="admin-primary-button"
+            onClick={() => notify(dictionary.createAgentPending)}
+          >
+            <Bot size={17} />
+            {dictionary.createAgent}
+          </button>
+        }
+      />
       {agents.length === 0 ? (
         <HaloEmptyState icon={<Bot size={22} />} title={dictionary.emptyAgentDirectory} />
       ) : (

@@ -6,12 +6,12 @@
 
 .system-console .admin-section-heading {
   max-width: none;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .system-console .admin-section-heading h1 {
-  font-size: clamp(22px, 2vw, 28px);
-  font-weight: 760;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .system-section-stack {
@@ -49,9 +49,8 @@
 .system-settings-panel {
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--surface-raised);
-  box-shadow: 0 12px 38px rgb(20 24 35 / 5%);
 }
 
 .system-preview-card {
@@ -517,11 +516,11 @@
 }
 
 .system-admin-drawer {
-  width: min(92vw, 620px);
+  width: min(92vw, 520px);
 }
 
 .system-members-drawer {
-  width: min(94vw, 760px);
+  width: min(94vw, 680px);
 }
 
 .system-members-stack {
@@ -652,18 +651,18 @@
 
 .system-form {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .system-form-field {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-columns: 34px minmax(0, 1fr);
   align-items: start;
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .system-form-field-copy {
@@ -813,12 +812,12 @@
 }
 
 .system-settings-layout > .halo-segmented {
-  width: 100%;
+  width: max-content;
   max-width: 100%;
 }
 
 .system-settings-panel {
-  min-height: 300px;
+  min-height: 0;
   padding: 16px;
 }
 

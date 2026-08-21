@@ -6,6 +6,7 @@ import type { AdminDictionary } from "@/lib/admin-i18n";
 import type { AdminSection } from "@/lib/admin-sections";
 import { formatRelativeTime } from "@/lib/format-relative-time";
 import type { Locale } from "@/lib/i18n";
+import { AdminPageHeader } from "./admin-page-header";
 import { LiveAgents } from "./live-agents";
 import { LiveAudit } from "./live-audit";
 import { LiveMembers } from "./live-members";
@@ -26,15 +27,6 @@ interface AdminSectionContentProps {
   live?: AdminLiveStats | undefined;
 }
 
-const sectionTitleKeys: Record<AdminSection, keyof AdminDictionary> = {
-  overview: "overviewTitle",
-  members: "membersTitle",
-  agents: "agentsTitle",
-  integrations: "integrationsTitle",
-  security: "securityTitle",
-  audit: "auditTitle",
-};
-
 function Overview({ props }: { props: AdminSectionContentProps }) {
   const { dictionary, live, locale } = props;
   const memberCount = live?.memberCount ?? 0;
@@ -42,11 +34,11 @@ function Overview({ props }: { props: AdminSectionContentProps }) {
   const events = live?.recentAudit ?? [];
   return (
     <>
-      <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary[sectionTitleKeys.overview]}</h1>
-        </div>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.navGroupSpace}
+        title={dictionary.overviewTitle}
+        description={dictionary.overviewDescription}
+      />
       <section className="admin-metrics" aria-label={dictionary.overviewTitle}>
         <HaloMetricCard
           icon={<UsersRound size={20} />}

@@ -7,6 +7,7 @@ import {
 } from "@haloai/contracts";
 import { Database, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdminPageHeader } from "./admin-page-header";
 import { notifyError } from "@/components/toast-host";
 import { resolveActiveWorkspace } from "@/lib/active-workspace";
 import type { AdminDictionary } from "@/lib/admin-i18n";
@@ -83,12 +84,11 @@ export function LiveSecurity({ dictionary }: { dictionary: AdminDictionary }) {
 
   return (
     <>
-      <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary.securityTitle}</h1>
-          <p>{dictionary.securityReadOnly}</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.navGroupGovernance}
+        title={dictionary.securityTitle}
+        description={dictionary.securityReadOnly}
+      />
       <section className="admin-security-grid">
         {items.map((item) => (
           <article className="admin-security-card" key={item.title}>

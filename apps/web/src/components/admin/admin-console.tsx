@@ -4,20 +4,31 @@ import { Bot, Boxes, LayoutDashboard, ScrollText, ShieldCheck, UsersRound } from
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { ManagementShell } from "./management-shell";
-import type { AdminDictionary } from "@/lib/admin-i18n";
+import { ManagementShell, type ManagementNavSection } from "./management-shell";
 
-const navigation: ReadonlyArray<{
-  href: Route;
-  icon: typeof LayoutDashboard;
-  labelKey: keyof AdminDictionary;
-}> = [
-  { href: "/admin/overview" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
-  { href: "/admin/members" as Route, icon: UsersRound, labelKey: "navMembers" },
-  { href: "/admin/agents" as Route, icon: Bot, labelKey: "navAgents" },
-  { href: "/admin/integrations" as Route, icon: Boxes, labelKey: "navIntegrations" },
-  { href: "/admin/security" as Route, icon: ShieldCheck, labelKey: "navSecurity" },
-  { href: "/admin/audit" as Route, icon: ScrollText, labelKey: "navAudit" },
+const navigation: ReadonlyArray<ManagementNavSection> = [
+  {
+    id: "space",
+    titleKey: "navGroupSpace",
+    items: [{ href: "/admin/overview" as Route, icon: LayoutDashboard, labelKey: "navOverview" }],
+  },
+  {
+    id: "people",
+    titleKey: "navGroupPeople",
+    items: [
+      { href: "/admin/members" as Route, icon: UsersRound, labelKey: "navMembers" },
+      { href: "/admin/agents" as Route, icon: Bot, labelKey: "navAgents" },
+    ],
+  },
+  {
+    id: "governance",
+    titleKey: "navGroupGovernance",
+    items: [
+      { href: "/admin/integrations" as Route, icon: Boxes, labelKey: "navIntegrations" },
+      { href: "/admin/security" as Route, icon: ShieldCheck, labelKey: "navSecurity" },
+      { href: "/admin/audit" as Route, icon: ScrollText, labelKey: "navAudit" },
+    ],
+  },
 ];
 
 /**
@@ -28,11 +39,10 @@ export function AdminConsole({ children }: { children: ReactNode }) {
 
   return (
     <ManagementShell
-      titleKey="administration"
       navLabelKey="navLabel"
       portalKey="workspace_admin"
       activeHref={pathname}
-      items={navigation}
+      sections={navigation}
     >
       {() => children}
     </ManagementShell>

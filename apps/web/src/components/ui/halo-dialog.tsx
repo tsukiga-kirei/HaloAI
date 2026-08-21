@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { animateBackdropIn, animateDrawerIn } from "@/lib/motion";
 
 /**
- * 表单与创建流程使用右侧抽屉，不再居中模态。
+ * 表单与创建流程使用右侧抽屉：顶栏、滚动区、可选固定底栏。
  * Radix 负责焦点与 Esc；GSAP 负责从右侧滑入。窄屏拉满宽度，仍从右侧进入。
  */
 export function HaloDialog({
@@ -14,6 +14,8 @@ export function HaloDialog({
   title,
   description,
   icon,
+  footer,
+  size = "default",
   onClose,
   children,
   className,
@@ -23,6 +25,8 @@ export function HaloDialog({
   title: string;
   description?: string;
   icon?: ReactNode;
+  footer?: ReactNode;
+  size?: "default" | "wide";
   onClose: () => void;
   children: ReactNode;
   className?: string;
@@ -48,7 +52,9 @@ export function HaloDialog({
         <Dialog.Overlay className="halo-dialog-overlay" ref={overlayRef} />
         <Dialog.Content
           ref={contentRef}
-          className={`halo-dialog-content${className ? ` ${className}` : ""}`}
+          className={`halo-dialog-content${size === "wide" ? " is-wide" : ""}${
+            footer ? " has-footer" : ""
+          }${className ? ` ${className}` : ""}`}
           {...(description ? {} : { "aria-describedby": undefined })}
           onPointerDownOutside={(event) => {
             // 下拉/校验浮层通过 Portal 挂到 body，不能因此关闭抽屉。
@@ -71,7 +77,7 @@ export function HaloDialog({
           }}
         >
           <div className="dialog-heading">
-            <div>
+            <div className="dialog-heading-copy">
               {icon ? <span className="dialog-icon">{icon}</span> : null}
               <div>
                 <Dialog.Title asChild>
@@ -91,6 +97,7 @@ export function HaloDialog({
             </Dialog.Close>
           </div>
           <div className="halo-dialog-body">{children}</div>
+          {footer ? <div className="halo-dialog-footer">{footer}</div> : null}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

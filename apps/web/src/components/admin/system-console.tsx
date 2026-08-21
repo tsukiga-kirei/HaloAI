@@ -4,23 +4,36 @@ import { Activity, Building2, Cpu, LayoutDashboard, Settings2 } from "lucide-rea
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { AdminPageHeader } from "./admin-page-header";
+import { ManagementShell, type ManagementNavSection } from "./management-shell";
 import { animateManagementSection } from "@/lib/motion";
 import { systemAdminDictionaries, type SystemAdminDictionary } from "@/lib/system-admin-i18n";
 import { isSystemSection, type SystemSection } from "@/lib/system-sections";
-import { ManagementShell } from "./management-shell";
+import type { AdminDictionary } from "@/lib/admin-i18n";
 
-const navigation = [
-  { section: "overview", href: "/system" as Route, icon: LayoutDashboard, labelKey: "navOverview" },
-  { section: "tenants", href: "/system/tenants" as Route, icon: Building2, labelKey: "navTenants" },
-  { section: "models", href: "/system/models" as Route, icon: Cpu, labelKey: "navModels" },
-  { section: "health", href: "/system/health" as Route, icon: Activity, labelKey: "navHealth" },
+const navigation: ReadonlyArray<ManagementNavSection> = [
   {
-    section: "settings",
-    href: "/system/settings" as Route,
-    icon: Settings2,
-    labelKey: "navSettings",
+    id: "platform",
+    titleKey: "navGroupPlatform",
+    items: [{ href: "/system" as Route, icon: LayoutDashboard, labelKey: "navOverview" }],
   },
-] as const;
+  {
+    id: "catalog",
+    titleKey: "navGroupCatalog",
+    items: [
+      { href: "/system/tenants" as Route, icon: Building2, labelKey: "navTenants" },
+      { href: "/system/models" as Route, icon: Cpu, labelKey: "navModels" },
+    ],
+  },
+  {
+    id: "operations",
+    titleKey: "navGroupOperations",
+    items: [
+      { href: "/system/health" as Route, icon: Activity, labelKey: "navHealth" },
+      { href: "/system/settings" as Route, icon: Settings2, labelKey: "navSettings" },
+    ],
+  },
+];
 
 function sectionFromPath(pathname: string): SystemSection {
   if (pathname === "/system" || pathname === "/system/") return "overview";
@@ -28,12 +41,44 @@ function sectionFromPath(pathname: string): SystemSection {
   return isSystemSection(value) ? value : "overview";
 }
 
-function titleFrom(section: SystemSection, dictionary: SystemAdminDictionary): string {
-  if (section === "tenants") return dictionary.tenantsTitle;
-  if (section === "models") return dictionary.modelsTitle;
-  if (section === "health") return dictionary.healthTitle;
-  if (section === "settings") return dictionary.settingsTitle;
-  return dictionary.overviewTitle;
+function chromeFrom(
+  section: SystemSection,
+  dictionary: SystemAdminDictionary,
+  admin: AdminDictionary,
+): { kicker: string; title: string; description: string } {
+  if (section === "tenants") {
+    return {
+      kicker: admin.navGroupCatalog,
+      title: dictionary.tenantsTitle,
+      description: dictionary.tenantsDescription,
+    };
+  }
+  if (section === "models") {
+    return {
+      kicker: admin.navGroupCatalog,
+      title: dictionary.modelsTitle,
+      description: dictionary.modelsDescription,
+    };
+  }
+  if (section === "health") {
+    return {
+      kicker: admin.navGroupOperations,
+      title: dictionary.healthTitle,
+      description: dictionary.healthDescription,
+    };
+  }
+  if (section === "settings") {
+    return {
+      kicker: admin.navGroupOperations,
+      title: dictionary.settingsTitle,
+      description: dictionary.settingsDescription,
+    };
+  }
+  return {
+    kicker: admin.navGroupPlatform,
+    title: dictionary.overviewTitle,
+    description: dictionary.overviewDescription,
+  };
 }
 
 /**
@@ -51,23 +96,21 @@ export function SystemConsole({ children }: { children: ReactNode }) {
 
   return (
     <ManagementShell
-      titleKey="systemConsoleTitle"
       navLabelKey="systemNavLabel"
       portalKey="system_admin"
       activeHref={section === "overview" ? "/system" : `/system/${section}`}
-      items={navigation.map((item) => ({
-        href: item.href,
-        labelKey: item.labelKey,
-        icon: item.icon,
-      }))}
+      sections={navigation}
     >
-      {(_adminDictionary, locale) => {
+      {(adminDictionary, locale) => {
         const dictionary = systemAdminDictionaries[locale];
+        const chrome = chromeFrom(section, dictionary, adminDictionary);
         return (
           <div className="system-console" ref={contentRef}>
-            <div className="admin-section-heading">
-              <h1>{titleFrom(section, dictionary)}</h1>
-            </div>
+            <AdminPageHeader
+              kicker={chrome.kicker}
+              title={chrome.title}
+              description={chrome.description}
+            />
             {children}
           </div>
         );

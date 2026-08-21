@@ -29,10 +29,10 @@ import {
   UserCog,
   UserPlus,
   UsersRound,
-  X,
 } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { notify, notifyError } from "@/components/toast-host";
+import { AdminPageHeader } from "./admin-page-header";
 import { FieldError } from "@/components/ui/field-error";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
@@ -443,32 +443,36 @@ export function LiveMembers() {
 
   return (
     <>
-      <div className="admin-section-heading organization-heading">
-        <div>
-          <span className="admin-page-kicker">{activeWorkspace?.name}</span>
-          <h1>{dictionary.title}</h1>
-          <p>{dictionary.description}</p>
-        </div>
-        <div className="organization-heading-actions">
-          <button type="button" className="admin-secondary-button" onClick={() => openDepartment()}>
-            <Plus size={17} /> {dictionary.addDepartment}
-          </button>
-          <button
-            type="button"
-            className="admin-primary-button"
-            onClick={() => {
-              setInviteOpen(true);
-              setInviteLink(null);
-              setInviteRole("member");
-              setInviteDepartmentId(unassignedValue);
-              setInviteJobTitle("");
-              setEmailError(false);
-            }}
-          >
-            <UserPlus size={17} /> {dictionary.inviteMember}
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.sectionGroup}
+        title={dictionary.title}
+        description={dictionary.description}
+        actions={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => openDepartment()}
+            >
+              <Plus size={17} /> {dictionary.addDepartment}
+            </button>
+            <button
+              type="button"
+              className="admin-primary-button"
+              onClick={() => {
+                setInviteOpen(true);
+                setInviteLink(null);
+                setInviteRole("member");
+                setInviteDepartmentId(unassignedValue);
+                setInviteJobTitle("");
+                setEmailError(false);
+              }}
+            >
+              <UserPlus size={17} /> {dictionary.inviteMember}
+            </button>
+          </>
+        }
+      />
 
       <section className="organization-summary" aria-label={dictionary.organizationOverview}>
         <span>
@@ -636,11 +640,36 @@ export function LiveMembers() {
         className="workspace-admin-drawer"
         title={dictionary.editMember}
         description={editingMember?.email ?? ""}
-        icon={<UserCog size={20} />}
+        icon={<UserCog size={18} />}
         onClose={() => setEditingMember(null)}
         closeLabel={dictionary.close}
+        footer={
+          <>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setEditingMember(null)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="workspace-edit-member"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.save}
+            </button>
+          </>
+        }
       >
-        <form className="organization-form" noValidate onSubmit={(event) => void saveMember(event)}>
+        <form
+          id="workspace-edit-member"
+          className="organization-form"
+          noValidate
+          onSubmit={(event) => void saveMember(event)}
+        >
           <label>
             <span>{dictionary.department}</span>
             <HaloSelect
@@ -663,19 +692,6 @@ export function LiveMembers() {
               onChange={(event) => setMemberJobTitle(event.target.value)}
             />
           </label>
-          <div className="dialog-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => setEditingMember(null)}
-            >
-              <X size={16} /> {dictionary.cancel}
-            </button>
-            <button type="submit" className="primary-button" disabled={submitting}>
-              {submitting ? <LoaderCircle size={16} /> : <UserCog size={16} />}
-              {dictionary.save}
-            </button>
-          </div>
         </form>
       </HaloDialog>
 
@@ -684,11 +700,32 @@ export function LiveMembers() {
         className="workspace-admin-drawer"
         title={editingDepartment ? dictionary.editDepartment : dictionary.createDepartment}
         description={dictionary.departmentCodeHint}
-        icon={<Building2 size={20} />}
+        icon={<Building2 size={18} />}
         onClose={() => setDepartmentOpen(false)}
         closeLabel={dictionary.close}
+        footer={
+          <>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setDepartmentOpen(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="workspace-department"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.save}
+            </button>
+          </>
+        }
       >
         <form
+          id="workspace-department"
           className="organization-form"
           noValidate
           onSubmit={(event) => void saveDepartment(event)}
@@ -757,19 +794,6 @@ export function LiveMembers() {
               onChange={(event) => setSortOrder(event.target.value)}
             />
           </label>
-          <div className="dialog-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => setDepartmentOpen(false)}
-            >
-              <X size={16} /> {dictionary.cancel}
-            </button>
-            <button type="submit" className="primary-button" disabled={submitting}>
-              {submitting ? <LoaderCircle size={16} /> : <Building2 size={16} />}
-              {dictionary.save}
-            </button>
-          </div>
         </form>
       </HaloDialog>
 
@@ -778,11 +802,32 @@ export function LiveMembers() {
         className="workspace-admin-drawer"
         title={dictionary.inviteMember}
         description={dictionary.inviteDescription}
-        icon={<Mail size={20} />}
+        icon={<Mail size={18} />}
         onClose={() => setInviteOpen(false)}
         closeLabel={dictionary.close}
+        footer={
+          <>
+            <button type="button" className="secondary-button" onClick={() => setInviteOpen(false)}>
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="workspace-invite-member"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting ? <LoaderCircle size={16} /> : null}
+              {dictionary.inviteMember}
+            </button>
+          </>
+        }
       >
-        <form className="organization-form" noValidate onSubmit={(event) => void invite(event)}>
+        <form
+          id="workspace-invite-member"
+          className="organization-form"
+          noValidate
+          onSubmit={(event) => void invite(event)}
+        >
           <label>
             <span>{dictionary.memberEmail}</span>
             <FieldError open={emailError} message={dictionary.invalidEmail}>
@@ -845,15 +890,6 @@ export function LiveMembers() {
               </button>
             </div>
           ) : null}
-          <div className="dialog-actions">
-            <button type="button" className="secondary-button" onClick={() => setInviteOpen(false)}>
-              <X size={16} /> {dictionary.cancel}
-            </button>
-            <button type="submit" className="primary-button" disabled={submitting}>
-              {submitting ? <LoaderCircle size={16} /> : <UserPlus size={16} />}
-              {dictionary.inviteMember}
-            </button>
-          </div>
         </form>
       </HaloDialog>
     </>

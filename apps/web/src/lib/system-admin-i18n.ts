@@ -3,10 +3,15 @@ import type { Locale } from "./i18n";
 
 export interface SystemAdminDictionary {
   overviewTitle: string;
+  overviewDescription: string;
   tenantsTitle: string;
+  tenantsDescription: string;
   modelsTitle: string;
+  modelsDescription: string;
   healthTitle: string;
+  healthDescription: string;
   settingsTitle: string;
+  settingsDescription: string;
   totalTenants: string;
   activeTenants: string;
   totalModels: string;
@@ -123,10 +128,15 @@ export interface SystemAdminDictionary {
 
 const zhCN: SystemAdminDictionary = {
   overviewTitle: "平台总览",
+  overviewDescription: "查看租户规模、模型目录和平台就绪状态。",
   tenantsTitle: "租户管理",
+  tenantsDescription: "创建租户、指定默认管理员，并查看成员治理元数据。",
   modelsTitle: "模型管理",
+  modelsDescription: "登记平台模型、保管密钥，并按租户分配可用范围。",
   healthTitle: "平台健康",
+  healthDescription: "只探测 API 就绪状态，未接入的依赖不会显示为可用。",
   settingsTitle: "系统设置",
+  settingsDescription: "平台默认语言与会话寿命。保存后对新签发的会话生效。",
   totalTenants: "租户总数",
   activeTenants: "活跃租户",
   totalModels: "模型总数",
@@ -249,10 +259,18 @@ const zhCN: SystemAdminDictionary = {
 
 const enUS: SystemAdminDictionary = {
   overviewTitle: "Platform overview",
+  overviewDescription: "Review tenant scale, the model catalog, and platform readiness.",
   tenantsTitle: "Tenant management",
+  tenantsDescription:
+    "Create tenants, assign a default administrator, and inspect membership metadata.",
   modelsTitle: "Model management",
+  modelsDescription: "Register platform models, store secrets, and allocate them to tenants.",
   healthTitle: "Platform health",
+  healthDescription:
+    "Probes the API readiness endpoint. Unconnected dependencies are not shown as available.",
   settingsTitle: "System settings",
+  settingsDescription:
+    "Platform default locale and session lifetime. Saved values apply to newly issued sessions.",
   totalTenants: "Total tenants",
   activeTenants: "Active tenants",
   totalModels: "Total models",

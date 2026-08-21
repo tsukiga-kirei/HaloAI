@@ -23,6 +23,9 @@ export interface AdminDictionary {
   roleSystemAdmin: string;
   switchedToRole: string;
   navLabel: string;
+  navGroupSpace: string;
+  navGroupPeople: string;
+  navGroupGovernance: string;
   navOverview: string;
   navMembers: string;
   navAgents: string;
@@ -30,6 +33,7 @@ export interface AdminDictionary {
   navSecurity: string;
   navAudit: string;
   overviewTitle: string;
+  overviewDescription: string;
   membersTitle: string;
   agentsTitle: string;
   integrationsTitle: string;
@@ -121,6 +125,9 @@ export interface AdminDictionary {
   returnToWorkspace: string;
   systemNavLabel: string;
   systemConsoleTitle: string;
+  navGroupPlatform: string;
+  navGroupCatalog: string;
+  navGroupOperations: string;
   navTenants: string;
   navModels: string;
   navHealth: string;
@@ -208,6 +215,9 @@ export interface AdminDictionary {
   agentReadOnly: string;
   createAgentPending: string;
   accountAndSecurity: string;
+  accountDescription: string;
+  accountTabProfile: string;
+  accountTabSession: string;
   accountEmail: string;
   accountDisplayName: string;
   accountWorkspace: string;
@@ -252,6 +262,9 @@ const zhCN: AdminDictionary = {
   roleSystemAdmin: "系统管理",
   switchedToRole: "已切换到{role}",
   navLabel: "后台配置导航",
+  navGroupSpace: "空间",
+  navGroupPeople: "人员",
+  navGroupGovernance: "治理",
   navOverview: "总览",
   navMembers: "组织与成员",
   navAgents: "AI 协作者",
@@ -259,6 +272,7 @@ const zhCN: AdminDictionary = {
   navSecurity: "安全策略",
   navAudit: "审计记录",
   overviewTitle: "工作空间总览",
+  overviewDescription: "查看本空间的成员、部门和近期治理活动。",
   membersTitle: "成员与访问角色",
   agentsTitle: "AI 协作者",
   integrationsTitle: "本空间可用模型",
@@ -350,6 +364,9 @@ const zhCN: AdminDictionary = {
   returnToWorkspace: "返回 HaloAI 工作空间",
   systemNavLabel: "系统后台导航",
   systemConsoleTitle: "系统管理",
+  navGroupPlatform: "平台",
+  navGroupCatalog: "目录",
+  navGroupOperations: "运行",
   navTenants: "租户",
   navModels: "模型",
   navHealth: "健康",
@@ -438,6 +455,9 @@ const zhCN: AdminDictionary = {
   agentReadOnly: "模型与工具范围由已发布版本决定；创建向导将在 Agent 发布链路接入后开放。",
   createAgentPending: "创建 AI 协作者将在 Agent 发布链路接入后开放。",
   accountAndSecurity: "账户与安全",
+  accountDescription: "更新显示名。邮箱与当前会话身份只读。",
+  accountTabProfile: "资料",
+  accountTabSession: "会话",
   accountEmail: "登录邮箱",
   accountDisplayName: "显示名称",
   accountWorkspace: "当前工作区",
@@ -482,6 +502,9 @@ const enUS: AdminDictionary = {
   roleSystemAdmin: "System admin",
   switchedToRole: "Switched to {role}",
   navLabel: "Administration navigation",
+  navGroupSpace: "Space",
+  navGroupPeople: "People",
+  navGroupGovernance: "Governance",
   navOverview: "Overview",
   navMembers: "Organization",
   navAgents: "AI collaborators",
@@ -489,6 +512,7 @@ const enUS: AdminDictionary = {
   navSecurity: "Security policy",
   navAudit: "Audit log",
   overviewTitle: "Workspace overview",
+  overviewDescription: "Review members, departments, and recent governance activity.",
   membersTitle: "Members and access roles",
   agentsTitle: "AI collaborators",
   integrationsTitle: "Models available here",
@@ -590,6 +614,9 @@ const enUS: AdminDictionary = {
   returnToWorkspace: "Return to HaloAI workspace",
   systemNavLabel: "System administration navigation",
   systemConsoleTitle: "System administration",
+  navGroupPlatform: "Platform",
+  navGroupCatalog: "Catalog",
+  navGroupOperations: "Operations",
   navTenants: "Tenants",
   navModels: "Models",
   navHealth: "Health",
@@ -683,6 +710,9 @@ const enUS: AdminDictionary = {
   createAgentPending:
     "Creating AI collaborators opens after the agent publishing path is connected.",
   accountAndSecurity: "Account and security",
+  accountDescription: "Update your display name. Email and session identity stay read-only.",
+  accountTabProfile: "Profile",
+  accountTabSession: "Session",
   accountEmail: "Sign-in email",
   accountDisplayName: "Display name",
   accountWorkspace: "Current workspace",

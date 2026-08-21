@@ -83,6 +83,9 @@ export interface Dictionary {
   memberInviteFailed: string;
   noAllocatedModels: string;
   accountAndSecurity: string;
+  accountDescription: string;
+  accountTabProfile: string;
+  accountTabSession: string;
   accountEmail: string;
   accountDisplayName: string;
   accountWorkspace: string;
@@ -326,6 +329,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     memberInviteFailed: "无法发送邀请，请确认邮箱和权限后重试。",
     noAllocatedModels: "本空间还没有可分配的模型。",
     accountAndSecurity: "账户与安全",
+    accountDescription: "更新显示名。邮箱与当前会话身份只读。",
+    accountTabProfile: "资料",
+    accountTabSession: "会话",
     accountEmail: "登录邮箱",
     accountDisplayName: "显示名称",
     accountWorkspace: "当前工作区",
@@ -574,6 +580,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     memberInviteFailed: "Could not send the invitation. Check the email and your permissions.",
     noAllocatedModels: "No models have been allocated to this workspace yet.",
     accountAndSecurity: "Account and security",
+    accountDescription: "Update your display name. Email and session identity stay read-only.",
+    accountTabProfile: "Profile",
+    accountTabSession: "Session",
     accountEmail: "Sign-in email",
     accountDisplayName: "Display name",
     accountWorkspace: "Current workspace",

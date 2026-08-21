@@ -253,8 +253,35 @@ export function SystemTenantsSection() {
           setCreating(false);
           setActivationLink(null);
         }}
+        footer={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                setCreating(false);
+                setActivationLink(null);
+              }}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="system-create-tenant"
+              className="admin-primary-button"
+              disabled={saving}
+            >
+              {dictionary.createTenant}
+            </button>
+          </>
+        }
       >
-        <form className="system-form" noValidate onSubmit={(event) => void createTenant(event)}>
+        <form
+          id="system-create-tenant"
+          className="system-form"
+          noValidate
+          onSubmit={(event) => void createTenant(event)}
+        >
           <SystemFormField icon={<Building2 size={16} />} label={dictionary.name}>
             <input
               required
@@ -317,21 +344,6 @@ export function SystemTenantsSection() {
               onChange={(event) => setNewTimeZone(event.target.value)}
             />
           </SystemFormField>
-          <footer className="system-form-actions">
-            <button
-              type="button"
-              className="admin-secondary-button"
-              onClick={() => {
-                setCreating(false);
-                setActivationLink(null);
-              }}
-            >
-              {dictionary.cancel}
-            </button>
-            <button type="submit" className="admin-primary-button" disabled={saving}>
-              {dictionary.createTenant}
-            </button>
-          </footer>
         </form>
       </HaloDialog>
 
@@ -344,8 +356,32 @@ export function SystemTenantsSection() {
         icon={<Building2 size={18} />}
         closeLabel={dictionary.close}
         onClose={() => setEditing(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setEditing(null)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="system-edit-tenant"
+              className="admin-primary-button"
+              disabled={saving}
+            >
+              {dictionary.save}
+            </button>
+          </>
+        }
       >
-        <form className="system-form" noValidate onSubmit={(event) => void saveTenant(event)}>
+        <form
+          id="system-edit-tenant"
+          className="system-form"
+          noValidate
+          onSubmit={(event) => void saveTenant(event)}
+        >
           <div className="system-form-summary">
             <strong>{editing?.name}</strong>
             <small>{editing?.slug}</small>
@@ -380,18 +416,6 @@ export function SystemTenantsSection() {
               onChange={(event) => setTimeZone(event.target.value)}
             />
           </SystemFormField>
-          <footer className="system-form-actions">
-            <button
-              type="button"
-              className="admin-secondary-button"
-              onClick={() => setEditing(null)}
-            >
-              {dictionary.cancel}
-            </button>
-            <button type="submit" className="admin-primary-button" disabled={saving}>
-              {dictionary.save}
-            </button>
-          </footer>
         </form>
       </HaloDialog>
     </div>

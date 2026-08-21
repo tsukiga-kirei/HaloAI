@@ -9,6 +9,7 @@ import {
 import { ArrowUpRight, LoaderCircle, ScrollText, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { notify, notifyError } from "@/components/toast-host";
+import { AdminPageHeader } from "./admin-page-header";
 import { HaloDialog } from "@/components/ui/halo-dialog";
 import { HaloEmptyState } from "@/components/ui/halo-empty-state";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
@@ -142,16 +143,17 @@ export function LiveAudit({ dictionary }: { dictionary: AdminDictionary }) {
 
   return (
     <>
-      <div className="admin-section-heading">
-        <div>
-          <h1>{dictionary.auditTitle}</h1>
-          <p>{dictionary.auditDescription}</p>
-        </div>
-        <button type="button" className="admin-primary-button" onClick={() => void exportLog()}>
-          <ArrowUpRight size={17} />
-          {dictionary.exportAudit}
-        </button>
-      </div>
+      <AdminPageHeader
+        kicker={dictionary.navGroupGovernance}
+        title={dictionary.auditTitle}
+        description={dictionary.auditDescription}
+        actions={
+          <button type="button" className="admin-primary-button" onClick={() => void exportLog()}>
+            <ArrowUpRight size={17} />
+            {dictionary.exportAudit}
+          </button>
+        }
+      />
       {toolbar}
       {loading ? (
         <p className="halo-loading-copy">

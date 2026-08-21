@@ -228,7 +228,7 @@ a {
 .management-main {
   min-width: 0;
   min-height: 0;
-  padding: 28px 32px 40px;
+  padding: 20px 24px 28px;
   overflow: auto;
   background: var(--canvas);
 }
@@ -1343,14 +1343,23 @@ a {
 .halo-shell.is-management .primary-nav {
   flex: 1 1 auto;
   min-height: 0;
-  gap: 6px;
-  padding: 10px 8px 12px;
+  gap: 10px;
+  padding: 8px 8px 12px;
   overflow: auto;
   border-bottom: 0;
 }
-.halo-shell.is-management .sidebar-kicker {
-  margin: 6px 9px 10px;
-  font-size: 12px;
+.halo-shell.is-management .nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.halo-shell.is-management .nav-section-title {
+  margin: 2px 9px 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .halo-shell.is-management:not(.is-collapsed) .nav-item {
   flex: 0 0 auto;
@@ -1700,6 +1709,16 @@ a {
 }
 .workspace-sidebar.is-collapsed .sidebar-label {
   display: none;
+}
+.halo-shell.is-management.is-collapsed .nav-section {
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.halo-shell.is-management.is-collapsed .nav-section:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
 }
 .workspace-sidebar.is-collapsed .room-item::before {
   display: none;
@@ -2645,7 +2664,7 @@ a {
   animation: dialog-in var(--overlay) var(--ease) both;
 }
 .dialog-heading,
-.dialog-heading > div:first-child {
+.dialog-heading-copy {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -2653,6 +2672,9 @@ a {
 .dialog-heading {
   justify-content: space-between;
   margin-bottom: 18px;
+}
+.dialog-heading-copy {
+  min-width: 0;
 }
 .dialog-heading h2 {
   margin: 0;
@@ -2689,7 +2711,7 @@ a {
 .member-dialog form,
 .halo-dialog-content form {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 .member-dialog label,
 .halo-dialog-content label {
@@ -2760,9 +2782,24 @@ a {
   padding-top: 4px;
 }
 .halo-dialog-content .dialog-actions {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.halo-dialog-content:not(.has-footer) .dialog-actions {
   margin-top: 4px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+}
+.halo-dialog-footer {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--surface-raised);
 }
 .toast {
   display: none;
@@ -3016,6 +3053,12 @@ a {
     overscroll-behavior-x: contain;
     scroll-snap-type: x proximity;
   }
+  .halo-shell.is-management .nav-section {
+    flex-direction: row;
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+  .halo-shell.is-management .nav-section-title,
   .halo-shell.is-management .sidebar-kicker {
     display: none;
   }

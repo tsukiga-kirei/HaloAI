@@ -267,24 +267,39 @@
   right: 0;
   bottom: 0;
   display: flex;
-  width: min(460px, 100vw);
+  width: min(480px, 100vw);
   max-height: 100dvh;
   flex-direction: column;
   overflow: hidden;
   padding: 0;
   border: 0;
   border-left: 1px solid var(--border);
-  border-radius: 20px 0 0 20px;
+  border-radius: 16px 0 0 16px;
   background: var(--surface-raised);
   box-shadow: var(--shadow-modal);
+}
+.halo-dialog-content.is-wide {
+  width: min(560px, 100vw);
 }
 .halo-dialog-content .dialog-heading {
   flex: 0 0 auto;
   margin-bottom: 0;
-  padding: 18px 20px 16px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid var(--border);
 }
+.halo-dialog-content .dialog-heading h2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+.halo-dialog-content .dialog-heading p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
 .halo-dialog-content .dialog-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: var(--accent-soft);
   color: var(--accent);
 }
@@ -293,18 +308,35 @@
   min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px calc(18px + env(safe-area-inset-bottom));
+  gap: 12px;
+  padding: 16px 16px 16px;
   overflow: auto;
   overscroll-behavior: contain;
+}
+.halo-dialog-content.has-footer .halo-dialog-body {
+  padding-bottom: 8px;
+}
+.halo-dialog-footer {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: var(--surface-raised);
 }
 @media (min-width: 1200px) {
   .halo-dialog-content {
     width: 480px;
   }
+  .halo-dialog-content.is-wide {
+    width: 560px;
+  }
 }
 @media (max-width: 767px) {
-  .halo-dialog-content {
+  .halo-dialog-content,
+  .halo-dialog-content.is-wide {
     width: 100vw;
     border-left: 0;
     border-radius: 0;

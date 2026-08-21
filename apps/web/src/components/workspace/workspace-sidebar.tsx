@@ -257,6 +257,9 @@ export function WorkspaceSidebar({
         workspace={activeWorkspace}
         labels={{
           title: dictionary.accountAndSecurity,
+          description: dictionary.accountDescription,
+          tabProfile: dictionary.accountTabProfile,
+          tabSession: dictionary.accountTabSession,
           email: dictionary.accountEmail,
           displayName: dictionary.accountDisplayName,
           workspace: dictionary.accountWorkspace,

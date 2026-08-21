@@ -18,22 +18,32 @@ import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
 import { useShellPreferences } from "@/lib/shell-preferences";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 
+export type ManagementNavItem = {
+  href: Route;
+  labelKey: keyof AdminDictionary;
+  icon: LucideIcon;
+};
+
+export type ManagementNavSection = {
+  id: string;
+  titleKey: keyof AdminDictionary;
+  items: ReadonlyArray<ManagementNavItem>;
+};
+
 /**
  * 工作空间后台与系统后台共用侧栏外壳。
  * portalKey 跟当前表面走，不能沿用 localStorage 里的协作身份，否则深链进后台后无法点选「协作成员」返回前台。
  */
 export function ManagementShell({
-  titleKey,
   navLabelKey,
-  items,
+  sections,
   activeHref,
   portalKey,
   workspaceName,
   children,
 }: {
-  titleKey: keyof AdminDictionary;
   navLabelKey: keyof AdminDictionary;
-  items: ReadonlyArray<{ href: Route; labelKey: keyof AdminDictionary; icon: LucideIcon }>;
+  sections: ReadonlyArray<ManagementNavSection>;
   activeHref: string;
   portalKey: PortalKey;
   workspaceName?: string;
@@ -134,25 +144,29 @@ export function ManagementShell({
           )}
         </div>
         <nav className="primary-nav" aria-label={dictionary[navLabelKey]}>
-          <p className="sidebar-kicker sidebar-label">{dictionary[titleKey]}</p>
-          {items.map((item) => {
-            const Icon = item.icon;
-            const active = activeHref === item.href;
-            const label = dictionary[item.labelKey];
-            return (
-              <SidebarTooltip key={item.href} enabled={sidebarCollapsed} label={label}>
-                <Link
-                  className={`nav-item ${active ? "is-active" : ""}`}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  title={label}
-                >
-                  <Icon size={18} />
-                  <span className="sidebar-label">{label}</span>
-                </Link>
-              </SidebarTooltip>
-            );
-          })}
+          {sections.map((section) => (
+            <div className="nav-section" key={section.id}>
+              <p className="nav-section-title sidebar-label">{dictionary[section.titleKey]}</p>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = activeHref === item.href;
+                const label = dictionary[item.labelKey];
+                return (
+                  <SidebarTooltip key={item.href} enabled={sidebarCollapsed} label={label}>
+                    <Link
+                      className={`nav-item ${active ? "is-active" : ""}`}
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      title={label}
+                    >
+                      <Icon size={18} />
+                      <span className="sidebar-label">{label}</span>
+                    </Link>
+                  </SidebarTooltip>
+                );
+              })}
+            </div>
+          ))}
         </nav>
         <div className="sidebar-footer">
           <AccountMenu
@@ -202,6 +216,9 @@ export function ManagementShell({
         workspace={activeWorkspace}
         labels={{
           title: dictionary.accountAndSecurity,
+          description: dictionary.accountDescription,
+          tabProfile: dictionary.accountTabProfile,
+          tabSession: dictionary.accountTabSession,
           email: dictionary.accountEmail,
           displayName: dictionary.accountDisplayName,
           workspace: dictionary.accountWorkspace,

@@ -230,10 +230,34 @@ export function SystemModelsSection() {
         className="system-admin-drawer"
         title={editing ? dictionary.editModel : dictionary.registerModel}
         icon={<Cpu size={18} />}
+        size="wide"
         closeLabel={dictionary.close}
         onClose={() => setDialogOpen(false)}
+        footer={
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => setDialogOpen(false)}
+            >
+              {dictionary.cancel}
+            </button>
+            <button
+              type="submit"
+              form="system-save-model"
+              className="admin-primary-button"
+              disabled={saving}
+            >
+              {dictionary.save}
+            </button>
+          </>
+        }
       >
-        <form className="system-form" onSubmit={(event) => void saveModel(event)}>
+        <form
+          id="system-save-model"
+          className="system-form"
+          onSubmit={(event) => void saveModel(event)}
+        >
           <SystemFormField icon={<Type size={16} />} tone="blue" label={dictionary.name}>
             <input
               value={name}
@@ -340,19 +364,6 @@ export function SystemModelsSection() {
               )}
             </section>
           ) : null}
-
-          <footer className="system-form-actions">
-            <button
-              type="button"
-              className="admin-secondary-button"
-              onClick={() => setDialogOpen(false)}
-            >
-              {dictionary.cancel}
-            </button>
-            <button type="submit" className="admin-primary-button" disabled={saving}>
-              {dictionary.save}
-            </button>
-          </footer>
         </form>
       </HaloDialog>
     </div>

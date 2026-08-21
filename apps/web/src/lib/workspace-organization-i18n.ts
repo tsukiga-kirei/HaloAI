@@ -2,6 +2,7 @@ import type { Locale } from "./i18n";
 
 export interface WorkspaceOrganizationDictionary {
   title: string;
+  sectionGroup: string;
   description: string;
   inviteMember: string;
   addDepartment: string;
@@ -68,6 +69,7 @@ export interface WorkspaceOrganizationDictionary {
 
 const zhCN: WorkspaceOrganizationDictionary = {
   title: "组织与成员",
+  sectionGroup: "人员",
   description: "维护部门结构、成员归属与访问角色。部门用于协作组织，权限仍由访问角色决定。",
   inviteMember: "邀请成员",
   addDepartment: "新增部门",
@@ -134,6 +136,7 @@ const zhCN: WorkspaceOrganizationDictionary = {
 
 const enUS: WorkspaceOrganizationDictionary = {
   title: "Organization & members",
+  sectionGroup: "People",
   description:
     "Manage departments, member placement, and access roles. Departments organize collaboration; roles still control access.",
   inviteMember: "Invite member",

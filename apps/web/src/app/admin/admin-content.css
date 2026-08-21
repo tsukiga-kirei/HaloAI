@@ -1,24 +1,33 @@
 .admin-section-heading {
   display: flex;
   max-width: 1200px;
-  margin: 0 auto 24px;
-  align-items: end;
+  margin: 0 auto 16px;
+  align-items: start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
 }
 
 .admin-section-heading h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .admin-section-heading p {
-  max-width: 720px;
-  margin: 7px 0 0;
+  max-width: 52ch;
+  margin: 4px 0 0;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-section-heading-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-primary-button,
@@ -149,10 +158,12 @@
 
 .admin-page-kicker {
   display: block;
-  margin-block-end: 6px;
-  color: var(--accent);
+  margin-block-end: 4px;
+  color: var(--text-muted);
   font-size: 11px;
-  font-weight: 720;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .organization-heading {
@@ -695,9 +706,8 @@
 .admin-integration-row,
 .admin-security-card {
   border: 1px solid var(--border);
-  border-radius: 15px;
+  border-radius: 12px;
   background: var(--surface-raised);
-  box-shadow: 0 10px 34px rgb(20 24 35 / 4%);
 }
 
 .admin-section-heading > div {
@@ -1030,15 +1040,15 @@ button.admin-table-row:focus-visible {
 }
 .admin-security-card {
   display: flex;
-  min-height: 250px;
-  padding: 22px;
+  min-height: 0;
+  padding: 16px;
   align-items: flex-start;
   flex-direction: column;
 }
 .admin-security-card-top {
   display: flex;
   width: 100%;
-  margin-block-end: 16px;
+  margin-block-end: 12px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -1213,9 +1223,6 @@ button.admin-table-row:focus-visible {
   .admin-security-grid.is-two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .admin-security-card {
-    min-height: 220px;
-  }
 }
 
 @media (max-width: 760px) {
@@ -1223,7 +1230,9 @@ button.admin-table-row:focus-visible {
     align-items: stretch;
     flex-direction: column;
   }
-  .admin-section-heading .admin-primary-button {
+  .admin-section-heading .admin-primary-button,
+  .admin-section-heading-actions,
+  .admin-section-heading-actions > button {
     width: 100%;
   }
   .admin-metrics,
