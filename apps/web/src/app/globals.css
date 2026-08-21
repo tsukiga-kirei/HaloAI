@@ -40,10 +40,13 @@ html {
   --r-card: 12px;
   --r-panel: 16px;
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6578' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  --fast: 120ms;
-  --standard: 180ms;
-  --overlay: 240ms;
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --fast: 140ms;
+  --standard: 220ms;
+  --overlay: 280ms;
+  --enter: 420ms;
+  --exit: 320ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   /* 表头必须与表体同底，禁止用 surface-muted 铺出薰衣草色带。 */
   --table-header-bg: var(--surface);
   --table-row-hover: color-mix(in srgb, var(--text) 4%, var(--surface));
@@ -234,6 +237,9 @@ a {
   padding: 20px 24px 28px;
   overflow: auto;
   background: var(--canvas);
+}
+.management-canvas {
+  min-width: 0;
 }
 .brand-copy small {
   color: var(--text-muted);
@@ -1041,7 +1047,7 @@ a {
 }
 /* 宽度过渡只在用户折叠/展开时开启；恢复偏好或换门户时不要播一遍收起。 */
 .halo-shell.is-sidebar-motion .workspace-sidebar {
-  transition: width 0.3s ease-out;
+  transition: width var(--enter) var(--ease);
 }
 .halo-shell.is-collapsed .workspace-sidebar,
 .workspace-sidebar.is-collapsed {
@@ -1481,7 +1487,8 @@ a {
 @keyframes tooltip-in {
   from {
     opacity: 0;
-    transform: translateX(-3px) scale(0.98);
+    filter: blur(4px);
+    transform: translateX(-4px) scale(0.96);
   }
 }
 .room-glyph-wrap {
@@ -2393,6 +2400,9 @@ a {
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 650;
+  transition:
+    color var(--standard) var(--ease),
+    background var(--standard) var(--ease);
 }
 .document-tabs button {
   min-height: 44px;
@@ -2898,7 +2908,7 @@ a {
     box-shadow: none;
   }
   .halo-shell.is-management.is-sidebar-motion .workspace-sidebar {
-    transition: width 0.3s ease-out;
+    transition: width var(--enter) var(--ease);
   }
   .halo-shell.is-management.is-collapsed .workspace-sidebar {
     width: var(--sidebar-collapsed);
@@ -3487,19 +3497,22 @@ a {
 @keyframes dialog-in {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.985);
+    filter: blur(8px);
+    transform: translateY(12px) scale(0.96);
   }
 }
 @keyframes sheet-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    filter: blur(8px);
+    transform: translateY(20px) scale(0.97);
   }
 }
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    filter: blur(6px);
+    transform: translateY(10px) scale(0.97);
   }
 }
 @media (prefers-reduced-motion: reduce) {

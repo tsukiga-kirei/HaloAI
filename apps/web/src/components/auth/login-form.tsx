@@ -89,6 +89,8 @@ export function LoginForm() {
   // 系统管理不绑定具体工作区；协作成员和空间管理在账号密码下方选择工作区。
   const needsWorkspace = portal !== "system_admin";
 
+  const portalReady = useRef(false);
+
   useLayoutEffect(() => {
     const shell = shellRef.current;
     if (!shell) return;
@@ -98,6 +100,10 @@ export function LoginForm() {
   useLayoutEffect(() => {
     const description = portalDescriptionRef.current;
     if (!description) return;
+    if (!portalReady.current) {
+      portalReady.current = true;
+      return;
+    }
     return animatePortalDescription(description);
   }, [portal]);
 

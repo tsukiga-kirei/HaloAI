@@ -1,13 +1,18 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import gsap from "gsap";
 import { X } from "lucide-react";
-import { useLayoutEffect, useRef, type ReactNode } from "react";
-import { animateBackdropIn, animateDrawerIn } from "@/lib/motion";
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createDrawerTimeline,
+  prefersReducedMotion,
+  showDrawerImmediate,
+} from "@/lib/motion";
 
 /**
  * 表单与创建流程使用右侧抽屉：顶栏、滚动区、可选固定底栏。
- * Radix 负责焦点与 Esc；GSAP 负责从右侧滑入。窄屏拉满宽度，仍从右侧进入。
+ * Radix 负责焦点与 Esc；GSAP 时间线负责飞入/飞回，节点挂载后再 play，关闭时 reverse。
  */
 export function HaloDialog({
   open,
@@ -32,32 +37,71 @@ export function HaloDialog({
   className?: string;
   closeLabel?: string;
 }) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const openRef = useRef(open);
+  const [present, setPresent] = useState(open);
+  openRef.current = open;
+
+  const attachOverlay = useCallback((node: HTMLDivElement | null) => {
+    overlayRef.current = node;
+  }, []);
+
+  const attachContent = useCallback((node: HTMLDivElement | null) => {
+    if (node === contentRef.current && timelineRef.current) return;
+    contentRef.current = node;
+    timelineRef.current?.kill();
+    timelineRef.current = null;
+    if (!node) return;
+    if (prefersReducedMotion()) {
+      showDrawerImmediate(node, overlayRef.current);
+      return;
+    }
+    const timeline = createDrawerTimeline(node, overlayRef.current);
+    timelineRef.current = timeline;
+    if (openRef.current) timeline.timeScale(1).play(0);
+  }, []);
 
   useLayoutEffect(() => {
-    if (!open) return;
-    if (overlayRef.current) animateBackdropIn(overlayRef.current);
-    if (contentRef.current) animateDrawerIn(contentRef.current);
-  }, [open]);
+    if (open) {
+      setPresent(true);
+      timelineRef.current?.eventCallback("onReverseComplete", null);
+      timelineRef.current?.timeScale(1).play();
+      return;
+    }
+    if (!present) return;
+    const timeline = timelineRef.current;
+    if (!timeline || prefersReducedMotion()) {
+      setPresent(false);
+      return;
+    }
+    timeline.eventCallback("onReverseComplete", () => {
+      setPresent(false);
+    });
+    timeline.timeScale(1.2).reverse();
+  }, [open, present]);
 
   return (
     <Dialog.Root
-      open={open}
+      open={present}
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
     >
       <Dialog.Portal>
-        <Dialog.Overlay className="halo-dialog-overlay" ref={overlayRef} />
+        <Dialog.Overlay className="halo-dialog-overlay" ref={attachOverlay} />
         <Dialog.Content
-          ref={contentRef}
+          ref={attachContent}
           className={`halo-dialog-content${size === "wide" ? " is-wide" : ""}${
             footer ? " has-footer" : ""
           }${className ? ` ${className}` : ""}`}
           {...(description ? {} : { "aria-describedby": undefined })}
+          onOpenAutoFocus={(event) => {
+            // 打开时先让位移跑完，避免焦点把滚动和动画抢在同一帧。
+            event.preventDefault();
+          }}
           onPointerDownOutside={(event) => {
-            // 下拉/校验浮层通过 Portal 挂到 body，不能因此关闭抽屉。
             const target = event.target;
             if (
               target instanceof Element &&

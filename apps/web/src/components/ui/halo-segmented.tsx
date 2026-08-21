@@ -28,6 +28,7 @@ export function HaloSegmented<T extends string>({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLSpanElement>(null);
+  const readyRef = useRef(false);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -37,7 +38,8 @@ export function HaloSegmented<T extends string>({
     if (!active) return;
     const rootBox = root.getBoundingClientRect();
     const box = active.getBoundingClientRect();
-    animateThumb(thumb, box.left - rootBox.left, box.width);
+    animateThumb(thumb, box.left - rootBox.left, box.width, { immediate: !readyRef.current });
+    readyRef.current = true;
   }, [value, items, fill]);
 
   return (

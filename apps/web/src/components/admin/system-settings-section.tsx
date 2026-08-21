@@ -7,7 +7,8 @@ import {
   type SystemSettings,
 } from "@haloai/contracts";
 import { Clock3, Globe2, Languages, RefreshCw, ShieldCheck } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { animatePanelIn } from "@/lib/motion";
 import { notify, notifyError } from "@/components/toast-host";
 import { HaloChoicePills } from "@/components/ui/halo-choice-pills";
 import { HaloSegmented } from "@/components/ui/halo-segmented";
@@ -25,6 +26,7 @@ export function SystemSettingsSection() {
   const { dictionary } = useSystemAdminDictionary();
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [tab, setTab] = useState<SettingsTab>("general");
+  const panelRef = useRef<HTMLElement>(null);
   const [locale, setLocale] = useState<"zh-CN" | "en-US">("zh-CN");
   const [sessionExpiresInSeconds, setSessionExpiresInSeconds] = useState(604_800);
   const [sessionUpdateAgeSeconds, setSessionUpdateAgeSeconds] = useState(86_400);
@@ -49,6 +51,18 @@ export function SystemSettingsSection() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const panelReady = useRef(false);
+  const settingsReady = Boolean(settings);
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+    if (!panelReady.current) {
+      panelReady.current = true;
+      return;
+    }
+    return animatePanelIn(panel);
+  }, [tab, settingsReady]);
 
   const dirty = useMemo(() => {
     if (!settings) return false;
@@ -121,7 +135,7 @@ export function SystemSettingsSection() {
         ]}
       />
 
-      <section className="system-settings-panel" data-motion="admin-item">
+      <section className="system-settings-panel" data-motion="admin-item" ref={panelRef}>
         {tab === "general" ? (
           <div className="system-settings-group">
             <SystemFormField

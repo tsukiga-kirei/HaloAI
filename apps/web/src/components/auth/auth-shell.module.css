@@ -29,6 +29,14 @@
   color: var(--text);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .authShell [data-motion="login-brand"],
+  .authShell [data-motion="login-panel"],
+  .authShell [data-motion="login-control"] {
+    opacity: 0;
+  }
+}
+
 .authFrame {
   display: grid;
   grid-template-columns: minmax(340px, 0.84fr) minmax(520px, 1.16fr);
@@ -802,6 +810,14 @@
   }
   .onboardingActions .submit {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .authShell [data-motion="login-brand"],
+  .authShell [data-motion="login-panel"],
+  .authShell [data-motion="login-control"] {
+    opacity: 0;
   }
 }
 

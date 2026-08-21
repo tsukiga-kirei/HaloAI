@@ -3,7 +3,8 @@
 import { Bot, Boxes, LayoutDashboard, ScrollText, ShieldCheck, UsersRound } from "lucide-react";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { animateManagementSection } from "@/lib/motion";
 import { ManagementShell, type ManagementNavSection } from "./management-shell";
 
 const navigation: ReadonlyArray<ManagementNavSection> = [
@@ -36,6 +37,12 @@ const navigation: ReadonlyArray<ManagementNavSection> = [
  */
 export function AdminConsole({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!contentRef.current) return;
+    return animateManagementSection(contentRef.current);
+  }, [pathname]);
 
   return (
     <ManagementShell
@@ -44,7 +51,11 @@ export function AdminConsole({ children }: { children: ReactNode }) {
       activeHref={pathname}
       sections={navigation}
     >
-      {() => children}
+      {() => (
+        <div className="management-canvas" ref={contentRef}>
+          {children}
+        </div>
+      )}
     </ManagementShell>
   );
 }

@@ -326,7 +326,8 @@ These rules match the current implementation. Change this table first when the v
 | Admin page header | Canvas headers are a section kicker, the page title, and primary actions on the right. Workspace and system administration must not stack product copy under the title. Lists and activity use human-readable event names; raw audit keys belong only in the detail drawer                                                                                                                                                                                                                                  |
 | Admin cards       | Directories and settings use a thin border and no large drop shadow. Form controls are label plus input. Drawers must not wrap every field in its own card. Workspace and system administration share a 1200px left-aligned canvas, the same metric cards, and 15px section titles; system pages must not grow a wider or smaller treatment                                                                                                                                                                 |
 | Trees and filter lists | Idle rows are transparent; hover uses an 8% accent wash; the selected row uses `accent-soft`. Icons, labels, counts, and inline actions share one grid. Nested departments must not push the icon off that column; hierarchy is order only. Counts are tabular numerals, not grey pills. Do not paint list rows or unstyled buttons with the system grey button face                                                                 |
-| Drawer anatomy    | Right-side drawers are a header (icon, title, one-line description, close), a scrolling form body, and a pinned footer with cancel plus the primary action. Cancel stays a secondary neutral button. Desktop default is about 480px; complex forms cap at 560px; read-only member catalogs may reach 680px. Narrow screens go full width but still enter from the right                                                                                                                                                                                                  |
+| Drawer anatomy    | Right-side drawers are a header (icon, title, one-line description, close), a scrolling form body, and a pinned footer with cancel plus the primary action. Cancel stays a secondary neutral button. Desktop default is about 480px; complex forms cap at 560px; read-only member catalogs may reach 680px. Narrow screens go full width but still enter from the right. Open and close share one GSAP timeline: fly in with `xPercent`, fly back with `reverse`. Do not blur or scale the full-height panel. |
+| Motion            | Micro-interactions 140ms; segmented thumbs about 380ms ease-out. Right drawers use a GSAP timeline `play` / `reverse` (~520ms in, slightly faster out). Do not blur or scale the full-height panel. First-load login choreography may reach about 700ms. Reduced motion switches instantly                                                                                 |
 
 ### Brand expression
 
@@ -423,7 +424,7 @@ Use only two elevation levels: menus/popovers and modal/drawer surfaces. Content
 
 Use one icon family with 16px, 20px, and 24px sizes. Emoji do not substitute for product icons. Every icon-only control has a tooltip and accessible name. Text buttons also include an icon. Inputs, selects, drawers, and toasts share the same radius, border, and focus ring. Toasts appear in the center of the viewport. Create, invite, and edit forms use a right-hand drawer: about 460–480px on desktop, still docked to the right on tablet, and full width on narrow viewports while still sliding in from the right. Do not revert to a centered modal or a bottom sheet.
 
-Overlays, selects, dialogs, and field errors use unstyled Radix primitives for focus, positioning, and keyboard behavior. Visual styling uses Halo semantic tokens only; entrance motion uses GSAP. Toasts use the open-source Sonner library’s default info layout and motion, mapped to Halo tokens through CSS variables, and must not be restyled into a homemade white box. The toast uses an accent border, a light accent wash, and an accent icon—not a black-and-white info bar. Native `<select>` menus and browser validation bubbles are forbidden. Segmented tabs size to their options and must not stretch across the row; the active tab uses a light purple wash and accent text, while the track stays a neutral surface. Ant Design and AntV are not the product skin; AntV is a charting library and is not used for form overlays.
+Overlays, selects, dialogs, and field errors use unstyled Radix primitives for focus, positioning, and keyboard behavior. Visual styling uses Halo semantic tokens only; entrance and exit motion use GSAP. Toasts use the open-source Sonner library’s default info layout and motion, mapped to Halo tokens through CSS variables, and must not be restyled into a homemade white box. The toast uses an accent border, a light accent wash, and an accent icon—not a black-and-white info bar. Native `<select>` menus and browser validation bubbles are forbidden. Segmented tabs size to their options and must not stretch across the row; the active tab uses a light purple wash and accent text, the thumb slides with a decelerating curve, and the track stays a neutral surface. Ant Design and AntV are not the product skin; AntV is a charting library and is not used for form overlays.
 
 Role switching in the account menu must use a nested submenu that opens to the side, not an indented list in the same column. Workspace switching appears only when the account belongs to more than one workspace, and then uses the same nested submenu. The current-role checkmark sits at the end of the row. Account menu items use a bold weight.
 
@@ -445,14 +446,17 @@ Data tables (collaboration directories and admin member/audit tables share one t
 ### Motion
 
 ```text
-immediate feedback  120ms
-standard transition 180ms
-drawer or dialog    240ms
+immediate feedback  140ms
+standard transition 220ms
+segmented thumb     380ms
+drawer fly-in       480ms
+drawer fly-back     320ms
+login first load    about 700ms
 ```
 
-Normal UI motion stays below 300ms. Streaming text does not bounce or animate word by word. Reduced-motion mode removes displacement and pulsing while preserving state meaning.
+Use a decelerating curve on enter and an accelerating curve on exit; do not slide linearly. Micro-interactions stay short. Right-side drawers use one GSAP timeline: fly in with `xPercent`, fly back with `reverse`, and never blur or scale the full-height panel. First-load login choreography may reach about 700ms. Streaming text does not bounce or animate word by word. Reduced-motion mode removes displacement and pulsing while preserving state meaning.
 
-Micro-interactions use CSS tokens. Sidebar collapse primarily animates width in CSS (matching the workbench reference), and only when the user explicitly collapses or expands it; restoring a preference or switching portals must not play that transition. Drawers, dialogs, selects, and page transitions use GSAP and must honor `prefers-reduced-motion`; reduced-motion mode switches state immediately. Data tables use TanStack Table for sorting, filtering, and virtualization. Visual styling still uses HaloAI tokens; Ant Design and a second component skin are not adopted.
+Micro-interactions use CSS tokens. Sidebar collapse primarily animates width in CSS (matching the workbench reference), and only when the user explicitly collapses or expands it; restoring a preference or switching portals must not play that transition. Drawers, dialogs, selects, and page transitions use GSAP and must honor `prefers-reduced-motion`; reduced-motion mode switches state immediately. A drawer must `play` only after its node is mounted and must not unmount before `reverse` finishes. Data tables use TanStack Table for sorting, filtering, and virtualization. Visual styling still uses HaloAI tokens; Ant Design and a second component skin are not adopted.
 
 ## Quantified visual acceptance
 

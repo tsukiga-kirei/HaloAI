@@ -259,6 +259,7 @@
   z-index: 200;
   inset: 0;
   background: var(--backdrop);
+  opacity: 0;
 }
 .halo-dialog-content {
   position: fixed;
@@ -277,6 +278,8 @@
   border-radius: 16px 0 0 16px;
   background: var(--surface-raised);
   box-shadow: var(--shadow-modal);
+  transform: translate3d(100%, 0, 0);
+  will-change: transform;
 }
 .halo-dialog-content.is-wide {
   width: min(560px, 100vw);
@@ -344,6 +347,16 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .halo-dialog-overlay {
+    opacity: 1;
+  }
+  .halo-dialog-content {
+    transform: none;
+    will-change: auto;
+  }
+}
+
 .halo-segmented {
   position: relative;
   display: flex;
@@ -396,6 +409,7 @@
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  transition: color var(--standard) var(--ease);
 }
 .halo-segmented.is-fill button {
   min-width: 0;
@@ -423,6 +437,10 @@
   color: var(--text-soft);
   font-size: 13px;
   font-weight: 650;
+  transition:
+    background var(--standard) var(--ease),
+    border-color var(--standard) var(--ease),
+    color var(--standard) var(--ease);
 }
 .halo-choice-pills button:hover {
   border-color: var(--accent-border);
