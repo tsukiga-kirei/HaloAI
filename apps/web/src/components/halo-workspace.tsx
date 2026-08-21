@@ -18,7 +18,7 @@ import {
 } from "@haloai/contracts";
 import { getDictionary } from "@/lib/i18n";
 import { clearClientPortalSession } from "@/lib/portals";
-import { useShellPreferences } from "@/lib/shell-preferences";
+import { usePortalSurface, useShellPreferences } from "@/lib/shell-preferences";
 import { notify, notifyError } from "@/components/toast-host";
 import { apiFetch } from "@/lib/api-client";
 import { ConversationPanel } from "./workspace/conversation-panel";
@@ -71,9 +71,9 @@ export function HaloWorkspace({
     setTheme,
     collapsed: sidebarCollapsed,
     setCollapsed: setSidebarCollapsed,
-    portal,
     sidebarMotion,
   } = useShellPreferences();
+  usePortalSurface("member");
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [workspaceSection, setWorkspaceSection] = useState<WorkspaceSection>("room");
   const [documentTab, setDocumentTab] = useState<DocumentTab>("document");
@@ -317,7 +317,7 @@ export function HaloWorkspace({
         onSectionSelect={selectWorkspaceSection}
         locale={locale}
         theme={theme}
-        portal={portal}
+        portal="member"
         onToggleLocale={toggleLocale}
         onToggleTheme={toggleTheme}
         collapsed={sidebarCollapsed}

@@ -49,41 +49,28 @@ export function animateBackdropIn(element: HTMLElement): void {
 
 /**
  * 右侧抽屉只用 GPU 位移：一条时间线正向飞入、反向飞回。
- * 禁止对整板做 blur/scale——全高面板会掉帧，子节点错峰会看起来一卡一卡。
+ * 必须先 gsap.set 接管 CSS 的 translate，再 tween xPercent。
+ * 若把 xPercent 叠在 `translate3d(100%, 0, 0)` 上，结束值仍是屏外，只剩变黑遮罩。
+ * 遮罩只用 opacity，避免 autoAlpha 把 visibility 藏掉后面板无法点按。
  */
 export function createDrawerTimeline(
   content: HTMLElement,
   overlay: HTMLElement | null,
 ): gsap.core.Timeline {
   gsap.killTweensOf([content, overlay].filter(Boolean));
+  gsap.set(content, { x: 0, y: 0, xPercent: 100, force3D: true });
+  if (overlay) gsap.set(overlay, { opacity: 0, visibility: "visible" });
   const timeline = gsap.timeline({ paused: true });
   if (overlay) {
-    timeline.fromTo(
-      overlay,
-      { autoAlpha: 0 },
-      { autoAlpha: 1, duration: 0.32, ease: "power2.out", immediateRender: true },
-      0,
-    );
+    timeline.to(overlay, { opacity: 1, duration: 0.32, ease: "power2.out" }, 0);
   }
-  timeline.fromTo(
-    content,
-    { xPercent: 100 },
-    {
-      xPercent: 0,
-      duration: 0.52,
-      ease: "expo.out",
-      force3D: true,
-      overwrite: true,
-      immediateRender: true,
-    },
-    0,
-  );
+  timeline.to(content, { xPercent: 0, duration: 0.52, ease: "expo.out", force3D: true }, 0);
   return timeline;
 }
 
 export function showDrawerImmediate(content: HTMLElement, overlay: HTMLElement | null): void {
-  gsap.set(content, { xPercent: 0 });
-  if (overlay) gsap.set(overlay, { autoAlpha: 1 });
+  gsap.set(content, { x: 0, y: 0, xPercent: 0, force3D: true });
+  if (overlay) gsap.set(overlay, { opacity: 1, visibility: "visible" });
 }
 
 export function animateThumb(
@@ -240,6 +227,7 @@ function collectSectionMotionTargets(root: HTMLElement): HTMLElement[] {
   root.querySelectorAll<HTMLElement>("[data-motion='admin-item']").forEach(add);
   add(root.querySelector(".admin-metrics"));
   add(root.querySelector(".organization-summary"));
+  add(root.querySelector(".organization-layout"));
   add(root.querySelector(".admin-overview-grid"));
   add(root.querySelector(".admin-security-grid"));
   add(root.querySelector(".system-health-grid"));
@@ -248,10 +236,11 @@ function collectSectionMotionTargets(root: HTMLElement): HTMLElement[] {
 
 /**
  * 管理分区切换只做短距淡入与去模糊。数据表内部更新不会重播整页。
+ * 组织与成员等页在首帧可能只有页头：没有子目标时改动画画布本身，避免换页硬切。
  */
 export function animateManagementSection(element: HTMLElement): () => void {
-  const targets = collectSectionMotionTargets(element);
-  if (targets.length === 0) return () => undefined;
+  const childTargets = collectSectionMotionTargets(element);
+  const targets = childTargets.length > 0 ? childTargets : [element];
   gsap.killTweensOf(targets);
   if (prefersReducedMotion()) {
     clearMotion(targets);

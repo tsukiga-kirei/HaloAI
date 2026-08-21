@@ -23,6 +23,7 @@ import {
   persistPortal,
   persistWorkspaceId,
   portalPath,
+  readStoredPortal,
   readStoredWorkspaceId,
   type PortalKey,
 } from "@/lib/portals";
@@ -90,6 +91,11 @@ export function LoginForm() {
   const needsWorkspace = portal !== "system_admin";
 
   const portalReady = useRef(false);
+
+  useLayoutEffect(() => {
+    // 登录页分段与上次门户对齐，避免重启后默认停在协作成员。
+    setPortal(readStoredPortal());
+  }, []);
 
   useLayoutEffect(() => {
     const shell = shellRef.current;

@@ -166,6 +166,7 @@ test.describe("桌面工作台", () => {
   });
 
   test("单工作区时个人设置不显示切换工作区，但可打开账户与安全", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "个人设置" })).toContainText("协作成员");
     await page.getByRole("button", { name: "个人设置" }).click();
     await expect(page.getByRole("menuitem", { name: "退出登录" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "切换工作区" })).toHaveCount(0);
@@ -180,6 +181,7 @@ test.describe("桌面工作台", () => {
     await page.getByRole("menuitemradio", { name: "空间管理" }).click();
     await expect(page).toHaveURL(/\/admin\/overview$/);
     await expect(page.getByRole("heading", { level: 1, name: "工作空间总览" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "个人设置" })).toContainText("空间管理");
     await expect(page.getByRole("navigation", { name: "后台配置导航" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
@@ -191,6 +193,12 @@ test.describe("桌面工作台", () => {
     await page.getByRole("link", { name: "组织与成员" }).click();
     await expect(page).toHaveURL(/\/admin\/members$/);
     await expect(page.getByRole("heading", { level: 1, name: "组织与成员" })).toBeVisible();
+    await page.getByRole("button", { name: "邀请成员" }).click();
+    const invite = page.getByRole("dialog", { name: "邀请成员" });
+    await expect(invite).toBeVisible();
+    await expect(invite.getByRole("heading", { name: "邀请成员" })).toBeVisible();
+    await invite.getByRole("button", { name: "关闭" }).click();
+    await expect(invite).toHaveCount(0);
 
     await page.getByRole("button", { name: "个人设置" }).click();
     await page.getByRole("menuitem", { name: "切换语言" }).click();
@@ -252,6 +260,14 @@ test.describe("桌面工作台", () => {
     await page.getByRole("link", { name: "系统设置" }).click();
     await expect(page).toHaveURL(/\/system\/settings$/);
     await expect(page.getByRole("heading", { level: 1, name: "系统设置" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "个人设置" })).toContainText("系统管理");
+    await page.addInitScript(() => {
+      window.localStorage.setItem("haloai.portal", "system_admin");
+    });
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/system$/);
+    await expect(page.getByRole("heading", { level: 1, name: "平台总览" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "个人设置" })).toContainText("系统管理");
   });
 
   test("未注册默认管理员自行设置密码后激活租户", async ({ page, context }) => {

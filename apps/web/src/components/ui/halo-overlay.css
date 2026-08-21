@@ -278,6 +278,7 @@
   border-radius: 16px 0 0 16px;
   background: var(--surface-raised);
   box-shadow: var(--shadow-modal);
+  /* 首帧停在屏外；GSAP 必须 set 接管该 transform，不能再叠一层 xPercent。 */
   transform: translate3d(100%, 0, 0);
   will-change: transform;
 }

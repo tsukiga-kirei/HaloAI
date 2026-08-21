@@ -10,7 +10,7 @@ HaloAI separates team collaboration, workspace governance, and platform operatio
 | Workspace administration | `/admin/*`   | Workspace Owners, Workspace Admins, and scoped administrators | Members, roles, AI (using allocated models only), integrations, security, usage, and audit                                                     |
 | System administration    | `/system`    | Platform operations and security staff                        | Tenant lifecycle, the platform model catalog and per-tenant allocation, system health, and platform defaults; no default tenant-content access |
 
-The root route `/` only enters the collaboration surface and does not host a second home page.
+The root route `/` enters the last chosen portal and does not host a second home page. The account menu shows the current surface identity. System administration still requires a server-side platform grant; a stored portal preference cannot escalate privilege.
 
 ## 2. Navigation and visual boundaries
 
@@ -73,6 +73,7 @@ The visual hierarchy continues to use HaloAI semantic tokens.
 ## 5. Completion criteria
 
 - `/app`, `/admin/overview`, `/system`, and `/system/tenants`, `/system/models`, `/system/health`, `/system/settings` navigate through real links. Section-route validation must not be imported from a Client Component module.
+- The root route `/` opens the last chosen portal. The collaboration account menu shows the collaborator identity and must not keep a stale system-admin label.
 - Administration has no unexpected horizontal overflow on desktop or a 390px mobile viewport, and interaction targets are at least 44×44 CSS pixels.
 - Chinese, English, light theme, and dark theme cover collaboration, administration, and denial states.
 - Unauthorized principals cannot bypass the server guard by entering a route directly.

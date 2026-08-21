@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Locale } from "@/lib/i18n";
-import { readStoredPortal, type PortalKey } from "@/lib/portals";
+import { persistPortal, readStoredPortal, type PortalKey } from "@/lib/portals";
 import { SIDEBAR_COLLAPSED_KEY } from "@/lib/shell-collapsed";
 
 type Theme = "light" | "dark";
@@ -23,6 +23,7 @@ export interface ShellPreferences {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean | ((current: boolean) => boolean)) => void;
   portal: PortalKey;
+  setPortal: (portal: PortalKey) => void;
   sidebarMotion: boolean;
 }
 
@@ -79,10 +80,23 @@ function useCreateShellPreferences(initialCollapsed: boolean): ShellPreferences 
       collapsed,
       setCollapsed,
       portal,
+      setPortal,
       sidebarMotion,
     }),
     [collapsed, locale, portal, sidebarMotion, theme],
   );
+}
+
+/**
+ * 进入某个表面时立刻把门户偏好写成该表面。重启后根路径才能回到系统管理，
+ * 而不会停在协作前台却仍显示「系统管理」。
+ */
+export function usePortalSurface(portalKey: PortalKey): void {
+  const { setPortal } = useShellPreferences();
+  useLayoutEffect(() => {
+    persistPortal(portalKey);
+    setPortal(portalKey);
+  }, [portalKey, setPortal]);
 }
 
 /**

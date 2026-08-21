@@ -15,7 +15,7 @@ import { adminDictionaries, type AdminDictionary } from "@/lib/admin-i18n";
 import { apiFetch } from "@/lib/api-client";
 import { persistWorkspaceId, readStoredWorkspaceId } from "@/lib/portals";
 import { clearClientPortalSession, type PortalKey } from "@/lib/portals";
-import { useShellPreferences } from "@/lib/shell-preferences";
+import { usePortalSurface, useShellPreferences } from "@/lib/shell-preferences";
 import { SidebarTooltip } from "@/components/ui/sidebar-tooltip";
 
 export type ManagementNavItem = {
@@ -51,6 +51,7 @@ export function ManagementShell({
 }) {
   const { locale, setLocale, theme, setTheme, collapsed, setCollapsed, sidebarMotion } =
     useShellPreferences();
+  usePortalSurface(portalKey);
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [narrowNav, setNarrowNav] = useState(false);

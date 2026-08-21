@@ -3,6 +3,7 @@ import type { Route } from "next";
 /**
  * 登录入口与账户菜单共用同一组门户。协作、空间管理、系统管理必须显式切换，
  * 不能把 Workspace Owner 自动提升为平台管理员。
+ * 根路径 `/` 读取上次门户进入对应表面；账户菜单展示当前表面身份，不沿用过期偏好。
  */
 export const portalKeys = ["member", "workspace_admin", "system_admin"] as const;
 export type PortalKey = (typeof portalKeys)[number];

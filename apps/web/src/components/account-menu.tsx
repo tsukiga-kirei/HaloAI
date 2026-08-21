@@ -19,6 +19,7 @@ import {
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { persistPortal, portalPath, clearClientPortalSession, type PortalKey } from "@/lib/portals";
+import { useShellPreferences } from "@/lib/shell-preferences";
 import type { Locale } from "@/lib/i18n";
 import type { Theme } from "@/components/workspace/types";
 import { notify } from "@/components/toast-host";
@@ -89,6 +90,7 @@ export function AccountMenu({
   onSignOut?: (() => void) | undefined;
 }) {
   const router = useRouter();
+  const { setPortal } = useShellPreferences();
   const roleLabel = {
     member: labels.roleMember,
     workspace_admin: labels.roleWorkspaceAdmin,
@@ -97,6 +99,7 @@ export function AccountMenu({
 
   function switchPortal(next: PortalKey): void {
     persistPortal(next);
+    setPortal(next);
     onOpenChange(false);
     notify(labels.switchedToRole.replace("{role}", roleLabel[next]));
     router.push(portalPath(next) as Route);

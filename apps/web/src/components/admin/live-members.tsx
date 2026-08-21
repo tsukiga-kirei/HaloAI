@@ -435,9 +435,12 @@ export function LiveMembers() {
 
   if (loading) {
     return (
-      <div className="admin-live-loading">
-        <LoaderCircle size={20} /> {dictionary.loading}
-      </div>
+      <>
+        <AdminPageHeader kicker={dictionary.sectionGroup} title={dictionary.title} />
+        <div className="admin-live-loading">
+          <LoaderCircle size={20} /> {dictionary.loading}
+        </div>
+      </>
     );
   }
 

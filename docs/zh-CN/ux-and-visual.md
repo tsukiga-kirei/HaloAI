@@ -453,7 +453,7 @@ PingFang SC, Microsoft YaHei, sans-serif
 
 曲线用减速入场、加速离场，避免线性滑入滑出。普通微交互仍应短促。右侧抽屉用一条 GSAP 时间线：`xPercent` 飞入，`reverse` 飞回，不对整板做模糊或缩放。登录首次编排可到约 700ms。流式文字不得逐字弹跳。减少动态模式取消位移和呼吸，但必须保留状态含义。
 
-微交互使用 CSS token。侧栏折叠以宽度 CSS 过渡为主，且只在用户主动折叠或展开时播放；恢复偏好或切换门户不得触发该过渡。抽屉、对话框、下拉和页面转场使用 GSAP，并必须读取 `prefers-reduced-motion`；减少动态时改为即时切态。抽屉必须在节点挂入后再 `play`，不得在未播完 `reverse` 前卸载。数据表使用 TanStack Table 管理排序、筛选与虚拟滚动，视觉仍走 HaloAI token，不引入 Ant Design 或第二套组件皮肤。
+微交互使用 CSS token。侧栏折叠以宽度 CSS 过渡为主，且只在用户主动折叠或展开时播放；恢复偏好或切换门户不得触发该过渡。抽屉、对话框、下拉和页面转场使用 GSAP，并必须读取 `prefers-reduced-motion`；减少动态时改为即时切态。抽屉必须在遮罩和面板都挂入后 `play`，并用 `gsap.set` 接管 CSS 的 `translate`，避免 `xPercent` 叠在 `translate3d(100%)` 上导致结束时只剩变黑遮罩；不得在未播完 `reverse` 前卸载。飞回期间必须保持最后一帧打开内容，禁止先把标题、摘要或表单置空再滑走。数据表使用 TanStack Table 管理排序、筛选与虚拟滚动，视觉仍走 HaloAI token，不引入 Ant Design 或第二套组件皮肤。
 
 ## 量化视觉验收
 
